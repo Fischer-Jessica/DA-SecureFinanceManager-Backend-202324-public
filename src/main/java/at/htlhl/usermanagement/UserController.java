@@ -18,7 +18,14 @@ public class UserController {
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all users")
-    public List<Users> getUsers() throws SQLException {
+    public List<Users> getUsers() {
         return (List<Users>) userRepository.getUsers();
+    }
+
+    @PostMapping("/users")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "add a user")
+    public int insertUser(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email) throws SQLException {
+        return userRepository.insertUser(username, password, email);
     }
 }
