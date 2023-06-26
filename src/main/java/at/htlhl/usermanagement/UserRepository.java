@@ -5,6 +5,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -14,9 +20,13 @@ import java.util.List;
 @Repository
 public class UserRepository {
 
+    public KeyPair pair;
+
     private static final String SELECT_USERS = "SELECT id,username,password,email FROM users;";
 
     private static final String INSERT_USER = "INSERT INTO users (username, password, email) VALUES (?,?,?);";
+
+    private static final String SELECT_USERNAME = "SELECT pgp_sym_decrypt(username, '?') AS text FROM users WHERE password=?;";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -48,5 +58,23 @@ public class UserRepository {
         }, keyHolder);
 
         return keyHolder.getKey().intValue();
+    }
+
+    public PublicKey getPublicKey() throws NoSuchAlgorithmException {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048);
+        pair = generator.generateKeyPair();
+        return pair.getPublic();
+    }
+
+    public String getUsername(String encryptedPassword) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
+        byte[] encryptedPasswordByte = Base64.getDecoder().decode(encryptedPassword.getBytes());
+
+        Cipher decryptCipher = Cipher.getInstance("RSA");
+        decryptCipher.init(Cipher.DECRYPT_MODE, pair.getPrivate());
+
+        byte[] decryptedPasswordByte = decryptCipher.doFinal(encryptedPasswordByte);
+
+        return new String(decryptedPasswordByte, StandardCharsets.UTF_8);
     }
 }
