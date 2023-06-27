@@ -22,7 +22,7 @@ public class UserRepository {
 
     public KeyPair pair;
 
-    private static final String SELECT_USERS = "SELECT id,username,password,email FROM users;";
+    private static final String SELECT_USERS = " SELECT id,encode(username,'base64') AS username,encode(password,'base64') AS password,email FROM users;";
 
     private static final String INSERT_USER = "INSERT INTO users (username, password, email) VALUES (?,?,?);";
 
