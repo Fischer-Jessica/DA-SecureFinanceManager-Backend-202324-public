@@ -39,7 +39,6 @@ public class UserRepository {
             String email = rs.getString("email");
             username = Base64.getDecoder().decode(username);
             password = Base64.getDecoder().decode(password);
-            System.out.println(new Users(id, new String(username), new String(password), email));
             return new Users(id, new String(username), new String(password), email);
         });
     }
