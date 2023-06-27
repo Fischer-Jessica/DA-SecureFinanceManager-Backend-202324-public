@@ -50,8 +50,8 @@ public class UserRepository {
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = conn.prepareStatement(INSERT_USER, new String[]{"id"});
-            ps.setBytes(1, Base64.getEncoder().encode(username.getBytes()));
-            ps.setBytes(2, Base64.getEncoder().encode(password.getBytes()));
+            ps.setBytes(1, username.getBytes());
+            ps.setBytes(2, password.getBytes());
             ps.setString(3, email);
             return ps;
         }, keyHolder);
