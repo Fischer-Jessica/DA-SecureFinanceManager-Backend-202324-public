@@ -17,19 +17,30 @@ public class UserRepository {
         return null;
     }
 
-    public User getUser(int userId) {
-        return null;
-    }
-
-    public int addUser(String username, byte[] password, String eMailAdresse, String firstName, String lastName) {
+    public int addUser(User newUser) {
         return 0;
     }
 
-    public void updateUser(int userId, User user) {
+    public void updateUser(User updatedUser, User oldUser) {
 
     }
 
-    public void deleteUser(int userId, byte[] password) {
+    public void updateUsername(String username, User loggedInUser) {
+    }
+
+    public void updatePassword(String updatedPassword, User loggedInUser) {
+    }
+
+    public void updateEMailAddress(String updatedEMailAddress, User loggedInUser) {
+    }
+
+    public void updateFirstName(String updatedFirstName, User loggedInUser) {
+    }
+
+    public void updateLastName(String updatedLastName, User loggedInUser) {
+    }
+
+    public void deleteUser(User loggedInUser) {
 
     }
 }
