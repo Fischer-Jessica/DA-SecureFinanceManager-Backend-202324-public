@@ -20,7 +20,7 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1
+ * @version 1.1
  * @since 02.07.2023 (version 1)
  *
  * @see Category this class (Category) for the explanations of the annotations
@@ -38,4 +38,8 @@ public class Colour {
     /** the name of the colour */
     @Column(name = "colour_name")
     private String colourName;
+
+    /** the hex-value of the colour */
+    @Column(name = "colour_code")
+    private byte[] colourCode;
 }
