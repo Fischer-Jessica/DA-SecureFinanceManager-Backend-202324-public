@@ -14,7 +14,7 @@ import java.util.List;
  * The SubcategoryController class handles the HTTP requests related to subcategories.
  *
  * @author Fischer
- * @version 1
+ * @version 1.1
  * @since 07.07.2023 (version 1)
  */
 @RestController
@@ -35,7 +35,7 @@ public class SubcategoryController {
     @GetMapping("/subcategories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all subcategories of one category")
-    public List<Subcategory> getSubcategories(@PathVariable int categoryId, @RequestParam User loggedInUser) {
+    public List<Subcategory> getSubcategories(@PathVariable int categoryId, @RequestBody User loggedInUser) {
         return subcategoryRepository.getSubcategories(categoryId, loggedInUser);
     }
 
@@ -50,7 +50,7 @@ public class SubcategoryController {
     @GetMapping("/subcategories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one subcategory")
-    public Subcategory getSubcategory(@PathVariable int categoryId, @RequestParam int subcategoryId, @RequestParam User loggedInUser) {
+    public Subcategory getSubcategory(@PathVariable int categoryId, @RequestParam int subcategoryId, @RequestBody User loggedInUser) {
         return subcategoryRepository.getSubcategory(categoryId, subcategoryId, loggedInUser);
     }
 
@@ -69,7 +69,7 @@ public class SubcategoryController {
     @Operation(summary = "add a new subcategory")
     public int addSubcategory(@PathVariable int categoryId, @RequestParam byte[] subcategoryName,
                               @RequestParam byte[] subcategoryDescription, @RequestParam int subcategoryColourId,
-                              @RequestParam User loggedInUser) {
+                              @RequestBody User loggedInUser) {
         return subcategoryRepository.addSubcategory(categoryId, subcategoryName, subcategoryDescription, subcategoryColourId, loggedInUser);
     }
 
