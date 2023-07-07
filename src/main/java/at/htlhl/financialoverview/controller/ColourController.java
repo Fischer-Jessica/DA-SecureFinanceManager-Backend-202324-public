@@ -9,13 +9,26 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * The ColourController class handles the HTTP requests related to colour management.
+ *
+ * @author Fischer
+ * @version 1.1
+ * @since 07.07.2023 (version 1.1)
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("financial-overview")
 public class ColourController {
+    /** The CategoryRepository instance for accessing colour data. */
     @Autowired
     ColourRepository colourRepository;
 
+    /**
+     * Returns a list of all colours.
+     *
+     * @return A list of colours.
+     */
     @GetMapping("/colours")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all colours")
@@ -23,6 +36,12 @@ public class ColourController {
         return colourRepository.getColours();
     }
 
+    /**
+     * Returns a specific colour.
+     *
+     * @param colourId The ID of the colour to retrieve.
+     * @return The requested colour.
+     */
     @GetMapping("/colours")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one colour")
