@@ -19,7 +19,7 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1
+ * @version 1.1
  * @since 02.07.2023 (version 1)
  *
  * @see Category this class (Category) for the explanations of the annotations
@@ -55,7 +55,7 @@ public class Subcategory {
      * Represents a many-to-one relationship between Subcategory and Colour.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_subcategory_colour", referencedColumnName = "pk_colour_id", table = "colours")
+    @JoinColumn(name = "fk_subcategory_colour_id", referencedColumnName = "pk_colour_id", table = "colours")
     private Colour subcategoryColour;
 
     /**
