@@ -14,8 +14,8 @@ import java.util.List;
  * The CategoryController class handles the HTTP requests related to category management.
  *
  * @author Fischer
- * @version 1
- * @since 07.07.2023 (version 1)
+ * @version 1.1
+ * @since 07.07.2023 (version 1.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -107,7 +107,7 @@ public class CategoryController {
      */
     @PatchMapping("/categories/categoryDescription")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the Description of an existing category")
+    @Operation(summary = "change the description of an existing category")
     public void updateCategoryDescription(@RequestParam int categoryId, @RequestParam byte[] updatedCategoryDescription, @RequestBody User loggedInUser) {
         categoryRepository.updateCategoryDescription(categoryId, updatedCategoryDescription, loggedInUser);
     }
