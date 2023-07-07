@@ -26,8 +26,12 @@ public class UserController {
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
-    public int addUser(@RequestParam User newUser) {
-        return userRepository.addUser(newUser);
+    public int addUser(@RequestParam String username,
+                       @RequestParam byte[] password,
+                       @RequestParam String eMailAddress,
+                       @RequestParam String firstName,
+                       @RequestParam String lastName) {
+        return userRepository.addUser(username, password, eMailAddress, firstName, lastName);
     }
 
     @PatchMapping("/users")

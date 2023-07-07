@@ -1,6 +1,7 @@
 package at.htlhl.financialoverview.repository;
 
 import at.htlhl.financialoverview.model.Category;
+import at.htlhl.financialoverview.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,23 +14,32 @@ public class CategoryRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<Category> getCategories() {
+    public List<Category> getCategories(User loggedInUser) {
         return null;
     }
 
-    public Category getCategory(int categoryId) {
+    public Category getCategory(int categoryId, User loggedInUser) {
         return null;
     }
 
-    public int addCategory(byte[] categoryName, byte[] categoryDescription, int categoryColourId) {
+    public int addCategory(byte[] categoryName, byte[] categoryDescription, int categoryColourId, User loggedInUser) {
         return 0;
     }
 
-    public void updateCategory(int categoryId, Category category) {
+    public void updateCategory(Category category, User loggedInUser) {
 
     }
 
-    public void deleteCategory(int categoryId, byte[] password) {
+    public void updateCategoryName(int categoryId, byte[] updatedCategoryName, User loggedInUser) {
+    }
+
+    public void updateCategoryDescription(int categoryId, byte[] updatedCategoryDescription, User loggedInUser) {
+    }
+
+    public void updateCategoryColourId(int categoryId, int updatedCategoryColourId, User loggedInUser) {
+    }
+
+    public void deleteCategory(int categoryId, User loggedInUser) {
 
     }
 }

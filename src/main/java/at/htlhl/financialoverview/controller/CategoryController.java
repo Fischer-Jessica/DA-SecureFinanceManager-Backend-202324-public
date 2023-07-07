@@ -1,6 +1,7 @@
 package at.htlhl.financialoverview.controller;
 
 import at.htlhl.financialoverview.model.Category;
+import at.htlhl.financialoverview.model.User;
 import at.htlhl.financialoverview.repository.CategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,37 +20,59 @@ public class CategoryController {
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all categories")
-    public List<Category> getCategories() {
-        return categoryRepository.getCategories();
+    public List<Category> getCategories(@RequestBody User loggedInUser) {
+        return categoryRepository.getCategories(loggedInUser);
     }
 
-    @GetMapping("/categories/{categoryId}")
+    @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one category")
-    public Category getCategory(@PathVariable("categoryId") int categoryId) {
-        return categoryRepository.getCategory(categoryId);
+    public Category getCategory(@RequestParam int categoryId, @RequestBody User loggedInUser) {
+        return categoryRepository.getCategory(categoryId, loggedInUser);
     }
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new category")
-    public int addCategory(@RequestParam("categoryName") byte[] categoryName,
-                           @RequestParam("categoryDescription") byte[] categoryDescription,
-                           @RequestParam("categoryColourId") int categoryColourId) {
-        return categoryRepository.addCategory(categoryName, categoryDescription, categoryColourId);
+    public int addCategory(@RequestParam byte[] categoryName,
+                           @RequestParam byte[] categoryDescription,
+                           @RequestParam int categoryColourId,
+                           @RequestBody User loggedInUser) {
+        return categoryRepository.addCategory(categoryName, categoryDescription, categoryColourId, loggedInUser);
     }
 
-    @PatchMapping("/categories/{categoryId}")
+    @PatchMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing category")
-    public void updateCategory(@PathVariable("categoryId") int categoryId, @RequestBody Category category) {
-        categoryRepository.updateCategory(categoryId, category);
+    public void updateCategory(@RequestBody Category updatedCategory, @RequestBody User loggedInUser) {
+        categoryRepository.updateCategory(updatedCategory, loggedInUser);
     }
 
-    @DeleteMapping("/categories/{categoryId}")
+    @PatchMapping("/categories/categoryName")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "change the name of an existing category")
+    public void updateCategoryName(@RequestParam int categoryId, @RequestParam byte[] updatedCategoryName, @RequestBody User loggedInUser) {
+        categoryRepository.updateCategoryName(categoryId, updatedCategoryName, loggedInUser);
+    }
+
+    @PatchMapping("/categories/categoryDescription")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "change the Description of an existing category")
+    public void updateCategoryDescription(@RequestParam int categoryId, @RequestParam byte[] updatedCategoryDescription, @RequestBody User loggedInUser) {
+        categoryRepository.updateCategoryDescription(categoryId, updatedCategoryDescription, loggedInUser);
+    }
+
+    @PatchMapping("/categories/categoryColourId")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "change the colour of an existing category")
+    public void updateCategoryColourId(@RequestParam int categoryId, @RequestParam int updatedCategoryColourId, @RequestBody User loggedInUser) {
+        categoryRepository.updateCategoryColourId(categoryId, updatedCategoryColourId, loggedInUser);
+    }
+
+    @DeleteMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a category")
-    public void deleteCategory(@PathVariable("categoryId") int categoryId, @RequestParam byte[] password) {
-        categoryRepository.deleteCategory(categoryId, password);
+    public void deleteCategory(@RequestParam int categoryId, @RequestBody User loggedInUser) {
+        categoryRepository.deleteCategory(categoryId, loggedInUser);
     }
 }

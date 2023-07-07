@@ -17,7 +17,7 @@ public class UserRepository {
         return null;
     }
 
-    public int addUser(User newUser) {
+    public int addUser(String username, byte[] password, String eMailAddress, String firstName, String lastName) {
         return 0;
     }
 
