@@ -2,6 +2,9 @@ package at.htlhl.financialoverview.model;
 
 import jakarta.persistence.*;
 
+import java.awt.*;
+import java.util.List;
+
 /**
  * The {@code Entry} class represents an entry entity in the 'entries' table of the 'financial_overview' PostgreSQL database.
  * It is a POJO (Plain Old Java Object) or entity class that maps to the database table.
@@ -17,8 +20,8 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1
- * @since 02.07.2023 (version 1)
+ * @version 1.1
+ * @since 08.07.2023 (version 1.1)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -56,14 +59,6 @@ public class Entry {
     private byte[] entryAttachment;
 
     /**
-     * The label associated with the entry.
-     * Represents a many-to-one relationship between Entry and Label.
-     */
-    @ManyToOne
-    @JoinColumn(name = "fk_entry_label_id", referencedColumnName = "pk_label_id", table = "labels")
-    private Label entryLabel;
-
-    /**
      * The subcategory associated with the entry.
      * Represents a many-to-one relationship between Entry and Subcategory.
      */
@@ -78,4 +73,16 @@ public class Entry {
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users")
     private User user;
+
+    /**
+     * Many-to-many relationship with Label.
+     * Represents the list of labels associated with this entry.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "entry_labels",
+            joinColumns = @JoinColumn(name = "fk_entry_id"),
+            inverseJoinColumns = @JoinColumn(name = "fk_label_id")
+    )
+    private List<Label> labels;
 }

@@ -2,6 +2,8 @@ package at.htlhl.financialoverview.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 /**
  * The {@code Label} class represents a label entity in the 'labels' table of the 'financial_overview' PostgreSQL database.
  * It is a POJO (Plain Old Java Object) or entity class that maps to the database table.
@@ -17,8 +19,8 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 02.07.2023 (version 1)
+ * @version 1.2
+ * @since 08.07.2023 (version 1.2)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -55,4 +57,16 @@ public class Label {
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users")
     private User user;
+
+    /**
+     * Many-to-many relationship with Entry.
+     * Represents the list of entries associated with this label.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "entry_labels",
+            joinColumns = @JoinColumn(name = "fk_label_id"),
+            inverseJoinColumns = @JoinColumn(name = "fk_entry_id")
+    )
+    private List<Entry> entries;
 }
