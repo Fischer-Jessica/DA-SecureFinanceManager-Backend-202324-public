@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author Fischer
  * @version 1.1
- * @since 02.07.2023 (version 1)
+ * @since 07.07.2023 (version 1.1)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
