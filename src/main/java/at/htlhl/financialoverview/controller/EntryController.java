@@ -14,8 +14,8 @@ import java.util.List;
  * The EntryController class handles the HTTP requests related to entries.
  *
  * @author Fischer
- * @version 1
- * @since 07.07.2023 (version 1)
+ * @version 1.1
+ * @since 08.07.2023 (version 1.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -68,7 +68,6 @@ public class EntryController {
      * @param entryCreationTime       The creation time of the entry.
      * @param entryTimeOfExpense      The time of expense of the entry.
      * @param entryAttachment         The attachment of the entry.
-     * @param entryLabelId            The label ID of the entry.
      * @param loggedInUser         The logged-in user.
      * @return The ID of the newly created entry.
      */
@@ -79,9 +78,9 @@ public class EntryController {
                         @RequestParam byte[] entryName, @RequestParam byte[] entryDescription,
                         @RequestParam byte[] entryAmount, @RequestParam byte[] entryCreationTime,
                         @RequestParam byte[] entryTimeOfExpense, @RequestParam byte[] entryAttachment,
-                        @RequestParam int entryLabelId, @RequestBody User loggedInUser) {
+                        @RequestBody User loggedInUser) {
         return entryRepository.addEntry(categoryId, subcategoryId, entryName, entryDescription, entryAmount,
-                entryCreationTime, entryTimeOfExpense, entryAmount, entryLabelId, loggedInUser);
+                entryCreationTime, entryTimeOfExpense, entryAmount, loggedInUser);
     }
 
     /**
@@ -180,21 +179,7 @@ public class EntryController {
         entryRepository.updateEntryAttachment(categoryId, subcategoryId, updatedEntryAttachment, loggedInUser);
     }
 
-    /**
-     * Changes the label of an existing entry in a specific subcategory.
-     *
-     * @param categoryId               The ID of the category.
-     * @param subcategoryId            The ID of the subcategory.
-     * @param updatedEntryLabelId       The updated label ID.
-     * @param loggedInUser             The logged-in user.
-     */
-    @PatchMapping("/entries/entryLabelId")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the label of an existing entry")
-    public void updateEntryLabelId(@PathVariable int categoryId, @PathVariable int subcategoryId,
-                                   @RequestParam int updatedEntryLabelId, @RequestBody User loggedInUser) {
-        entryRepository.updateEntryLabelId(categoryId, subcategoryId, updatedEntryLabelId, loggedInUser);
-    }
+    // TODO: write a method to update the to the Entry attached Labels
 
     /**
      * Deletes an entry from a specific subcategory.

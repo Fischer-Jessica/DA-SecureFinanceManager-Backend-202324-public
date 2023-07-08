@@ -12,8 +12,8 @@ import java.util.List;
  * The EntryRepository class handles the persistence operations for entry data.
  *
  * @author Fischer
- * @version 1
- * @since 07.07.2023 (version 1)
+ * @version 1.1
+ * @since 08.07.2023 (version 1.1)
  */
 @Repository
 public class EntryRepository {
@@ -57,11 +57,10 @@ public class EntryRepository {
      * @param entryCreationTime        The creation time of the entry.
      * @param entryTimeOfExpense       The time of expense of the entry.
      * @param entryAmount1             The amount of the entry (duplicate).
-     * @param entryLabelId             The ID of the label associated with the entry.
      * @param loggedInUser             The logged-in user.
      * @return                         The ID of the added entry.
      */
-    public int addEntry(int categoryId, int subcategoryId, byte[] entryName, byte[] entryDescription, byte[] entryAmount, byte[] entryCreationTime, byte[] entryTimeOfExpense, byte[] entryAmount1, int entryLabelId, User loggedInUser) {
+    public int addEntry(int categoryId, int subcategoryId, byte[] entryName, byte[] entryDescription, byte[] entryAmount, byte[] entryCreationTime, byte[] entryTimeOfExpense, byte[] entryAmount1, User loggedInUser) {
         return 0;
     }
 
@@ -129,17 +128,6 @@ public class EntryRepository {
      * @param loggedInUser             The logged-in user.
      */
     public void updateEntryAttachment(int categoryId, int subcategoryId, byte[] updatedEntryAttachment, User loggedInUser) {
-    }
-
-    /**
-     * Updates the label of an existing entry in a specific subcategory.
-     *
-     * @param categoryId               The ID of the category.
-     * @param subcategoryId            The ID of the subcategory.
-     * @param updatedEntryLabelId       The updated label ID of the entry.
-     * @param loggedInUser             The logged-in user.
-     */
-    public void updateEntryLabelId(int categoryId, int subcategoryId, int updatedEntryLabelId, User loggedInUser) {
     }
 
     /**
