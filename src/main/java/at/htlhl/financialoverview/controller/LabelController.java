@@ -14,8 +14,8 @@ import java.util.List;
  * The LabelController class handles the HTTP requests related to label management.
  *
  * @author Fischer
- * @version 1
- * @since 07.07.2023 (version 1)
+ * @version 1.1
+ * @since 11.07.2023 (version 1.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -45,10 +45,10 @@ public class LabelController {
      * @param loggedInUser The logged-in user.
      * @return The requested label.
      */
-    @GetMapping("/labels")
+    @GetMapping("/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one label")
-    public Label getLabel(@RequestParam int labelId, @RequestBody User loggedInUser) {
+    public Label getLabel(@PathVariable int labelId, @RequestBody User loggedInUser) {
         return labelRepository.getLabel(labelId, loggedInUser);
     }
 

@@ -14,8 +14,8 @@ import java.util.List;
  * The SubcategoryController class handles the HTTP requests related to subcategories.
  *
  * @author Fischer
- * @version 1.1
- * @since 07.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 11.07.2023 (version 1.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -47,10 +47,10 @@ public class SubcategoryController {
      * @param loggedInUser The logged-in user.
      * @return The requested subcategory.
      */
-    @GetMapping("/subcategories")
+    @GetMapping("/subcategories/{subcategoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one subcategory")
-    public Subcategory getSubcategory(@PathVariable int categoryId, @RequestParam int subcategoryId, @RequestBody User loggedInUser) {
+    public Subcategory getSubcategory(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestBody User loggedInUser) {
         return subcategoryRepository.getSubcategory(categoryId, subcategoryId, loggedInUser);
     }
 

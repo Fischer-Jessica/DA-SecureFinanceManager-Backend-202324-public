@@ -14,8 +14,8 @@ import java.util.List;
  * The EntryController class handles the HTTP requests related to entries.
  *
  * @author Fischer
- * @version 1.1
- * @since 08.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 11.07.2023 (version 1.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -49,11 +49,11 @@ public class EntryController {
      * @param loggedInUser The logged-in user.
      * @return The requested entry.
      */
-    @GetMapping("/entries")
+    @GetMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one entry")
     public Entry getEntry(@PathVariable int categoryId, @PathVariable int subcategoryId,
-                          @RequestParam int entryId, @RequestBody User loggedInUser) {
+                          @PathVariable int entryId, @RequestBody User loggedInUser) {
         return entryRepository.getEntry(categoryId, subcategoryId, entryId, loggedInUser);
     }
 

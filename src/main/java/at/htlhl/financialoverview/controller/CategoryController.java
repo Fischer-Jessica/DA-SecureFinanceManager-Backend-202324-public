@@ -14,8 +14,8 @@ import java.util.List;
  * The CategoryController class handles the HTTP requests related to category management.
  *
  * @author Fischer
- * @version 1.1
- * @since 07.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 11.07.2023 (version 1.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -45,10 +45,10 @@ public class CategoryController {
      * @param loggedInUser The logged-in user.
      * @return The requested category.
      */
-    @GetMapping("/categories")
+    @GetMapping("/categories/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one category")
-    public Category getCategory(@RequestParam int categoryId, @RequestBody User loggedInUser) {
+    public Category getCategory(@PathVariable int categoryId, @RequestBody User loggedInUser) {
         return categoryRepository.getCategory(categoryId, loggedInUser);
     }
 
