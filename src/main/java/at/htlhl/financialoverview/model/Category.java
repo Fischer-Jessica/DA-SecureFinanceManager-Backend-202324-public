@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1
- * @since 02.07.2023 (version 1)
+ * @version 1.1
+ * @since 11.07.2023 (version 1.1)
  */
 
 /**
@@ -33,6 +33,13 @@ import java.util.List;
  */
 @Entity
 @Table(name = "categories")
+/**
+ * The @SecondaryTable annotation is used to specify a secondary table for an entity in Java Persistence API (JPA). It allows you to map additional columns from a secondary table to the same entity. The name attribute is used to specify the name of the secondary table.
+ * In the case of @SecondaryTable(name = "colours", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_category_colour_id")), it means that the entity is associated with a secondary table named "colours". The pkJoinColumns attribute is used to specify the primary key join column(s) between the main table and the secondary table. In this case, @PrimaryKeyJoinColumn(name = "fk_category_colour_id") specifies that the column "fk_category_colour_id" in the main table is used as the primary key join column.
+ * So, when the entity is fetched or persisted, the corresponding columns from the secondary table will be included and mapped to the entity's fields or properties.
+ */
+@SecondaryTable(name = "colours", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_category_colour_id"))
+@SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
 public class Category {
     /**
      * <i>@Id is an annotation used to mark a field or property in an entity class as the primary key of the corresponding table in the database.</i>
@@ -74,7 +81,7 @@ public class Category {
      * Represents a many-to-one relationship between Category and Colour.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_category_colour_id", referencedColumnName = "pk_colour_id", table = "colours")
+    @JoinColumn(name = "fk_category_colour_id", referencedColumnName = "pk_colour_id", table = "colours", insertable=false, updatable=false)
     private Colour colour;
 
     /**
@@ -82,8 +89,8 @@ public class Category {
      * Represents a many-to-one relationship between Category and User.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users")
-    private User user;
+    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
+    private User userId;
 
     /**
      * <i>@OneToMany is an annotation indicates a none-toa-many relationship between the entities. It is used to define a relationship where the annotated entity has a collection of instances of another entity.
@@ -94,6 +101,6 @@ public class Category {
      * The subcategories associated with the category.
      * Represents a one-to-many relationship between Category and Subcategory.
      */
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL)
     private List<Subcategory> subcategories;
 }

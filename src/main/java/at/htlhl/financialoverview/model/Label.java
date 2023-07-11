@@ -19,14 +19,16 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 08.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 08.07.2023 (version 1.3)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
 
 @Entity
 @Table(name = "labels")
+@SecondaryTable(name = "colours", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_colour_id"))
+@SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
 public class Label {
     /** the id of the label */
     @Id
@@ -55,8 +57,8 @@ public class Label {
      * Represents a many-to-one relationship between Label and User.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users")
-    private User user;
+    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
+    private User userId;
 
     /**
      * Many-to-many relationship with Entry.

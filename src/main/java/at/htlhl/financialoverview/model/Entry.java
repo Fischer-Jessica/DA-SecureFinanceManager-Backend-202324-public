@@ -20,13 +20,16 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 08.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 11.07.2023 (version 1.2)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
 @Entity
 @Table(name = "entries")
+@SecondaryTable(name = "subcategories", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_subcategory_id"))
+@SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
+@SecondaryTable(name = "labels", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_label_id"))
 public class Entry {
     /** the id of the entry */
     @Id
@@ -63,16 +66,17 @@ public class Entry {
      * Represents a many-to-one relationship between Entry and Subcategory.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_subcategory_id", referencedColumnName = "pk_subcategory_id", table = "subcategories")
-    private Subcategory subcategory;
+    @JoinColumn(name = "fk_subcategory_id", referencedColumnName = "pk_subcategory_id", table = "subcategories", insertable=false, updatable=false)
+    private Subcategory subcategoryId;
+
 
     /**
      * The user associated with the entry.
      * Represents a many-to-one relationship between Entry and User.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users")
-    private User user;
+    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
+    private User userId;
 
     /**
      * Many-to-many relationship with Label.

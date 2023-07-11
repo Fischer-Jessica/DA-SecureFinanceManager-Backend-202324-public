@@ -20,24 +20,34 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1
- * @since 08.07.2023 (version 1)
+ * @version 1.1
+ * @since 11.07.2023 (version 1.1)
  *
  * @see Entry
  * @see Label
  */
 @Entity
-@Table(name = "entry_labels")
+@Table(name = "entry_labels", uniqueConstraints = @UniqueConstraint(columnNames = {"fk_entry_id", "fk_label_id"}))
+@SecondaryTable(name = "entries", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_entry_id"))
+@SecondaryTable(name = "labels", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_label_id"))
+@SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
 public class EntryLabel {
-    /** The Entry associated with this EntryLabel. */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "pk_entry_label_id")
+    private int entryLabelId;
+
+    /** The Entry associated with this EntryLabel. */
     @ManyToOne
-    @JoinColumn(name = "fk_entry_id", referencedColumnName = "pk_entry_id", table = "entries")
+    @JoinColumn(name = "fk_entry_id", referencedColumnName = "pk_entry_id", table = "entries", insertable=false, updatable=false)
     private Entry entry;
 
     /** The Label associated with this EntryLabel. */
-    @Id
     @ManyToOne
-    @JoinColumn(name = "fk_label_id", referencedColumnName = "pk_label_id", table = "labels")
+    @JoinColumn(name = "fk_label_id", referencedColumnName = "pk_label_id", table = "labels", insertable=false, updatable=false)
     private Label label;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
+    private User userId;
 }

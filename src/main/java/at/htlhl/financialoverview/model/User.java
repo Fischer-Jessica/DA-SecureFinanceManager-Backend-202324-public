@@ -18,8 +18,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1
- * @since 02.07.2023 (version 1)
+ * @version 1.1
+ * @since 11.07.2023 (version 1)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -57,6 +57,7 @@ public class User {
      * The categories associated with the user.
      * Represents a one-to-many relationship between User and Category.
      */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_category_id")
     private List<Category> categories;
 }

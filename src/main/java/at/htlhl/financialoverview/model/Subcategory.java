@@ -19,14 +19,18 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 07.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 11.07.2023 (version 1.2)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
 
 @Entity
 @Table(name = "subcategories")
+@SecondaryTable(name = "categories", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_category_id"))
+@SecondaryTable(name = "colours", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_colour_id"))
+@SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
+
 public class Subcategory {
     /** the id of the subcategory */
     @Id
@@ -39,8 +43,8 @@ public class Subcategory {
      * Represents a many-to-one relationship between Subcategory and Category.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_category_id", referencedColumnName = "pk_category_id", table = "categories")
-    private Category category;
+    @JoinColumn(name = "fk_category_id")
+    private Category categoryId;
 
     /** the name of the subcategory */
     @Column(name = "subcategory_name")
@@ -63,13 +67,14 @@ public class Subcategory {
      * Represents a many-to-one relationship between Subcategory and User.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users")
-    private User user;
+    @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
+    private User userId;
 
     /**
      * The entries associated with the subcategory.
      * Represents a one-to-many relationship between Subcategory and Entry.
      */
-    @OneToMany(mappedBy = "subcategory", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_subcategory_id")
     private List<Entry> entries;
 }
