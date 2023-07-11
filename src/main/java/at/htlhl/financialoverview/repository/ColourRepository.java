@@ -5,14 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
  * The ColourRepository class handles the persistence operations for colour data.
  *
  * @author Fischer
- * @version 1
- * @since 07.07.2023 (version 1)
+ * @version 1.1
+ * @since 11.07.2023 (version 1.1)
  */
 @Repository
 public class ColourRepository {
@@ -20,13 +23,22 @@ public class ColourRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private static final String SELECT_COLOURS = "SELECT pk_colour_id, colour_name, colour_code FROM colours;";
+
+    private static final String SELECT_COLOUR = "SELECT pk_colour_id, colour_name, colour_code FROM colours WHERE pk_colour_id = ?;";
+
     /**
      * Retrieves a list of all colours.
      *
      * @return A list of Colour objects representing the colours.
      */
     public List<Colour> getColours() {
-        return null;
+        return jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
+            int colourId = rs.getInt("pk_colour_id");
+            String colourName = rs.getString("colour_name");
+            byte[] colourCode = rs.getBytes("colour_code");
+            return new Colour(colourId, colourName, colourCode);
+        });
     }
 
     /**
@@ -36,6 +48,20 @@ public class ColourRepository {
      * @return The requested Colour object.
      */
     public Colour getColour(int colourId) {
-        return null;
+        try {
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
+
+            Colour colour = new Colour();
+            ResultSet getColour = conn.createStatement().executeQuery(SELECT_COLOUR);
+            if (getColour.next()) {
+                colour = new Colour(getColour.getInt("pk_colour_id"),
+                        getColour.getString("colour_name"),
+                        getColour.getBytes("colour_code"));
+            }
+            conn.close();
+            return colour;
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 }

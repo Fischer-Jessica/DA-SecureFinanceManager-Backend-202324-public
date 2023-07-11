@@ -1,5 +1,6 @@
 package at.htlhl.financialoverview.model;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.*;
 
 /**
@@ -20,8 +21,8 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 07.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 11.07.2023 (version 1.2)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -42,4 +43,14 @@ public class Colour {
     /** the hex-value of the colour */
     @Column(name = "colour_code")
     private byte[] colourCode;
+
+    public Colour() {
+
+    }
+
+    public Colour(int colourId, String colourName, byte[] colourCode) {
+        this.colourId = colourId;
+        this.colourName = colourName;
+        this.colourCode = colourCode;
+    }
 }
