@@ -14,8 +14,8 @@ import java.util.List;
  * The ColourRepository class handles the persistence operations for colour data.
  *
  * @author Fischer
- * @version 1.1
- * @since 11.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 12.07.2023 (version 1.2)
  */
 @Repository
 public class ColourRepository {
@@ -24,8 +24,6 @@ public class ColourRepository {
     private JdbcTemplate jdbcTemplate;
 
     private static final String SELECT_COLOURS = "SELECT pk_colour_id, colour_name, colour_code FROM colours;";
-
-    private static final String SELECT_COLOUR = "SELECT pk_colour_id, colour_name, colour_code FROM colours WHERE pk_colour_id = ?;";
 
     /**
      * Retrieves a list of all colours.
@@ -48,6 +46,7 @@ public class ColourRepository {
      * @return The requested Colour object.
      */
     public Colour getColour(int colourId) {
+        String SELECT_COLOUR = "SELECT pk_colour_id, colour_name, colour_code FROM colours WHERE pk_colour_id = " + colourId + ";";
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 

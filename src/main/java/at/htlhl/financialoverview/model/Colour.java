@@ -21,8 +21,8 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 11.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 12.07.2023 (version 1.3)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -52,5 +52,17 @@ public class Colour {
         this.colourId = colourId;
         this.colourName = colourName;
         this.colourCode = colourCode;
+    }
+
+    public Integer getColourId() {
+        return colourId;
+    }
+
+    public String getColourName() {
+        return colourName;
+    }
+
+    public byte[] getColourCode() {
+        return colourCode;
     }
 }

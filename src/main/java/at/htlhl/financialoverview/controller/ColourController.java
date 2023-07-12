@@ -13,8 +13,8 @@ import java.util.List;
  * The ColourController class handles the HTTP requests related to colour management.
  *
  * @author Fischer
- * @version 1.2
- * @since 11.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 12.07.2023 (version 1.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -42,7 +42,7 @@ public class ColourController {
      * @param colourId The ID of the colour to retrieve.
      * @return The requested colour.
      */
-    @GetMapping("/colours/{coloursId}")
+    @GetMapping("/colours/{colourId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one colour")
     public Colour getColour(@PathVariable int colourId) {
