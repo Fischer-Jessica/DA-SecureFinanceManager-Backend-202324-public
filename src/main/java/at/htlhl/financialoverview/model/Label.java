@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 08.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 12.07.2023 (version 1.4)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -30,7 +30,10 @@ import java.util.List;
 @SecondaryTable(name = "colours", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_colour_id"))
 @SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
 public class Label {
-    /** the id of the label */
+    /**
+     * The unique identifier for this Label.
+     * It is generated automatically by the database.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pk_label_id")

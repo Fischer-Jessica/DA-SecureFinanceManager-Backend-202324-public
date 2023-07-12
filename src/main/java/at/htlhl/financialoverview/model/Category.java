@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 11.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 12.07.2023 (version 1.2)
  */
 
 /**
@@ -50,7 +50,10 @@ public class Category {
      * <i>@Column is an annotation used to specify the details of the column associated with the annotated field in the database table.
      * The 'name' attribute specifies the name of the column in the database that corresponds to the annotated field.</i>
      */
-    /** the id of the category */
+    /**
+     * The unique identifier for this Category.
+     * It is generated automatically by the database.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pk_category_id")

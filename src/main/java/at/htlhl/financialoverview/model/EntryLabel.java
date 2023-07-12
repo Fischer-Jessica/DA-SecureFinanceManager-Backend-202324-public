@@ -25,6 +25,7 @@ import jakarta.persistence.*;
  *
  * @see Entry
  * @see Label
+ * @see Category (refer to the Category class for explanations of the annotations)
  */
 @Entity
 @Table(name = "entry_labels", uniqueConstraints = @UniqueConstraint(columnNames = {"fk_entry_id", "fk_label_id"}))
@@ -32,21 +33,35 @@ import jakarta.persistence.*;
 @SecondaryTable(name = "labels", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_label_id"))
 @SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
 public class EntryLabel {
+    /**
+     * The unique identifier for this EntryLabel.
+     * It is generated automatically by the database.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pk_entry_label_id")
     private int entryLabelId;
 
-    /** The Entry associated with this EntryLabel. */
+    /**
+     * The Entry associated with this EntryLabel.
+     * Represents a many-to-one relationship between EntryLabel and Entry.
+     */
     @ManyToOne
     @JoinColumn(name = "fk_entry_id", referencedColumnName = "pk_entry_id", table = "entries", insertable=false, updatable=false)
     private Entry entry;
 
-    /** The Label associated with this EntryLabel. */
+    /**
+     * The Label associated with this EntryLabel.
+     * Represents a many-to-one relationship between EntryLabel and Label.
+     */
     @ManyToOne
     @JoinColumn(name = "fk_label_id", referencedColumnName = "pk_label_id", table = "labels", insertable=false, updatable=false)
     private Label label;
 
+    /**
+     * The User associated with the label.
+     * Represents a many-to-one relationship between EntryLabel and User.
+     */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
     private User userId;

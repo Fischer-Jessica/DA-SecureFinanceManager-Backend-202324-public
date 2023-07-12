@@ -1,6 +1,5 @@
 package at.htlhl.financialoverview.model;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.*;
 
 /**
@@ -21,8 +20,8 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 12.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 12.07.2023 (version 1.4)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -44,24 +43,44 @@ public class Colour {
     @Column(name = "colour_code")
     private byte[] colourCode;
 
-    public Colour() {
+    public Colour() {}
 
-    }
-
+    /**
+     * Constructs a new Colour object with the specified ID, name, and code.
+     *
+     * @param colourId    the ID of the colour
+     * @param colourName  the name of the colour
+     * @param colourCode  the code of the colour
+     */
     public Colour(int colourId, String colourName, byte[] colourCode) {
         this.colourId = colourId;
         this.colourName = colourName;
         this.colourCode = colourCode;
     }
 
+    /**
+     * Returns the ID of the colour.
+     *
+     * @return the ID of the colour
+     */
     public Integer getColourId() {
         return colourId;
     }
 
+    /**
+     * Returns the name of the colour.
+     *
+     * @return the name of the colour
+     */
     public String getColourName() {
         return colourName;
     }
 
+    /**
+     * Returns the code of the colour.
+     *
+     * @return the code of the colour
+     */
     public byte[] getColourCode() {
         return colourCode;
     }

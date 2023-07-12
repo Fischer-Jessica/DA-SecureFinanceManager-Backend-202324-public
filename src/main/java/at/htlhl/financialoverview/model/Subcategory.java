@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 11.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 12.07.2023 (version 1.3)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -32,7 +32,10 @@ import java.util.List;
 @SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
 
 public class Subcategory {
-    /** the id of the subcategory */
+    /**
+     * The unique identifier for this Subcategory.
+     * It is generated automatically by the database.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pk_subcategory_id")
