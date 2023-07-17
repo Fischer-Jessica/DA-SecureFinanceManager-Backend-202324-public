@@ -13,8 +13,8 @@ import java.util.List;
  * The UserController class handles the HTTP requests related to user management.
  *
  * @author Fischer
- * @version 1
- * @since 07.07.2023 (version 1)
+ * @version 1.1
+ * @since 17.07.2023 (version 1.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -51,7 +51,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
     public int addUser(@RequestParam String username,
-                       @RequestParam byte[] password,
+                       @RequestParam String password,
                        @RequestParam String eMailAddress,
                        @RequestParam String firstName,
                        @RequestParam String lastName) {
@@ -67,8 +67,9 @@ public class UserController {
     @PatchMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing user")
-    public void updateUser(@RequestBody User updatedUser, @RequestBody User loggedInUser) {
-        userRepository.updateUser(updatedUser, loggedInUser);
+    public void updateUser(@RequestParam String username, @RequestParam String password, @RequestParam String eMailAddress, @RequestParam String firstName, @RequestParam String lastName,
+                           @RequestBody User loggedInUser) {
+        userRepository.updateUser(new User(loggedInUser.getUserId(), username, password, eMailAddress, firstName, lastName), loggedInUser);
     }
 
     /**
