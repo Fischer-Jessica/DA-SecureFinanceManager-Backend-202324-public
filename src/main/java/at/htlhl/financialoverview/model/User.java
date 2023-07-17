@@ -19,8 +19,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 17.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 17.07.2023 (version 1.3)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -62,9 +62,22 @@ public class User {
     @JoinColumn(name = "fk_category_id")
     private List<Category> categories;
 
+    /**
+     * Constructs a new empty User instance.
+     */
     public User() {
     }
 
+    /**
+     * Constructs a new User instance with the specified details.
+     *
+     * @param userId        The ID of the user.
+     * @param username      The username of the user.
+     * @param password      The password of the user.
+     * @param eMailAddress  The email address of the user.
+     * @param firstName     The first name of the user.
+     * @param lastName      The last name of the user.
+     */
     public User(int userId, String username, String password, String eMailAddress, String firstName, String lastName) {
         this.userId = userId;
         this.username = username;
@@ -74,30 +87,68 @@ public class User {
         this.lastName = lastName;
     }
 
+    /**
+     * Retrieves the ID of the user.
+     *
+     * @return The user ID.
+     */
     public int getUserId() {
         return userId;
     }
 
+    /**
+     * Retrieves the username of the user.
+     *
+     * @return The username.
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Retrieves the password of the user.
+     *
+     * @return The password.
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Retrieves the email address of the user.
+     *
+     * @return The email address.
+     */
     public String geteMailAddress() {
         return eMailAddress;
     }
 
+    /**
+     * Retrieves the first name of the user.
+     *
+     * @return The first name.
+     */
     public String getFirstName() {
         return firstName;
     }
 
+    /**
+     * Retrieves the last name of the user.
+     *
+     * @return The last name.
+     */
     public String getLastName() {
         return lastName;
     }
 
+    /**
+     * Checks if this User instance is equal to another object.
+     * Two User instances are considered equal if their user IDs, usernames, passwords, email addresses,
+     * first names, last names, and categories are all equal.
+     *
+     * @param o The object to compare this User instance against.
+     * @return {@code true} if the objects are equal, {@code false} otherwise.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -114,6 +165,13 @@ public class User {
         return Objects.equals(categories, user.categories);
     }
 
+    /**
+     * Generates a hash code value for this User instance.
+     * The hash code is based on the user ID, username, password, email address,
+     * first name, last name, and categories.
+     *
+     * @return The hash code value for this User instance.
+     */
     @Override
     public int hashCode() {
         int result = userId;

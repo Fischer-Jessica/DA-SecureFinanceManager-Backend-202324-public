@@ -18,38 +18,144 @@ import java.util.List;
  * The UserRepository class handles the persistence operations for user data.
  *
  * @author Fischer
- * @version 1.1
- * @since 17.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 17.07.2023 (version 1.2)
  */
 @Repository
 public class UserRepository {
-    /** JdbcTemplate which is used in the code below but implementing the template at each usage would be unnecessary */
+    /** JdbcTemplate which is used for executing SQL statements, in the other repositories too, but implementing the template at each usage would be unnecessary */
     @Autowired
     private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
+    /**
+     * SQL query to retrieve a user based on the user ID.
+     *
+     * Columns used: pk_user_id, username, password, email_address, first_name, last_name
+     * Table used: users
+     *
+     * param pk_user_id The user ID of the user to retrieve.
+     */
     private static final String SELECT_USER = "SELECT pk_user_id, username, password, email_address, first_name, last_name FROM users WHERE pk_user_id = ?;";
 
+    /**
+     * SQL query to retrieve all users.
+     *
+     * Columns used: pk_user_id, username, password, email_address, first_name, last_name
+     * Table used: users
+     */
     private static final String SELECT_USERS = "SELECT pk_user_id, username, password, email_address, first_name, last_name FROM users;";
 
+    /**
+     * SQL query to insert a new user into the database.
+     *
+     * Columns used: username, password, email_address, first_name, last_name
+     * Table used: users
+     *
+     * param username       The username of the new user.
+     * param password       The password of the new user.
+     * param email_address  The email address of the new user.
+     * param first_name     The first name of the new user.
+     * param last_name      The last name of the new user.
+     */
     private static final String INSERT_USER = "INSERT INTO users (username, password, email_address, first_name, last_name) VALUES (?, ?, ?, ?, ?)";
 
+    /**
+     * SQL query to update an existing user.
+     *
+     * Columns used: username, password, email_address, first_name, last_name
+     * Table used: users
+     *
+     * param username       The updated username.
+     * param password       The updated password.
+     * param email_address  The updated email address.
+     * param first_name     The updated first name.
+     * param last_name      The updated last name.
+     * param pk_user_id     The user ID of the user to update.
+     */
     private static final String UPDATE_USER = "UPDATE users " +
             "SET username = ?, password = ?, email_address = ?, first_name = ?, last_name = ? " +
             "WHERE pk_user_id = ?;";
 
+    /**
+     * SQL query to update the username of an existing user.
+     *
+     * Column used: username
+     * Table used: users
+     *
+     * param username       The updated username.
+     * param pk_user_id     The user ID of the user to update.
+     */
     private static final String UPDATE_USERNAME = "UPDATE users SET username = ? WHERE pk_user_id = ?;";
+
+    /**
+     * SQL query to update the password of an existing user.
+     *
+     * Column used: password
+     * Table used: users
+     *
+     * param password       The updated password.
+     * param pk_user_id     The user ID of the user to update.
+     */
     private static final String UPDATE_PASSWORD = "UPDATE users SET password = ? WHERE pk_user_id = ?;";
+
+    /**
+     * SQL query to update the email address of an existing user.
+     *
+     * Column used: email_address
+     * Table used: users
+     *
+     * param email_address  The updated email address.
+     * param pk_user_id     The user ID of the user to update.
+     */
     private static final String UPDATE_EMAIL_ADDRESS = "UPDATE users SET email_address = ? WHERE pk_user_id = ?;";
+
+    /**
+     * SQL query to update the first name of an existing user.
+     *
+     * Column used: first_name
+     * Table used: users
+     *
+     * param first_name     The updated first name.
+     * param pk_user_id     The user ID of the user to update.
+     */
     private static final String UPDATE_FIRST_NAME = "UPDATE users SET first_name = ? WHERE pk_user_id = ?;";
+
+    /**
+     * SQL query to update the last name of an existing user.
+     *
+     * Column used: last_name
+     * Table used: users
+     *
+     * param last_name      The updated last name.
+     * param pk_user_id     The user ID of the user to update.
+     */
     private static final String UPDATE_LAST_NAME = "UPDATE users SET last_name = ? WHERE pk_user_id = ?;";
 
+    /**
+     * SQL query to delete a user from the repository.
+     *
+     * Table used: users
+     *
+     * param pk_user_id     The user ID of the user to delete.
+     */
     private static final String DELETE_USER = "DELETE FROM users WHERE pk_user_id = ?;";
 
+    /**
+     * Constructs a new UserRepository object with the given DataSource.
+     *
+     * @param dataSource The DataSource object to be used by the repository.
+     */
     @Autowired
     public UserRepository(DataSource dataSource) {
         UserRepository.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+    /**
+     * Validates the credentials of a user.
+     *
+     * @param loggedInUser The User object containing the user credentials to be validated.
+     * @return True if the credentials are valid, false otherwise.
+     */
     public static boolean validateUserCredentials(User loggedInUser) {
         User databaseUser = null;
         try {
