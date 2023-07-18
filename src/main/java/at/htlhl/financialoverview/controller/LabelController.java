@@ -14,8 +14,8 @@ import java.util.List;
  * The LabelController class handles the HTTP requests related to label management.
  *
  * @author Fischer
- * @version 1.1
- * @since 11.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 18.07.2023 (version 1.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -64,8 +64,8 @@ public class LabelController {
     @PostMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "add a new label")
-    public int addLabel(@RequestParam byte[] labelName,
-                        @RequestParam byte[] labelDescription,
+    public int addLabel(@RequestParam String labelName,
+                        @RequestParam String labelDescription,
                         @RequestParam int labelColourId,
                         @RequestBody User loggedInUser) {
         return labelRepository.addLabel(labelName, labelDescription, labelColourId, loggedInUser);
@@ -94,7 +94,7 @@ public class LabelController {
     @PatchMapping("labels/labelName")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the name of the label")
-    public void updateLabelName(@RequestParam int labelId, @RequestParam byte[] labelName, @RequestBody User loggedInUser) {
+    public void updateLabelName(@RequestParam int labelId, @RequestParam String labelName, @RequestBody User loggedInUser) {
         labelRepository.updateLabelName(labelId, labelName, loggedInUser);
     }
 
@@ -108,7 +108,7 @@ public class LabelController {
     @PatchMapping("labels/labelDescription")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the description of the label")
-    public void updateLabelDescription(@RequestParam int labelId, @RequestParam byte[] labelDescription, @RequestBody User loggedInUser) {
+    public void updateLabelDescription(@RequestParam int labelId, @RequestParam String labelDescription, @RequestBody User loggedInUser) {
         labelRepository.updateLabelDescription(labelId, labelDescription, loggedInUser);
     }
 

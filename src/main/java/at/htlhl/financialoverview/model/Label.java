@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 12.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 18.07.2023 (version 1.5)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -41,11 +41,11 @@ public class Label {
 
     /** the name of the label */
     @Column(name = "label_name")
-    private byte[] labelName;
+    private String labelName;
 
     /** the description of the label */
     @Column(name = "label_description")
-    private byte[] labelDescription;
+    private String labelDescription;
 
     /**
      * The colour associated with the label.
@@ -54,6 +54,9 @@ public class Label {
     @ManyToOne
     @JoinColumn(name = "fk_label_colour_id", referencedColumnName = "pk_colour_id", table = "colours")
     private Colour labelColour;
+
+    @Column(name = "fk_label_colour_id")
+    private int labelColourId;
 
     /**
      * The user associated with the label.
@@ -74,4 +77,31 @@ public class Label {
             inverseJoinColumns = @JoinColumn(name = "fk_entry_id")
     )
     private List<Entry> entries;
+
+    public Label(int labelId, String labelName, String labelDescription, int labelColourId) {
+        this.labelId = labelId;
+        this.labelName = labelName;
+        this.labelDescription = labelDescription;
+        this.labelColourId = labelColourId;
+    }
+
+    public int getLabelId() {
+        return labelId;
+    }
+
+    public String getLabelName() {
+        return labelName;
+    }
+
+    public String getLabelDescription() {
+        return labelDescription;
+    }
+
+    public int getLabelColourId() {
+        return labelColourId;
+    }
+
+    public User getUserId() {
+        return userId;
+    }
 }

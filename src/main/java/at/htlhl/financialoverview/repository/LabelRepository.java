@@ -1,25 +1,47 @@
 package at.htlhl.financialoverview.repository;
 
+import at.htlhl.financialoverview.model.Category;
 import at.htlhl.financialoverview.model.Label;
 import at.htlhl.financialoverview.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
  * The LabelRepository class handles the persistence operations for label data.
  *
  * @author Fischer
- * @version 1
- * @since 07.07.2023 (version 1)
+ * @version 1.1
+ * @since 18.07.2023 (version 1.1)
  */
 @Repository
 public class LabelRepository {
-    /** JdbcTemplate which is used in the code below but implementing the template at each usage would be unnecessary */
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private static final String SELECT_LABELS = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id FROM labels WHERE fk_user_id = ?;";
+
+    private static final String SELECT_LABEL = "SELECT label_name, label_description, fk_label_colour_id FROM labels WHERE fk_user_id = ? AND pk_label_id = ?;";
+
+    private static final String INSERT_LABEL = "INSERT INTO labels (label_name, label_description, fk_label_colour_id, fk_user_id) VALUES (?, ?, ?, ?);";
+
+    private static final String UPDATE_LABEL = "UPDATE labels " +
+            "SET label_name = ?, label_description = ?, fk_category_colour_id = ? " +
+            "WHERE pk_label_id = ? AND fk_user_id = ?;";
+
+    private static final String UPDATE_LABEL_NAME = "UPDATE labels SET label_name = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
+
+    private static final String UPDATE_LABEL_DESCRIPTION = "UPDATE labels SET label_description = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
+
+    private static final String UPDATE_LABEL_COLOUR_ID = "UPDATE labels SET fk_category_colour_id = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
+
+    private static final String DELETE_LABEL = "DELETE FROM labels WHERE pk_label_id = ? AND fk_user_id = ?;";
 
     /**
      * Retrieves a list of labels for the logged-in user.
@@ -28,7 +50,31 @@ public class LabelRepository {
      * @return A list of Label objects representing the labels.
      */
     public List<Label> getLabels(User loggedInUser) {
-        return null;
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+                PreparedStatement ps = conn.prepareStatement(SELECT_LABELS);
+                ps.setInt(1, loggedInUser.getUserId());
+                ResultSet rs = ps.executeQuery();
+
+                List<Label> labels = new ArrayList<>();
+                while (rs.next()) {
+                    int labelId = rs.getInt("pk_label_id");
+                    byte[] labelName = rs.getBytes("label_name");
+                    byte[] labelDescription = rs.getBytes("label_description");
+                    int labelColourId = rs.getInt("fk_label_colour_id");
+
+                    Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId);
+                    labels.add(label);
+                }
+
+                return labels;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -39,7 +85,29 @@ public class LabelRepository {
      * @return The requested Label object.
      */
     public Label getLabel(int labelId, User loggedInUser) {
-        return null;
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+                PreparedStatement ps = conn.prepareStatement(SELECT_LABEL);
+                ps.setInt(1, loggedInUser.getUserId());
+                ps.setInt(2, labelId);
+                ResultSet rs = ps.executeQuery();
+
+                Label getLabel = null;
+                if (rs.next()) {
+                    byte[] labelName = rs.getBytes("label_name");
+                    byte[] labelDescription = rs.getBytes("label_description");
+                    int labelColourId = rs.getInt("fk_label_colour_id");
+
+                    getLabel = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId);
+                }
+                return getLabel;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -51,8 +119,29 @@ public class LabelRepository {
      * @param loggedInUser     The logged-in user.
      * @return The ID of the newly created label.
      */
-    public int addLabel(byte[] labelName, byte[] labelDescription, int labelColourId, User loggedInUser) {
-        return 0;
+    public int addLabel(String labelName, String labelDescription, int labelColourId, User loggedInUser) {
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+
+                GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+
+                UserRepository.jdbcTemplate.update(connection -> {
+                    PreparedStatement ps = conn.prepareStatement(INSERT_LABEL, new String[]{"pk_category_id"});
+                    ps.setBytes(1, Base64.getDecoder().decode(labelName));
+                    ps.setBytes(2, Base64.getDecoder().decode(labelDescription));
+                    ps.setInt(3, labelColourId);
+                    ps.setInt(4, loggedInUser.getUserId());
+                    return ps;
+                }, keyHolder);
+
+                return keyHolder.getKey().intValue();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -62,6 +151,21 @@ public class LabelRepository {
      * @param loggedInUser The logged-in user.
      */
     public void updateLabel(Label updatedLabel, User loggedInUser) {
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+                PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL);
+                ps.setBytes(1, Base64.getDecoder().decode(updatedLabel.getLabelName()));
+                ps.setBytes(2, Base64.getDecoder().decode(updatedLabel.getLabelDescription()));
+                ps.setInt(3, updatedLabel.getLabelColourId());
+                ps.setInt(4, updatedLabel.getLabelId());
+                ps.setInt(5, loggedInUser.getUserId());
+                ps.executeUpdate();
+                conn.close();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
     }
 
     /**
@@ -71,7 +175,20 @@ public class LabelRepository {
      * @param labelName     The updated label name.
      * @param loggedInUser The logged-in user.
      */
-    public void updateLabelName(int labelId, byte[] labelName, User loggedInUser) {
+    public void updateLabelName(int labelId, String labelName, User loggedInUser) {
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+                PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_NAME);
+                ps.setBytes(1, Base64.getDecoder().decode(labelName));
+                ps.setInt(2, labelId);
+                ps.setInt(3, loggedInUser.getUserId());
+                ps.executeUpdate();
+                conn.close();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
     }
 
     /**
@@ -81,7 +198,20 @@ public class LabelRepository {
      * @param labelDescription The updated label description.
      * @param loggedInUser    The logged-in user.
      */
-    public void updateLabelDescription(int labelId, byte[] labelDescription, User loggedInUser) {
+    public void updateLabelDescription(int labelId, String labelDescription, User loggedInUser) {
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+                PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_DESCRIPTION);
+                ps.setBytes(1, Base64.getDecoder().decode(labelDescription));
+                ps.setInt(2, labelId);
+                ps.setInt(3, loggedInUser.getUserId());
+                ps.executeUpdate();
+                conn.close();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
     }
 
     /**
@@ -92,6 +222,19 @@ public class LabelRepository {
      * @param loggedInUser The logged-in user.
      */
     public void updateLabelColourId(int labelId, int labelColourId, User loggedInUser) {
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+                PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_COLOUR_ID);
+                ps.setInt(1, labelColourId);
+                ps.setInt(2, labelId);
+                ps.setInt(3, loggedInUser.getUserId());
+                ps.executeUpdate();
+                conn.close();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
     }
 
     /**
@@ -101,5 +244,18 @@ public class LabelRepository {
      * @param loggedInUser The logged-in user.
      */
     public void deleteLabel(int labelId, User loggedInUser) {
+        if (UserRepository.validateUserCredentials(loggedInUser)) {
+            try {
+                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+
+                PreparedStatement ps = conn.prepareStatement(DELETE_LABEL);
+                ps.setInt(1, labelId);
+                ps.setInt(2, loggedInUser.getUserId());
+                ps.executeUpdate();
+                conn.close();
+            } catch (SQLException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
     }
 }
