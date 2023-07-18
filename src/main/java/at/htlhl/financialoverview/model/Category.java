@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 12.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 17.07.2023 (version 1.3)
  */
 
 /**
@@ -61,11 +61,11 @@ public class Category {
 
     /** the name of the category */
     @Column(name = "category_name")
-    private byte[] categoryName;
+    private String categoryName;
 
     /** the description of the category */
     @Column(name = "category_description")
-    private byte[] categoryDescription;
+    private String categoryDescription;
 
     /**
      * <i>@ManyToOne is an annotation used to define a many-to-one relationship between two entities. It indicates that the annotated entity (or entity field) has a many-to-one association with another entity.</i>
@@ -87,6 +87,9 @@ public class Category {
     @JoinColumn(name = "fk_category_colour_id", referencedColumnName = "pk_colour_id", table = "colours", insertable=false, updatable=false)
     private Colour colour;
 
+    @Column(name = "fk_category_colour_id")
+    private int categoryColourId;
+
     /**
      * The user associated with the category.
      * Represents a many-to-one relationship between Category and User.
@@ -106,4 +109,27 @@ public class Category {
      */
     @OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL)
     private List<Subcategory> subcategories;
+
+    public Category(int categoryId, String categoryName, String categoryDescription, int categoryColourId) {
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.categoryDescription = categoryDescription;
+        this.categoryColourId = categoryColourId;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public String getCategoryDescription() {
+        return categoryDescription;
+    }
+
+    public int getCategoryColourId() {
+        return categoryColourId;
+    }
 }

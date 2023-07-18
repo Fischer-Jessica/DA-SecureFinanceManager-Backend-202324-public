@@ -14,8 +14,8 @@ import java.util.List;
  * The CategoryController class handles the HTTP requests related to category management.
  *
  * @author Fischer
- * @version 1.2
- * @since 11.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 18.07.2023 (version 1.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -34,8 +34,8 @@ public class CategoryController {
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all categories")
-    public List<Category> getCategories(@RequestBody User loggedInUser) {
-        return categoryRepository.getCategories(loggedInUser);
+    public List<Category> getCategories(@RequestParam int userId, @RequestParam String username, @RequestParam String password, @RequestParam String eMailAddress, @RequestParam String firstName, @RequestParam String lastName) {
+        return categoryRepository.getCategories(new User(userId, username, password, eMailAddress, firstName, lastName));
     }
 
     /**
@@ -48,8 +48,9 @@ public class CategoryController {
     @GetMapping("/categories/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one category")
-    public Category getCategory(@PathVariable int categoryId, @RequestBody User loggedInUser) {
-        return categoryRepository.getCategory(categoryId, loggedInUser);
+    public Category getCategory(@PathVariable int categoryId,
+                                @RequestParam int loggedInUserId, @RequestParam String loggedInUserUsername, @RequestParam String loggedInUserPassword, @RequestParam String loggedInUserEmailAddress, @RequestParam String loggedInUserFirstName, @RequestParam String loggedInUserLastName) {
+        return categoryRepository.getCategory(categoryId, new User(loggedInUserId, loggedInUserUsername, loggedInUserPassword, loggedInUserEmailAddress, loggedInUserFirstName, loggedInUserLastName));
     }
 
     /**
@@ -64,8 +65,8 @@ public class CategoryController {
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new category")
-    public int addCategory(@RequestParam byte[] categoryName,
-                           @RequestParam byte[] categoryDescription,
+    public int addCategory(@RequestParam String categoryName,
+                           @RequestParam String categoryDescription,
                            @RequestParam int categoryColourId,
                            @RequestBody User loggedInUser) {
         return categoryRepository.addCategory(categoryName, categoryDescription, categoryColourId, loggedInUser);
@@ -94,7 +95,7 @@ public class CategoryController {
     @PatchMapping("/categories/categoryName")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the name of an existing category")
-    public void updateCategoryName(@RequestParam int categoryId, @RequestParam byte[] updatedCategoryName, @RequestBody User loggedInUser) {
+    public void updateCategoryName(@RequestParam int categoryId, @RequestParam String updatedCategoryName, @RequestBody User loggedInUser) {
         categoryRepository.updateCategoryName(categoryId, updatedCategoryName, loggedInUser);
     }
 
@@ -108,7 +109,7 @@ public class CategoryController {
     @PatchMapping("/categories/categoryDescription")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the description of an existing category")
-    public void updateCategoryDescription(@RequestParam int categoryId, @RequestParam byte[] updatedCategoryDescription, @RequestBody User loggedInUser) {
+    public void updateCategoryDescription(@RequestParam int categoryId, @RequestParam String updatedCategoryDescription, @RequestBody User loggedInUser) {
         categoryRepository.updateCategoryDescription(categoryId, updatedCategoryDescription, loggedInUser);
     }
 
