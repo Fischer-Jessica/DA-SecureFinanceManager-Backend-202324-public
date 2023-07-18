@@ -18,14 +18,14 @@ import java.util.List;
  * The UserRepository class handles the persistence operations for user data.
  *
  * @author Fischer
- * @version 1.2
- * @since 17.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 18.07.2023 (version 1.3)
  */
 @Repository
 public class UserRepository {
     /** JdbcTemplate which is used for executing SQL statements, in the other repositories too, but implementing the template at each usage would be unnecessary */
     @Autowired
-    private static JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    protected static JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
     /**
      * SQL query to retrieve a user based on the user ID.
@@ -57,7 +57,7 @@ public class UserRepository {
      * param first_name     The first name of the new user.
      * param last_name      The last name of the new user.
      */
-    private static final String INSERT_USER = "INSERT INTO users (username, password, email_address, first_name, last_name) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_USER = "INSERT INTO users (username, password, email_address, first_name, last_name) VALUES (?, ?, ?, ?, ?);";
 
     /**
      * SQL query to update an existing user.
