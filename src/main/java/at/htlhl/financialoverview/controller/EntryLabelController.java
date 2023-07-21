@@ -10,6 +10,29 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * The EntryLabelController class handles HTTP requests related to the management of associations between Entry and Label entities (EntryLabel).
+ * It provides endpoints for adding and removing labels from entries, as well as retrieving associated labels for a specific entry.
+ *
+ * <p>
+ * This controller is responsible for handling CRUD operations (Create, Read, Update, Delete) on EntryLabel associations.
+ * It interacts with the EntryLabelRepository to access and manipulate the EntryLabel entities in the 'entry_labels' table of the 'financial_overview' PostgreSQL database.
+ * </p>
+ *
+ * <p>
+ * This class is annotated with the {@link RestController} annotation, which indicates that it is a controller that handles RESTful HTTP requests.
+ * The {@link CrossOrigin} annotation allows cross-origin requests to this controller, enabling it to be accessed from different domains.
+ * The {@link RequestMapping} annotation specifies the base path for all the endpoints provided by this controller.
+ * </p>
+ *
+ * <p>
+ * The EntryLabelController class works in conjunction with the EntryLabelRepository and other related classes to enable efficient management of Entry-Label associations in the financial overview system.
+ * </p>
+ *
+ * @author Fischer
+ * @version 1.0
+ * @since 21.07.2023 (version 1.0)
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("financial-overview")
