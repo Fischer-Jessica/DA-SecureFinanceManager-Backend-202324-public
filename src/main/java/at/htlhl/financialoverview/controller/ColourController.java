@@ -10,17 +10,33 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * The ColourController class handles the HTTP requests related to colour management.
+ * The ColourController class handles HTTP requests related to colour management.
+ * It provides endpoints for retrieving all colours and getting a specific colour by ID.
+ *
+ * <p>
+ * This controller is responsible for handling colour-related operations, including fetching a list of all colours and retrieving a specific colour by its ID.
+ * It interacts with the ColourRepository to access and manipulate the Colour entities in the 'colours' table of the 'financial_overview' PostgreSQL database.
+ * </p>
+ *
+ * <p>
+ * This class is annotated with the {@link RestController} annotation, which indicates that it is a controller that handles RESTful HTTP requests.
+ * The {@link CrossOrigin} annotation allows cross-origin requests to this controller, enabling it to be accessed from different domains.
+ * The {@link RequestMapping} annotation specifies the base path for all the endpoints provided by this controller.
+ * </p>
+ *
+ * <p>
+ * The ColourController class works in conjunction with the ColourRepository and other related classes to enable efficient management of colours in the financial overview system.
+ * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 12.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 21.07.2023 (version 1.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("financial-overview")
 public class ColourController {
-    /** The CategoryRepository instance for accessing colour data. */
+    /** The ColourRepository instance for accessing colour data. */
     @Autowired
     ColourRepository colourRepository;
 
