@@ -2,7 +2,6 @@ package at.htlhl.financialoverview.model;
 
 import jakarta.persistence.*;
 
-import java.awt.*;
 import java.util.List;
 
 /**
@@ -20,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 11.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 21.07.2023 (version 1.3)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -39,27 +38,27 @@ public class Entry {
 
     /** the name of the entry */
     @Column(name = "entry_name")
-    private byte[] entryName;
+    private String entryName;
 
     /** the description of the entry */
     @Column(name = "entry_description")
-    private byte[] entryDescription;
+    private String entryDescription;
 
     /** the amount of the entry */
     @Column(name = "entry_amount")
-    private byte[] entryAmount;
+    private String entryAmount;
 
     /** the creation time of the entry */
     @Column(name = "entry_creation_time")
-    private byte[] entryCreationTime;
+    private String entryCreationTime;
 
     /** the time of expense for the entry */
     @Column(name = "entry_time_of_expense")
-    private byte[] entryTimeOfExpense;
+    private String entryTimeOfExpense;
 
     /** the attachment of the entry */
     @Column(name = "entry_attachment")
-    private byte[] entryAttachment;
+    private String entryAttachment;
 
     /**
      * The subcategory associated with the entry.
@@ -67,7 +66,10 @@ public class Entry {
      */
     @ManyToOne
     @JoinColumn(name = "fk_subcategory_id", referencedColumnName = "pk_subcategory_id", table = "subcategories", insertable=false, updatable=false)
-    private Subcategory subcategoryId;
+    private Subcategory subcategory;
+
+    @Column(name = "fk_subcategory_id")
+    private int subcategoryId;
 
 
     /**
@@ -76,7 +78,10 @@ public class Entry {
      */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
-    private User userId;
+    private User user;
+
+    @Column(name = "fk_user_id")
+    private int userId;
 
     /**
      * Many-to-many relationship with Label.
@@ -89,4 +94,52 @@ public class Entry {
             inverseJoinColumns = @JoinColumn(name = "fk_label_id")
     )
     private List<Label> labels;
+
+    public Entry() {}
+
+    public Entry(int entryId, String entryName, String entryDescription, String entryAmount, String entryCreationTime, String entryTimeOfExpense, String entryAttachment, int subcategoryId, int userId) {
+        this.entryId = entryId;
+        this.entryName = entryName;
+        this.entryDescription = entryDescription;
+        this.entryAmount = entryAmount;
+        this.entryCreationTime = entryCreationTime;
+        this.entryTimeOfExpense = entryTimeOfExpense;
+        this.entryAttachment = entryAttachment;
+    }
+
+    public int getEntryId() {
+        return entryId;
+    }
+
+    public String getEntryName() {
+        return entryName;
+    }
+
+    public String getEntryDescription() {
+        return entryDescription;
+    }
+
+    public String getEntryAmount() {
+        return entryAmount;
+    }
+
+    public String getEntryCreationTime() {
+        return entryCreationTime;
+    }
+
+    public String getEntryTimeOfExpense() {
+        return entryTimeOfExpense;
+    }
+
+    public String getEntryAttachment() {
+        return entryAttachment;
+    }
+
+    public int getSubcategoryId() {
+        return subcategoryId;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
 }
