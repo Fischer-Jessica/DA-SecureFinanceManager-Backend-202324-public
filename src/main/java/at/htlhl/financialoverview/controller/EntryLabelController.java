@@ -1,9 +1,7 @@
 package at.htlhl.financialoverview.controller;
 
-import at.htlhl.financialoverview.model.EntryLabel;
 import at.htlhl.financialoverview.model.Label;
 import at.htlhl.financialoverview.model.User;
-import at.htlhl.financialoverview.repository.CategoryRepository;
 import at.htlhl.financialoverview.repository.EntryLabelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,35 +29,70 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 21.07.2023 (version 1.0)
+ * @version 1.1
+ * @since 21.07.2023 (version 1.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("financial-overview")
+@RequestMapping("financial-overview/entry-labels")
 public class EntryLabelController {
+    /** The EntryLabelRepository instance for accessing entry-label data. */
     @Autowired
     EntryLabelRepository entryLabelRepository;
 
-    // Methode zum Abrufen von Labels für einen bestimmten Eintrag
+    /**
+     * Retrieves a list of labels associated with a specific entry.
+     *
+     * @param entryId               The ID of the entry.
+     * @param loggedInUserId        The ID of the logged-in user.
+     * @param loggedInUsername      The username of the logged-in user.
+     * @param loggedInPassword      The password of the logged-in user.
+     * @param loggedInEMailAddress  The email address of the logged-in user.
+     * @param loggedInFirstName     The first name of the logged-in user.
+     * @param loggedInLastName      The last name of the logged-in user.
+     * @return A list of labels associated with the entry.
+     */
     @GetMapping("/entries/{entryId}/labels")
     @ResponseStatus(HttpStatus.OK)
     public List<Label> getLabelsForEntry(@PathVariable int entryId,
-                                         @RequestParam int userId, @RequestParam String username, @RequestParam String password, @RequestParam String eMailAddress, @RequestParam String firstName, @RequestParam String lastName) {
-        return entryLabelRepository.getLabelsForEntry(entryId, new User(userId, username, password, eMailAddress, firstName, lastName));
+                                         @RequestParam int loggedInUserId,
+                                         @RequestParam String loggedInUsername,
+                                         @RequestParam String loggedInPassword,
+                                         @RequestParam String loggedInEMailAddress,
+                                         @RequestParam String loggedInFirstName,
+                                         @RequestParam String loggedInLastName) {
+        return entryLabelRepository.getLabelsForEntry(entryId,
+                new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName));
     }
 
-    // Methode zum Hinzufügen von Labels zu einem bestimmten Eintrag
+    /**
+     * Adds a label to a specific entry.
+     *
+     * @param entryId      The ID of the entry.
+     * @param labelId      The ID of the label to add.
+     * @param loggedInUser The logged-in user.
+     * @return The ID of the newly created EntryLabel association.
+     */
     @PostMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public int addLabelToEntry(@PathVariable int entryId, @PathVariable int labelId, @RequestBody User loggedInUser) {
+    public int addLabelToEntry(@PathVariable int entryId,
+                               @PathVariable int labelId,
+                               @RequestBody User loggedInUser) {
         return entryLabelRepository.addLabelToEntry(entryId, labelId, loggedInUser);
     }
 
-    // Methode zum Entfernen von Labels von einem bestimmten Eintrag
+    /**
+     * Removes a label from a specific entry.
+     *
+     * @param entryId      The ID of the entry.
+     * @param labelId      The ID of the label to remove.
+     * @param loggedInUser The logged-in user.
+     */
     @DeleteMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public void removeLabelFromEntry(@PathVariable int entryId, @PathVariable int labelId, @RequestBody User loggedInUser) {
+    public void removeLabelFromEntry(@PathVariable int entryId,
+                                     @PathVariable int labelId,
+                                     @RequestBody User loggedInUser) {
         entryLabelRepository.removeLabelFromEntry(entryId, labelId, loggedInUser);
     }
 }
