@@ -20,8 +20,8 @@ import java.util.List;
  * The LabelRepository class handles the persistence operations for label data.
  *
  * @author Fischer
- * @version 1.1
- * @since 18.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 21.07.2023 (version 1.2)
  */
 @Repository
 public class LabelRepository {
@@ -32,14 +32,14 @@ public class LabelRepository {
     private static final String INSERT_LABEL = "INSERT INTO labels (label_name, label_description, fk_label_colour_id, fk_user_id) VALUES (?, ?, ?, ?);";
 
     private static final String UPDATE_LABEL = "UPDATE labels " +
-            "SET label_name = ?, label_description = ?, fk_category_colour_id = ? " +
+            "SET label_name = ?, label_description = ?, fk_label_colour_id = ? " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
     private static final String UPDATE_LABEL_NAME = "UPDATE labels SET label_name = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
 
     private static final String UPDATE_LABEL_DESCRIPTION = "UPDATE labels SET label_description = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_LABEL_COLOUR_ID = "UPDATE labels SET fk_category_colour_id = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
+    private static final String UPDATE_LABEL_COLOUR_ID = "UPDATE labels SET fk_label_colour_id = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
 
     private static final String DELETE_LABEL = "DELETE FROM labels WHERE pk_label_id = ? AND fk_user_id = ?;";
 
@@ -64,7 +64,7 @@ public class LabelRepository {
                     byte[] labelDescription = rs.getBytes("label_description");
                     int labelColourId = rs.getInt("fk_label_colour_id");
 
-                    Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId);
+                    Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, loggedInUser.getUserId());
                     labels.add(label);
                 }
 
@@ -99,7 +99,7 @@ public class LabelRepository {
                     byte[] labelDescription = rs.getBytes("label_description");
                     int labelColourId = rs.getInt("fk_label_colour_id");
 
-                    getLabel = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId);
+                    getLabel = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, loggedInUser.getUserId());
                 }
                 return getLabel;
             } catch (SQLException e) {
@@ -127,7 +127,7 @@ public class LabelRepository {
                 GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
                 UserRepository.jdbcTemplate.update(connection -> {
-                    PreparedStatement ps = conn.prepareStatement(INSERT_LABEL, new String[]{"pk_category_id"});
+                    PreparedStatement ps = conn.prepareStatement(INSERT_LABEL, new String[]{"pk_label_id"});
                     ps.setBytes(1, Base64.getDecoder().decode(labelName));
                     ps.setBytes(2, Base64.getDecoder().decode(labelDescription));
                     ps.setInt(3, labelColourId);

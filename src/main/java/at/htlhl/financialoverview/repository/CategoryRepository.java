@@ -20,8 +20,8 @@ import java.util.List;
  * The CategoryRepository class handles the persistence operations for category data.
  *
  * @author Fischer
- * @version 1.1
- * @since 18.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 21.07.2023 (version 1.2)
  */
 @Repository
 public class CategoryRepository {
@@ -63,7 +63,7 @@ public class CategoryRepository {
                     byte[] categoryDescription = rs.getBytes("category_description");
                     int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                    Category category = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId);
+                    Category category = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, loggedInUser.getUserId());
                     categories.add(category);
                 }
 
@@ -99,7 +99,7 @@ public class CategoryRepository {
                     byte[] categoryDescription = rs.getBytes("category_description");
                     int categoryColourId = rs.getInt("fk_category_colour_id");
                     
-                    getCategory = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId);
+                    getCategory = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, loggedInUser.getUserId());
                 }
                 return getCategory;
             } catch (SQLException e) {

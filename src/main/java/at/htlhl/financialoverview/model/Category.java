@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 17.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 21.07.2023 (version 1.4)
  */
 
 /**
@@ -96,7 +96,10 @@ public class Category {
      */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
-    private User userId;
+    private User categoryUser;
+
+    @Column
+    private int categoryUserId;
 
     /**
      * <i>@OneToMany is an annotation indicates a none-toa-many relationship between the entities. It is used to define a relationship where the annotated entity has a collection of instances of another entity.
@@ -110,11 +113,16 @@ public class Category {
     @OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL)
     private List<Subcategory> subcategories;
 
-    public Category(int categoryId, String categoryName, String categoryDescription, int categoryColourId) {
+    public Category() {
+
+    }
+
+    public Category(int categoryId, String categoryName, String categoryDescription, int categoryColourId, int categoryUserId) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.categoryDescription = categoryDescription;
         this.categoryColourId = categoryColourId;
+        this.categoryUserId = categoryUserId;
     }
 
     public int getCategoryId() {

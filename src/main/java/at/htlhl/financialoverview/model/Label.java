@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 18.07.2023 (version 1.5)
+ * @version 1.6
+ * @since 21.07.2023 (version 1.6)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -64,7 +64,10 @@ public class Label {
      */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
-    private User userId;
+    private User labelUser;
+
+    @Column(name = "fk_user_id")
+    private int labelUserId;
 
     /**
      * Many-to-many relationship with Entry.
@@ -78,11 +81,14 @@ public class Label {
     )
     private List<Entry> entries;
 
-    public Label(int labelId, String labelName, String labelDescription, int labelColourId) {
+    public Label() {}
+
+    public Label(int labelId, String labelName, String labelDescription, int labelColourId, int labelUserId) {
         this.labelId = labelId;
         this.labelName = labelName;
         this.labelDescription = labelDescription;
         this.labelColourId = labelColourId;
+        this.labelUserId = labelUserId;
     }
 
     public int getLabelId() {
@@ -101,7 +107,7 @@ public class Label {
         return labelColourId;
     }
 
-    public User getUserId() {
-        return userId;
+    public User getLabelUser() {
+        return labelUser;
     }
 }

@@ -14,8 +14,8 @@ import java.util.List;
  * The LabelController class handles the HTTP requests related to label management.
  *
  * @author Fischer
- * @version 1.2
- * @since 18.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 21.07.2023 (version 1.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -34,8 +34,8 @@ public class LabelController {
     @GetMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all labels")
-    public List<Label> getLabels(@RequestBody User loggedInUser) {
-        return labelRepository.getLabels(loggedInUser);
+    public List<Label> getLabels(@RequestParam int userId, @RequestParam String username, @RequestParam String password, @RequestParam String eMailAddress, @RequestParam String firstName, @RequestParam String lastName) {
+        return labelRepository.getLabels(new User(userId, username, password, eMailAddress, firstName, lastName));
     }
 
     /**
@@ -48,8 +48,9 @@ public class LabelController {
     @GetMapping("/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one label")
-    public Label getLabel(@PathVariable int labelId, @RequestBody User loggedInUser) {
-        return labelRepository.getLabel(labelId, loggedInUser);
+    public Label getLabel(@PathVariable int labelId,
+                          @RequestParam int userId, @RequestParam String username, @RequestParam String eMailAddress, @RequestParam String password, @RequestParam String firstName, @RequestParam String lastName) {
+        return labelRepository.getLabel(labelId, new User(userId, username, password, eMailAddress, firstName, lastName));
     }
 
     /**
@@ -80,8 +81,9 @@ public class LabelController {
     @PatchMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing label")
-    public void updateLabel(@RequestBody Label updatedLabel, @RequestBody User loggedInUser) {
-        labelRepository.updateLabel(updatedLabel, loggedInUser);
+    public void updateLabel(@RequestParam int labelId, @RequestParam String updatedLabelName, @RequestParam String updatedLabelDescription, @RequestParam int updatedLabelColour
+            , @RequestBody User loggedInUser) {
+        labelRepository.updateLabel(new Label(labelId, updatedLabelName, updatedLabelDescription, updatedLabelColour, loggedInUser.getUserId()), loggedInUser);
     }
 
     /**
