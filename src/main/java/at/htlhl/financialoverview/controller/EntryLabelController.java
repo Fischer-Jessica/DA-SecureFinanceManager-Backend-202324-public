@@ -2,6 +2,7 @@ package at.htlhl.financialoverview.controller;
 
 import at.htlhl.financialoverview.model.EntryLabel;
 import at.htlhl.financialoverview.model.Label;
+import at.htlhl.financialoverview.model.User;
 import at.htlhl.financialoverview.repository.CategoryRepository;
 import at.htlhl.financialoverview.repository.EntryLabelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,21 +44,22 @@ public class EntryLabelController {
     // Methode zum Abrufen von Labels für einen bestimmten Eintrag
     @GetMapping("/entries/{entryId}/labels")
     @ResponseStatus(HttpStatus.OK)
-    public List<Label> getLabelsForEntry(@PathVariable int entryId) {
-        return entryLabelRepository.getLabelsForEntry(entryId);
+    public List<Label> getLabelsForEntry(@PathVariable int entryId,
+                                         @RequestParam int userId, @RequestParam String username, @RequestParam String password, @RequestParam String eMailAddress, @RequestParam String firstName, @RequestParam String lastName) {
+        return entryLabelRepository.getLabelsForEntry(entryId, new User(userId, username, password, eMailAddress, firstName, lastName));
     }
 
     // Methode zum Hinzufügen von Labels zu einem bestimmten Eintrag
     @PostMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public void addLabelToEntry(@PathVariable int entryId, @PathVariable int labelId) {
-        entryLabelRepository.addLabelToEntry(entryId, labelId);
+    public int addLabelToEntry(@PathVariable int entryId, @PathVariable int labelId, @RequestBody User loggedInUser) {
+        return entryLabelRepository.addLabelToEntry(entryId, labelId, loggedInUser);
     }
 
     // Methode zum Entfernen von Labels von einem bestimmten Eintrag
     @DeleteMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public void removeLabelFromEntry(@PathVariable int entryId, @PathVariable int labelId) {
-        entryLabelRepository.removeLabelFromEntry(entryId, labelId);
+    public void removeLabelFromEntry(@PathVariable int entryId, @PathVariable int labelId, @RequestBody User loggedInUser) {
+        entryLabelRepository.removeLabelFromEntry(entryId, labelId, loggedInUser);
     }
 }
