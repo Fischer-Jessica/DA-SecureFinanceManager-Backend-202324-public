@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 12.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 21.07.2023 (version 1.4)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -46,16 +46,19 @@ public class Subcategory {
      * Represents a many-to-one relationship between Subcategory and Category.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_category_id")
-    private Category categoryId;
+    @JoinColumn(name = "fk_category_id", insertable=false, updatable=false)
+    private Category category;
+
+    @Column(name = "fk_category_id")
+    private int categoryId;
 
     /** the name of the subcategory */
     @Column(name = "subcategory_name")
-    private byte[] subcategoryName;
+    private String subcategoryName;
 
     /** the description of the subcategory */
     @Column(name = "subcategory_description")
-    private byte[] subcategoryDescription;
+    private String subcategoryDescription;
 
     /**
      * The colour associated with the subcategory.
@@ -65,13 +68,19 @@ public class Subcategory {
     @JoinColumn(name = "fk_subcategory_colour_id", referencedColumnName = "pk_colour_id", table = "colours")
     private Colour subcategoryColour;
 
+    @Column(name = "fk_subcategory_colour_id")
+    private int subcategoryColourId;
+
     /**
      * The user associated with the subcategory.
      * Represents a many-to-one relationship between Subcategory and User.
      */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
-    private User userId;
+    private User user;
+
+    @Column(name = "fk_user_id")
+    private int userId;
 
     /**
      * The entries associated with the subcategory.
@@ -80,4 +89,39 @@ public class Subcategory {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "fk_subcategory_id")
     private List<Entry> entries;
+
+    public Subcategory() {}
+
+    public Subcategory(int subcategoryId, int categoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, int userId) {
+        this.subcategoryId = subcategoryId;
+        this.categoryId = categoryId;
+        this.subcategoryName = subcategoryName;
+        this.subcategoryDescription = subcategoryDescription;
+        this.subcategoryColourId = subcategoryColourId;
+        this.userId = userId;
+    }
+
+    public int getSubcategoryId() {
+        return subcategoryId;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public String getSubcategoryName() {
+        return subcategoryName;
+    }
+
+    public String getSubcategoryDescription() {
+        return subcategoryDescription;
+    }
+
+    public int getSubcategoryColourId() {
+        return subcategoryColourId;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
 }

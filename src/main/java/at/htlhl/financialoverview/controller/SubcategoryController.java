@@ -14,8 +14,8 @@ import java.util.List;
  * The SubcategoryController class handles the HTTP requests related to subcategories.
  *
  * @author Fischer
- * @version 1.2
- * @since 11.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 21.07.2023 (version 1.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -35,8 +35,8 @@ public class SubcategoryController {
     @GetMapping("/subcategories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all subcategories of one category")
-    public List<Subcategory> getSubcategories(@PathVariable int categoryId, @RequestBody User loggedInUser) {
-        return subcategoryRepository.getSubcategories(categoryId, loggedInUser);
+    public List<Subcategory> getSubcategories(@PathVariable int categoryId, @RequestParam int userId, @RequestParam String username, @RequestParam String password, @RequestParam String eMailAddress, @RequestParam String firstName, @RequestParam String lastName) {
+        return subcategoryRepository.getSubcategories(categoryId, new User(userId, username, password, eMailAddress, firstName, lastName));
     }
 
     /**
@@ -50,8 +50,9 @@ public class SubcategoryController {
     @GetMapping("/subcategories/{subcategoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one subcategory")
-    public Subcategory getSubcategory(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestBody User loggedInUser) {
-        return subcategoryRepository.getSubcategory(categoryId, subcategoryId, loggedInUser);
+    public Subcategory getSubcategory(@PathVariable int categoryId, @PathVariable int subcategoryId,
+                                      @RequestParam int userId, @RequestParam String username, @RequestParam String password, @RequestParam String eMailAddress, @RequestParam String firstName, @RequestParam String lastName) {
+        return subcategoryRepository.getSubcategory(categoryId, subcategoryId, new User(userId, username, password, eMailAddress, firstName, lastName));
     }
 
     /**
@@ -67,8 +68,8 @@ public class SubcategoryController {
     @PostMapping("/subcategories")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new subcategory")
-    public int addSubcategory(@PathVariable int categoryId, @RequestParam byte[] subcategoryName,
-                              @RequestParam byte[] subcategoryDescription, @RequestParam int subcategoryColourId,
+    public int addSubcategory(@PathVariable int categoryId, @RequestParam String subcategoryName,
+                              @RequestParam String subcategoryDescription, @RequestParam int subcategoryColourId,
                               @RequestBody User loggedInUser) {
         return subcategoryRepository.addSubcategory(categoryId, subcategoryName, subcategoryDescription, subcategoryColourId, loggedInUser);
     }
@@ -80,11 +81,19 @@ public class SubcategoryController {
      * @param updatedSubcategory The updated subcategory.
      * @param loggedInUser     The logged-in user.
      */
-    @PatchMapping("/subcategories")
+    @PatchMapping("/subcategories/{subcategoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing subcategory")
-    public void updateSubcategory(@PathVariable int categoryId, @RequestBody Subcategory updatedSubcategory, @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategory(categoryId, updatedSubcategory, loggedInUser);
+    public void updateSubcategory(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestParam String updatedSubcategoryName, @RequestParam String updatedSubcategoryDescription, @RequestParam int updatedSubcategoryColour,
+                                  @RequestBody User loggedInUser) {
+        subcategoryRepository.updateSubcategory(categoryId, subcategoryId, updatedSubcategoryName, updatedSubcategoryDescription, updatedSubcategoryColour, loggedInUser);
+    }
+
+    @PostMapping("/subcategories/{subcategoryId}/categoryOfSubcategory")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "change the category of a subcategory")
+    public void updateCategoryOfSubcategory(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestBody User loggedInUser) {
+        subcategoryRepository.updateCategoryOfSubcategory(categoryId, subcategoryId, loggedInUser);
     }
 
     /**
@@ -94,11 +103,11 @@ public class SubcategoryController {
      * @param updatedSubcategoryName The updated subcategory name.
      * @param loggedInUser        The logged-in user.
      */
-    @PatchMapping("/subcategories/subcategoryName")
+    @PatchMapping("/subcategories/{subcategoryId}/subcategoryName")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the name of an existing subcategory")
-    public void updateSubcategoryName(@PathVariable int categoryId, @RequestBody byte[] updatedSubcategoryName, @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategoryName(categoryId, updatedSubcategoryName, loggedInUser);
+    public void updateSubcategoryName(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestParam String updatedSubcategoryName, @RequestBody User loggedInUser) {
+        subcategoryRepository.updateSubcategoryName(categoryId, subcategoryId, updatedSubcategoryName, loggedInUser);
     }
 
     /**
@@ -108,12 +117,12 @@ public class SubcategoryController {
      * @param updatedSubcategoryDescription The updated subcategory description.
      * @param loggedInUser               The logged-in user.
      */
-    @PatchMapping("/subcategories/subcategoryDescription")
+    @PatchMapping("/subcategories/{subcategoryId}/subcategoryDescription")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the description of an existing subcategory")
-    public void updateSubcategoryDescription(@PathVariable int categoryId, @RequestBody byte[] updatedSubcategoryDescription,
+    public void updateSubcategoryDescription(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestParam String updatedSubcategoryDescription,
                                              @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategoryDescription(categoryId, updatedSubcategoryDescription, loggedInUser);
+        subcategoryRepository.updateSubcategoryDescription(categoryId, subcategoryId, updatedSubcategoryDescription, loggedInUser);
     }
 
     /**
@@ -123,11 +132,11 @@ public class SubcategoryController {
      * @param updatedSubcategoryColour  The updated subcategory colour ID.
      * @param loggedInUser            The logged-in user.
      */
-    @PatchMapping("/subcategories/subcategoryColour")
+    @PatchMapping("/subcategories/{subcategoryId}/subcategoryColour")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the colour of an existing subcategory")
-    public void updateSubcategoryColour(@PathVariable int categoryId, @RequestParam int updatedSubcategoryColour, @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategoryColour(categoryId, updatedSubcategoryColour, loggedInUser);
+    public void updateSubcategoryColour(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestParam int updatedSubcategoryColour, @RequestBody User loggedInUser) {
+        subcategoryRepository.updateSubcategoryColour(categoryId, subcategoryId, updatedSubcategoryColour, loggedInUser);
     }
 
     /**
@@ -137,10 +146,10 @@ public class SubcategoryController {
      * @param subcategoryId    The ID of the subcategory to delete.
      * @param loggedInUser The logged-in user.
      */
-    @DeleteMapping("/subcategories")
+    @DeleteMapping("/subcategories/{subcategoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a subcategory")
-    public void deleteSubcategory(@PathVariable int categoryId, @RequestParam int subcategoryId, @RequestBody User loggedInUser) {
+    public void deleteSubcategory(@PathVariable int categoryId, @PathVariable int subcategoryId, @RequestBody User loggedInUser) {
         subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, loggedInUser);
     }
 }

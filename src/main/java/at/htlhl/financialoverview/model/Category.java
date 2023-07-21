@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 21.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 21.07.2023 (version 1.5)
  */
 
 /**
@@ -110,7 +110,7 @@ public class Category {
      * The subcategories associated with the category.
      * Represents a one-to-many relationship between Category and Subcategory.
      */
-    @OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Subcategory> subcategories;
 
     public Category() {
