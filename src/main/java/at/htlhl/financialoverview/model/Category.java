@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 24.07.2023 (version 1.6)
+ * @version 1.7
+ * @since 24.07.2023 (version 1.7)
  */
 
 /*
@@ -116,7 +116,7 @@ public class Category {
      * The 'mappedBy' attribute is used to specify the field in the Subcategory class that owns the relationship.
      * The 'cascade' attribute specifies that any operations performed on the entity containing this annotation will also affect the associated subcategories (e.g., persisting, merging, removing, refreshing).
      */
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "subcategoryCategory", cascade = CascadeType.ALL)
     private List<Subcategory> subcategories;
 
     /** Default constructor. */
