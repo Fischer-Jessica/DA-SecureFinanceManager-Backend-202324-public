@@ -15,17 +15,11 @@ import java.util.Base64;
 import java.util.List;
 
 /**
- * The EntryLabelRepository interface serves as a Spring Data JPA repository for the EntryLabel entity.
- * It provides methods to access and perform database operations on the 'entry_labels' table in the 'financial_overview' PostgreSQL database.
+ * The EntryLabelRepository class handles the persistence operations for EntryLabel data.
+ * It serves as a Spring Data JPA repository for the EntryLabel entity.
  *
  * <p>
  * This repository interfaces with the EntryLabel entity class, which is a POJO (Plain Old Java Object) or entity class that maps to the 'entry_labels' table in the database.
- * It extends the JpaRepository interface, which provides generic CRUD (Create, Read, Update, Delete) operations for the EntryLabel entity, eliminating the need for boilerplate code.
- * </p>
- *
- * <p>
- * By extending the JpaRepository, this interface inherits all the standard database operations like saving, updating, finding, and deleting EntryLabel entities.
- * It allows for customization and addition of custom queries through method naming conventions or the use of the @Query annotation.
  * </p>
  *
  * <p>
@@ -37,23 +31,33 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 21.07.2023 (version 1.0)
+ * @version 1.1
+ * @since 24.07.2023 (version 1.1)
  */
 @Repository
 public class EntryLabelRepository {
+    /** SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database. */
     private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
             "FROM labels " +
             "JOIN entry_labels ON labels.pk_label_id = entry_labels.fk_label_id " +
             "WHERE entry_labels.fk_entry_id = ? AND entry_labels.fk_user_id = ? AND entry_labels.fk_user_id = ?;";
 
+    /** SQL query to add a label to an entry in the 'entry_labels' table in the database. */
     private static final String ADD_LABEL_TO_ENTRY = "INSERT INTO entry_labels " +
             "(fk_entry_id, fk_label_id, fk_user_id) " +
             "VALUES (?, ?, ?);";
 
+    /** SQL query to remove a label from an entry in the 'entry_labels' table in the database. */
     private static final String REMOVE_LABEL_FROM_ENTRY = "DELETE FROM entry_labels " +
             "WHERE fk_entry_id = ? AND fk_label_id = ? AND fk_user_id = ?;";
 
+    /**
+     * Retrieves a list of labels associated with a specific entry and user from the 'labels' and 'entry_labels' tables in the database.
+     *
+     * @param entryId           The ID of the entry to retrieve labels for.
+     * @param loggedInUser      The logged-in user.
+     * @return A list of Label objects representing the labels associated with the entry and user.
+     */
     public List<Label> getLabelsForEntry(int entryId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
@@ -83,6 +87,14 @@ public class EntryLabelRepository {
         }
     }
 
+    /**
+     * Adds a label to an entry in the 'entry_labels' table in the database.
+     *
+     * @param entryId           The ID of the entry to add the label to.
+     * @param labelId           The ID of the label to add.
+     * @param loggedInUser      The logged-in user.
+     * @return The ID of the newly created entry label.
+     */
     public int addLabelToEntry(int entryId, int labelId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
@@ -107,6 +119,13 @@ public class EntryLabelRepository {
         }
     }
 
+    /**
+     * Removes a label from an entry in the 'entry_labels' table in the database.
+     *
+     * @param entryId           The ID of the entry to remove the label from.
+     * @param labelId           The ID of the label to remove.
+     * @param loggedInUser      The logged-in user.
+     */
     public void removeLabelFromEntry(int entryId, int labelId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
