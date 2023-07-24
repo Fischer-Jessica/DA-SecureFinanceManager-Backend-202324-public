@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 21.07.2023 (version 1.6)
+ * @version 1.7
+ * @since 24.07.2023 (version 1.7)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -39,11 +39,11 @@ public class Label {
     @Column(name = "pk_label_id")
     private int labelId;
 
-    /** the name of the label */
+    /** The name of the label. */
     @Column(name = "label_name")
     private String labelName;
 
-    /** the description of the label */
+    /** The description of the label. */
     @Column(name = "label_description")
     private String labelDescription;
 
@@ -55,6 +55,7 @@ public class Label {
     @JoinColumn(name = "fk_label_colour_id", referencedColumnName = "pk_colour_id", table = "colours")
     private Colour labelColour;
 
+    /** The ID of the associated colour. */
     @Column(name = "fk_label_colour_id")
     private int labelColourId;
 
@@ -66,6 +67,7 @@ public class Label {
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
     private User labelUser;
 
+    /** The ID of the associated user. */
     @Column(name = "fk_user_id")
     private int labelUserId;
 
@@ -81,8 +83,18 @@ public class Label {
     )
     private List<Entry> entries;
 
+    /** Default constructor. */
     public Label() {}
 
+    /**
+     * Constructs a new Label object with the specified properties.
+     *
+     * @param labelId               The unique identifier for this Label.
+     * @param labelName             The name of the label.
+     * @param labelDescription      The description of the label.
+     * @param labelColourId         The ID of the associated colour.
+     * @param labelUserId           The ID of the associated user.
+     */
     public Label(int labelId, String labelName, String labelDescription, int labelColourId, int labelUserId) {
         this.labelId = labelId;
         this.labelName = labelName;
@@ -91,23 +103,48 @@ public class Label {
         this.labelUserId = labelUserId;
     }
 
+    /**
+     * Returns the unique identifier for this Label.
+     *
+     * @return The unique identifier for this Label.
+     */
     public int getLabelId() {
         return labelId;
     }
 
+    /**
+     * Returns the name of the label.
+     *
+     * @return The name of the label.
+     */
     public String getLabelName() {
         return labelName;
     }
 
+    /**
+     * Returns the description of the label.
+     *
+     * @return The description of the label.
+     */
     public String getLabelDescription() {
         return labelDescription;
     }
 
+    /**
+     * Returns the ID of the associated colour.
+     *
+     * @return The ID of the associated colour.
+     */
     public int getLabelColourId() {
         return labelColourId;
     }
 
-    public User getLabelUser() {
-        return labelUser;
+    /**
+     * Returns the ID of the user associated with the label.
+     *
+     * @return The ID of the user associated with the label.
+     */
+    public int getLabelUserId() {
+        return labelUserId;
     }
 }
