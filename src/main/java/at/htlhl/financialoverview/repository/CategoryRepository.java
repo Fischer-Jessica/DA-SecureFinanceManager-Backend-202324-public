@@ -2,12 +2,9 @@ package at.htlhl.financialoverview.repository;
 
 import at.htlhl.financialoverview.model.Category;
 import at.htlhl.financialoverview.model.User;
-import com.fasterxml.jackson.databind.ser.Serializers;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.print.DocFlavor;
-import javax.xml.transform.Result;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,29 +15,69 @@ import java.util.List;
 
 /**
  * The CategoryRepository class handles the persistence operations for category data.
+ * It provides methods to access and manipulate the 'categories' table in the 'financial_overview' PostgreSQL database.
+ *
+ * <p>
+ * This class interacts with the Category entity class, which represents a POJO (Plain Old Java Object) or entity class that maps to the 'categories' table in the database.
+ * It uses Spring Data JPA to provide generic CRUD (Create, Read, Update, Delete) operations for the Category entity, reducing boilerplate code.
+ * </p>
+ *
+ * <p>
+ * The CategoryRepository serves as an abstraction layer between the CategoryController and the underlying data storage, enabling seamless access and manipulation of Category entities.
+ * </p>
+ *
+ * <p>
+ * This class should be annotated with the @Repository annotation to indicate that it is a Spring-managed repository component.
+ * </p>
+ *
+ * <p>
+ * The methods in this class should be implemented to provide the necessary data access and database operations for Category entities.
+ * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 21.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 24.07.2023 (version 1.3)
  */
 @Repository
 public class CategoryRepository {
-    private static final String SELECT_CATEGORIES = "SELECT pk_category_id, category_name, category_description, fk_category_colour_id FROM categories WHERE fk_user_id = ?;";
-    private static final String SELECT_CATEGORY = "SELECT category_name, category_description, fk_category_colour_id FROM categories WHERE fk_user_id = ? AND pk_category_id = ?;";
+    /** SQL query to retrieve a list of categories for the logged-in user from the 'categories' table in the database. */
+    private static final String SELECT_CATEGORIES = "SELECT pk_category_id, category_name, category_description, fk_category_colour_id " +
+            "FROM categories " +
+            "WHERE fk_user_id = ?;";
 
-    private static final String INSERT_CATEGORY = "INSERT INTO categories (category_name, category_description, fk_category_colour_id, fk_user_id) VALUES (?, ?, ?, ?);";
+    /**  SQL query to retrieve a specific category for the logged-in user from the 'categories' table in the database. */
+    private static final String SELECT_CATEGORY = "SELECT category_name, category_description, fk_category_colour_id " +
+            "FROM categories " +
+            "WHERE fk_user_id = ? AND pk_category_id = ?;";
 
+    /** SQL query to insert a new category for the logged-in user into the 'categories' table in the database. */
+    private static final String INSERT_CATEGORY = "INSERT INTO categories " +
+            "(category_name, category_description, fk_category_colour_id, fk_user_id) " +
+            "VALUES (?, ?, ?, ?);";
+
+    /** SQL query to update an existing category for the logged-in user in the 'categories' table in the database. */
     private static final String UPDATE_CATEGORY = "UPDATE categories " +
             "SET category_name = ?, category_description = ?, fk_category_colour_id = ? " +
             "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_CATEGORY_NAME = "UPDATE categories SET category_name = ? WHERE pk_category_id = ? AND fk_user_id = ?;";
+    /** SQL query to update the name of an existing category for the logged-in user in the 'categories' table in the database. */
+    private static final String UPDATE_CATEGORY_NAME = "UPDATE categories " +
+            "SET category_name = ? " +
+            "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_CATEGORY_DESCRIPTION = "UPDATE categories SET category_description = ? WHERE pk_category_id = ? AND fk_user_id = ?;";
+    /** SQL query to update the description of an existing category for the logged-in user in the 'categories' table in the database. */
+    private static final String UPDATE_CATEGORY_DESCRIPTION = "UPDATE categories " +
+            "SET category_description = ? " +
+            "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_COLOUR_ID = "UPDATE categories SET fk_category_colour_id = ? WHERE pk_category_id = ? AND fk_user_id = ?;";
+    /** SQL query to update the color of an existing category for the logged-in user in the 'categories' table in the database. */
+    private static final String UPDATE_COLOUR_ID = "UPDATE categories " +
+            "SET fk_category_colour_id = ? " +
+            "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
-    private static final String DELETE_CATEGORY = "DELETE FROM categories WHERE pk_category_id = ? AND fk_user_id = ?;";
+    /** SQL query to delete a category for the logged-in user from the 'categories' table in the database. */
+    private static final String DELETE_CATEGORY = "DELETE FROM categories " +
+            "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
     /**
      * Retrieves a list of categories for the logged-in user.
@@ -80,8 +117,8 @@ public class CategoryRepository {
     /**
      * Retrieves a specific category for the logged-in user.
      *
-     * @param categoryId   The ID of the category to retrieve.
-     * @param loggedInUser The logged-in user.
+     * @param categoryId        The ID of the category to retrieve.
+     * @param loggedInUser      The logged-in user.
      * @return The requested Category object.
      */
     public Category getCategory(int categoryId, User loggedInUser) {
@@ -113,10 +150,10 @@ public class CategoryRepository {
     /**
      * Adds a new category for the logged-in user.
      *
-     * @param categoryName        The name of the new category.
-     * @param categoryDescription The description of the new category.
-     * @param categoryColourId    The ID of the color for the new category.
-     * @param loggedInUser        The logged-in user.
+     * @param categoryName              The name of the new category.
+     * @param categoryDescription       The description of the new category.
+     * @param categoryColourId          The ID of the color for the new category.
+     * @param loggedInUser              The logged-in user.
      * @return The ID of the newly created category.
      */
     public int addCategory(String categoryName, String categoryDescription, int categoryColourId, User loggedInUser) {
@@ -171,9 +208,9 @@ public class CategoryRepository {
     /**
      * Updates the name of an existing category for the logged-in user.
      *
-     * @param categoryId         The ID of the category to update.
-     * @param updatedCategoryName The updated category name.
-     * @param loggedInUser       The logged-in user.
+     * @param categoryId                The ID of the category to update.
+     * @param updatedCategoryName       The updated category name.
+     * @param loggedInUser              The logged-in user.
      */
     public void updateCategoryName(int categoryId, String updatedCategoryName, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
@@ -194,9 +231,9 @@ public class CategoryRepository {
     /**
      * Updates the description of an existing category for the logged-in user.
      *
-     * @param categoryId               The ID of the category to update.
-     * @param updatedCategoryDescription The updated category description.
-     * @param loggedInUser             The logged-in user.
+     * @param categoryId                        The ID of the category to update.
+     * @param updatedCategoryDescription        The updated category description.
+     * @param loggedInUser                      The logged-in user.
      */
     public void updateCategoryDescription(int categoryId, String updatedCategoryDescription, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
@@ -217,9 +254,9 @@ public class CategoryRepository {
     /**
      * Updates the color of an existing category for the logged-in user.
      *
-     * @param categoryId              The ID of the category to update.
-     * @param updatedCategoryColourId The updated category color ID.
-     * @param loggedInUser            The logged-in user.
+     * @param categoryId                    The ID of the category to update.
+     * @param updatedCategoryColourId       The updated category color ID.
+     * @param loggedInUser                  The logged-in user.
      */
     public void updateCategoryColourId(int categoryId, int updatedCategoryColourId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
@@ -240,8 +277,8 @@ public class CategoryRepository {
     /**
      * Deletes a category for the logged-in user.
      *
-     * @param categoryId   The ID of the category to delete.
-     * @param loggedInUser The logged-in user.
+     * @param categoryId        The ID of the category to delete.
+     * @param loggedInUser      The logged-in user.
      */
     public void deleteCategory(int categoryId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
