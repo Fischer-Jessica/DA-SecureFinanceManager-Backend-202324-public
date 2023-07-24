@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 21.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 24.07.2023 (version 1.5)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -47,16 +47,17 @@ public class Subcategory {
      */
     @ManyToOne
     @JoinColumn(name = "fk_category_id", insertable=false, updatable=false)
-    private Category category;
+    private Category subcategoryCategory;
 
+    /** The ID of the associated category. */
     @Column(name = "fk_category_id")
-    private int categoryId;
+    private int subcategoryCategoryId;
 
-    /** the name of the subcategory */
+    /** The name of the subcategory. */
     @Column(name = "subcategory_name")
     private String subcategoryName;
 
-    /** the description of the subcategory */
+    /** The description of the subcategory. */
     @Column(name = "subcategory_description")
     private String subcategoryDescription;
 
@@ -68,6 +69,7 @@ public class Subcategory {
     @JoinColumn(name = "fk_subcategory_colour_id", referencedColumnName = "pk_colour_id", table = "colours")
     private Colour subcategoryColour;
 
+    /** The ID of the associated colour. */
     @Column(name = "fk_subcategory_colour_id")
     private int subcategoryColourId;
 
@@ -77,10 +79,11 @@ public class Subcategory {
      */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
-    private User user;
+    private User subcategoryUser;
 
+    /** The ID of the associated user. */
     @Column(name = "fk_user_id")
-    private int userId;
+    private int subcategoryUserId;
 
     /**
      * The entries associated with the subcategory.
@@ -90,38 +93,79 @@ public class Subcategory {
     @JoinColumn(name = "fk_subcategory_id")
     private List<Entry> entries;
 
+    /** Default constructor. */
     public Subcategory() {}
 
-    public Subcategory(int subcategoryId, int categoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, int userId) {
+    /**
+     * Constructs a new Subcategory object with the specified properties.
+     *
+     * @param subcategoryId                 The unique identifier for this Subcategory.
+     * @param subcategoryCategoryId         The ID of the associated category.
+     * @param subcategoryName               The name of the subcategory.
+     * @param subcategoryDescription        The description of the subcategory.
+     * @param subcategoryColourId           The ID of the associated colour.
+     * @param subcategoryUserId             The ID of the associated user.
+     */
+    public Subcategory(int subcategoryId, int subcategoryCategoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, int subcategoryUserId) {
         this.subcategoryId = subcategoryId;
-        this.categoryId = categoryId;
+        this.subcategoryCategoryId = subcategoryCategoryId;
         this.subcategoryName = subcategoryName;
         this.subcategoryDescription = subcategoryDescription;
         this.subcategoryColourId = subcategoryColourId;
-        this.userId = userId;
+        this.subcategoryUserId = subcategoryUserId;
     }
 
+    /**
+     * Returns the unique identifier for this Subcategory.
+     *
+     * @return The unique identifier for this Subcategory.
+     */
     public int getSubcategoryId() {
         return subcategoryId;
     }
 
-    public int getCategoryId() {
-        return categoryId;
+    /**
+     * Returns the ID of the associated category.
+     *
+     * @return The ID of the associated category.
+     */
+    public int getSubcategoryCategoryId() {
+        return subcategoryCategoryId;
     }
 
+    /**
+     * Returns the name of the subcategory.
+     *
+     * @return The name of the subcategory.
+     */
     public String getSubcategoryName() {
         return subcategoryName;
     }
 
+    /**
+     * Returns the description of the subcategory.
+     *
+     * @return The description of the subcategory.
+     */
     public String getSubcategoryDescription() {
         return subcategoryDescription;
     }
 
+    /**
+     * Returns the ID of the associated colour.
+     *
+     * @return The ID of the associated colour.
+     */
     public int getSubcategoryColourId() {
         return subcategoryColourId;
     }
 
-    public int getUserId() {
-        return userId;
+    /**
+     * Returns the ID of the user associated with the subcategory.
+     *
+     * @return The ID of the user associated with the subcategory.
+     */
+    public int getSubcategoryUserId() {
+        return subcategoryUserId;
     }
 }
