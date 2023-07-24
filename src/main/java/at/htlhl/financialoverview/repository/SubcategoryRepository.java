@@ -1,14 +1,10 @@
 package at.htlhl.financialoverview.repository;
 
-import at.htlhl.financialoverview.model.Category;
 import at.htlhl.financialoverview.model.Subcategory;
 import at.htlhl.financialoverview.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.xml.transform.Result;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,38 +15,75 @@ import java.util.List;
 
 /**
  * The SubcategoryRepository class handles the persistence operations for subcategory data.
+ * It serves as a Spring Data JPA repository for the Subcategory entity.
+ *
+ * <p>
+ * The SubcategoryRepository serves as an abstraction layer between the SubcategoryController and the underlying data storage, enabling seamless access and manipulation of Subcategory entities.
+ * </p>
+ *
+ * <p>
+ * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for Subcategory entities.
+ * </p>
+ *
+ * <p>
+ * Note: This implementation directly uses JDBC for database operations. For a more modern approach, consider using Spring Data JPA's repository interfaces and entity managers.
+ * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 21.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 24.07.2023 (version 1.2)
  */
 @Repository
 public class SubcategoryRepository {
-    private static final String SELECT_SUBCATEGORIES = "SELECT pk_subcategory_id, subcategory_name, subcategory_description, fk_subcategory_colour_id FROM subcategories WHERE fk_user_id = ? AND fk_category_id = ?;";
+    /** SQL query to select all subcategories for a specific category and user. */
+    private static final String SELECT_SUBCATEGORIES = "SELECT pk_subcategory_id, subcategory_name, subcategory_description, fk_subcategory_colour_id " +
+            "FROM subcategories " +
+            "WHERE fk_user_id = ? AND fk_category_id = ?;";
 
-    private static final String SELECT_SUBCATEGORY = "SELECT subcategory_name, subcategory_description, fk_subcategory_colour_id FROM subcategories WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
+    /** SQL query to select a specific subcategory for a specific category and user. */
+    private static final String SELECT_SUBCATEGORY = "SELECT subcategory_name, subcategory_description, fk_subcategory_colour_id " +
+            "FROM subcategories " +
+            "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
-    private static final String INSERT_SUBCATEGORY = "INSERT INTO subcategories (fk_category_id, subcategory_name, subcategory_description, fk_subcategory_colour_id, fk_user_id) VALUES (?, ?, ?, ?, ?);";
+    /** SQL query to insert a new subcategory for a specific category and user. */
+    private static final String INSERT_SUBCATEGORY = "INSERT INTO subcategories " +
+            "(fk_category_id, subcategory_name, subcategory_description, fk_subcategory_colour_id, fk_user_id) " +
+            "VALUES (?, ?, ?, ?, ?);";
 
+    /** SQL query to update an existing subcategory for a specific category and user. */
     private static final String UPDATE_SUBCATEGORY = "UPDATE subcategories " +
             "SET fk_category_id = ?, subcategory_name = ?, subcategory_description = ?, fk_subcategory_colour_id = ? " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_CATEGORY_ID = "UPDATE subcategories SET fk_category_id = ? WHERE pk_subcategory_id = ? AND fk_user_id = ?;";
+    /** SQL query to update the category ID of an existing subcategory for a specific user. */
+    private static final String UPDATE_CATEGORY_ID = "UPDATE subcategories " +
+            "SET fk_category_id = ? " +
+            "WHERE pk_subcategory_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_SUBCATEGORY_NAME = "UPDATE subcategories SET subcategory_name = ? WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
+    /** SQL query to update the name of an existing subcategory for a specific category and user. */
+    private static final String UPDATE_SUBCATEGORY_NAME = "UPDATE subcategories " +
+            "SET subcategory_name = ? " +
+            "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
-    private static final String UPDATE_SUBCATEGORY_DESCRIPTION = "UPDATE subcategories SET subcategory_description = ? WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
+    /** SQL query to update the description of an existing subcategory for a specific category and user. */
+    private static final String UPDATE_SUBCATEGORY_DESCRIPTION = "UPDATE subcategories " +
+            "SET subcategory_description = ? " +
+            "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
-    private static final String UPDATE_SUBCATEGORY_COLOUR = "UPDATE subcategories SET fk_subcategory_colour_id = ? WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
+    /** SQL query to update the color ID of an existing subcategory for a specific category and user. */
+    private static final String UPDATE_SUBCATEGORY_COLOUR = "UPDATE subcategories " +
+            "SET fk_subcategory_colour_id = ? " +
+            "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
-    private static final String DELETE_SUBCATEGORY = "DELETE FROM subcategories WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
+    /** SQL query to delete a subcategory for a specific category and user. */
+    private static final String DELETE_SUBCATEGORY = "DELETE FROM subcategories " +
+            "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
     /**
-     * Retrieves a list of all subcategories for a specific category.
+     * Retrieves a list of all subcategories for a specific category and user.
      *
-     * @param categoryId  The ID of the category.
-     * @param loggedInUser The logged-in user.
+     * @param categoryId        The ID of the category.
+     * @param loggedInUser      The logged-in user.
      * @return A list of subcategories for the specified category.
      */
     public List<Subcategory> getSubcategories(int categoryId, User loggedInUser) {
@@ -83,11 +116,11 @@ public class SubcategoryRepository {
     }
 
     /**
-     * Retrieves a specific subcategory for a specific category.
+     * Retrieves a specific subcategory for a specific category and user.
      *
-     * @param categoryId     The ID of the category.
-     * @param subcategoryId  The ID of the subcategory.
-     * @param loggedInUser   The logged-in user.
+     * @param categoryId        The ID of the category.
+     * @param subcategoryId     The ID of the subcategory.
+     * @param loggedInUser      The logged-in user.
      * @return The requested subcategory.
      */
     public Subcategory getSubcategory(int categoryId, int subcategoryId, User loggedInUser) {
@@ -118,13 +151,13 @@ public class SubcategoryRepository {
     }
 
     /**
-     * Adds a new subcategory to a specific category.
+     * Adds a new subcategory to a specific category and user.
      *
-     * @param categoryId              The ID of the category.
-     * @param subcategoryName         The name of the subcategory.
-     * @param subcategoryDescription  The description of the subcategory.
-     * @param subcategoryColourId     The ID of the color for the subcategory.
-     * @param loggedInUser         The logged-in user.
+     * @param categoryId                The ID of the category.
+     * @param subcategoryName           The name of the subcategory.
+     * @param subcategoryDescription    The description of the subcategory.
+     * @param subcategoryColourId       The ID of the color for the subcategory.
+     * @param loggedInUser              The logged-in user.
      * @return The ID of the newly created subcategory.
      */
     public int addSubcategory(int categoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, User loggedInUser) {
@@ -154,14 +187,16 @@ public class SubcategoryRepository {
     }
 
     /**
-     * Updates an existing subcategory for a specific category.
+     * Updates an existing subcategory for a specific category and user.
      *
-     * @param categoryId         The ID of the category.
-     * @param updatedSubcategory The updated subcategory.
-     * @param loggedInUser     The logged-in user.
+     * @param categoryId                            The ID of the category.
+     * @param updatedSubcategoryName                The updated subcategory name.
+     * @param updatedSubcategoryDescription         The updated subcategory description.
+     * @param updatedSubcategoryColour              The updated subcategory colour.
+     * @param loggedInUser                          The logged-in user.
      */
-    public void updateSubcategory(int categoryId, int subcategoryId, String updatedSubcategoryName, String updatedSubcategoryDescription, int updatedSubcategoryColour
-            , User loggedInUser) {
+    public void updateSubcategory(int categoryId, int subcategoryId, String updatedSubcategoryName,
+                                  String updatedSubcategoryDescription, int updatedSubcategoryColour, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -180,6 +215,13 @@ public class SubcategoryRepository {
         }
     }
 
+    /**
+     * Updates the category ID of an existing subcategory for a specific user.
+     *
+     * @param categoryId        The updated ID of the category.
+     * @param subcategoryId     The ID of the subcategory.
+     * @param loggedInUser      The logged-in user.
+     */
     public void updateCategoryOfSubcategory(int categoryId, int subcategoryId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
@@ -197,11 +239,11 @@ public class SubcategoryRepository {
     }
 
     /**
-     * Changes the name of an existing subcategory for a specific category.
+     * Changes the name of an existing subcategory for a specific category and user.
      *
-     * @param categoryId            The ID of the category.
-     * @param updatedSubcategoryName The updated subcategory name.
-     * @param loggedInUser        The logged-in user.
+     * @param categoryId                    The ID of the category.
+     * @param updatedSubcategoryName        The updated subcategory name.
+     * @param loggedInUser                  The logged-in user.
      */
     public void updateSubcategoryName(int categoryId, int subcategoryId, String updatedSubcategoryName, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
@@ -221,11 +263,11 @@ public class SubcategoryRepository {
     }
 
     /**
-     * Changes the description of an existing subcategory for a specific category.
+     * Changes the description of an existing subcategory for a specific category and user.
      *
-     * @param categoryId                 The ID of the category.
-     * @param updatedSubcategoryDescription The updated subcategory description.
-     * @param loggedInUser               The logged-in user.
+     * @param categoryId                            The ID of the category.
+     * @param updatedSubcategoryDescription         The updated subcategory description.
+     * @param loggedInUser                          The logged-in user.
      */
     public void updateSubcategoryDescription(int categoryId, int subcategoryId, String updatedSubcategoryDescription, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
@@ -245,11 +287,11 @@ public class SubcategoryRepository {
     }
 
     /**
-     * Changes the colour of an existing subcategory for a specific category.
+     * Changes the colour of an existing subcategory for a specific category and user.
      *
-     * @param categoryId                The ID of the category.
-     * @param updatedSubcategoryColour  The updated subcategory colour ID.
-     * @param loggedInUser            The logged-in user.
+     * @param categoryId                    The ID of the category.
+     * @param updatedSubcategoryColour      The updated subcategory colour ID.
+     * @param loggedInUser                  The logged-in user.
      */
     public void updateSubcategoryColour(int categoryId, int subcategoryId, int updatedSubcategoryColour, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
@@ -269,11 +311,11 @@ public class SubcategoryRepository {
     }
 
     /**
-     * Deletes a subcategory for a specific category.
+     * Deletes a subcategory for a specific category and user.
      *
-     * @param categoryId       The ID of the category.
-     * @param subcategoryId    The ID of the subcategory to delete.
-     * @param loggedInUser The logged-in user.
+     * @param categoryId            The ID of the category.
+     * @param subcategoryId         The ID of the subcategory to delete.
+     * @param loggedInUser          The logged-in user.
      */
     public void deleteSubcategory(int categoryId, int subcategoryId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
