@@ -1,10 +1,7 @@
 package at.htlhl.financialoverview.repository;
 
-import at.htlhl.financialoverview.model.Category;
 import at.htlhl.financialoverview.model.Label;
 import at.htlhl.financialoverview.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -18,30 +15,64 @@ import java.util.List;
 
 /**
  * The LabelRepository class handles the persistence operations for label data.
+ * It serves as a Spring Data JPA repository for the Label entity.
+ *
+ * <p>
+ * The LabelRepository serves as an abstraction layer between the LabelController and the underlying data storage, enabling seamless access and manipulation of Label entities.
+ * </p>
+ *
+ * <p>
+ * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for Label entities.
+ * </p>
+ *
+ * <p>
+ * Note: This implementation directly uses JDBC for database operations. For a more modern approach, consider using Spring Data JPA's repository interfaces and entity managers.
+ * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 21.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 24.07.2023 (version 1.3)
  */
 @Repository
 public class LabelRepository {
-    private static final String SELECT_LABELS = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id FROM labels WHERE fk_user_id = ?;";
+    /** SQL query to select all labels for a given user. */
+    private static final String SELECT_LABELS = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
+            "FROM labels " +
+            "WHERE fk_user_id = ?;";
 
-    private static final String SELECT_LABEL = "SELECT label_name, label_description, fk_label_colour_id FROM labels WHERE fk_user_id = ? AND pk_label_id = ?;";
+    /** SQL query to select a specific label for a given user and label ID. */
+    private static final String SELECT_LABEL = "SELECT label_name, label_description, fk_label_colour_id " +
+            "FROM labels " +
+            "WHERE fk_user_id = ? AND pk_label_id = ?;";
 
-    private static final String INSERT_LABEL = "INSERT INTO labels (label_name, label_description, fk_label_colour_id, fk_user_id) VALUES (?, ?, ?, ?);";
+    /** SQL query to insert a new label for the logged-in user. */
+    private static final String INSERT_LABEL = "INSERT INTO labels " +
+            "(label_name, label_description, fk_label_colour_id, fk_user_id) " +
+            "VALUES (?, ?, ?, ?);";
 
+    /** SQL query to update an existing label for the logged-in user. */
     private static final String UPDATE_LABEL = "UPDATE labels " +
             "SET label_name = ?, label_description = ?, fk_label_colour_id = ? " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_LABEL_NAME = "UPDATE labels SET label_name = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
+    /** SQL query to update the name of an existing label for the logged-in user. */
+    private static final String UPDATE_LABEL_NAME = "UPDATE labels " +
+            "SET label_name = ? " +
+            "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_LABEL_DESCRIPTION = "UPDATE labels SET label_description = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
+    /** SQL query to update the description of an existing label for the logged-in user. */
+    private static final String UPDATE_LABEL_DESCRIPTION = "UPDATE labels " +
+            "SET label_description = ? " +
+            "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    private static final String UPDATE_LABEL_COLOUR_ID = "UPDATE labels SET fk_label_colour_id = ? WHERE pk_label_id = ? AND fk_user_id = ?;";
+    /** SQL query to update the color of an existing label for the logged-in user. */
+    private static final String UPDATE_LABEL_COLOUR_ID = "UPDATE labels " +
+            "SET fk_label_colour_id = ? " +
+            "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    private static final String DELETE_LABEL = "DELETE FROM labels WHERE pk_label_id = ? AND fk_user_id = ?;";
+    /** SQL query to delete a label for the logged-in user. */
+    private static final String DELETE_LABEL = "DELETE FROM labels " +
+            "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
     /**
      * Retrieves a list of labels for the logged-in user.
@@ -80,8 +111,8 @@ public class LabelRepository {
     /**
      * Retrieves a specific label for the logged-in user.
      *
-     * @param labelId      The ID of the label to retrieve.
-     * @param loggedInUser The logged-in user.
+     * @param labelId           The ID of the label to retrieve.
+     * @param loggedInUser      The logged-in user.
      * @return The requested Label object.
      */
     public Label getLabel(int labelId, User loggedInUser) {
@@ -113,10 +144,10 @@ public class LabelRepository {
     /**
      * Adds a new label for the logged-in user.
      *
-     * @param labelName        The name of the new label.
-     * @param labelDescription The description of the new label.
-     * @param labelColourId    The ID of the color for the new label.
-     * @param loggedInUser     The logged-in user.
+     * @param labelName             The name of the new label.
+     * @param labelDescription      The description of the new label.
+     * @param labelColourId         The ID of the color for the new label.
+     * @param loggedInUser          The logged-in user.
      * @return The ID of the newly created label.
      */
     public int addLabel(String labelName, String labelDescription, int labelColourId, User loggedInUser) {
@@ -147,8 +178,8 @@ public class LabelRepository {
     /**
      * Updates an existing label for the logged-in user.
      *
-     * @param updatedLabel  The updated Label object.
-     * @param loggedInUser The logged-in user.
+     * @param updatedLabel      The updated Label object.
+     * @param loggedInUser      The logged-in user.
      */
     public void updateLabel(Label updatedLabel, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
@@ -171,16 +202,16 @@ public class LabelRepository {
     /**
      * Updates the name of an existing label for the logged-in user.
      *
-     * @param labelId       The ID of the label to update.
-     * @param labelName     The updated label name.
-     * @param loggedInUser The logged-in user.
+     * @param labelId               The ID of the label to update.
+     * @param updatedLabelName      The updated label name.
+     * @param loggedInUser          The logged-in user.
      */
-    public void updateLabelName(int labelId, String labelName, User loggedInUser) {
+    public void updateLabelName(int labelId, String updatedLabelName, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_NAME);
-                ps.setBytes(1, Base64.getDecoder().decode(labelName));
+                ps.setBytes(1, Base64.getDecoder().decode(updatedLabelName));
                 ps.setInt(2, labelId);
                 ps.setInt(3, loggedInUser.getUserId());
                 ps.executeUpdate();
@@ -194,16 +225,16 @@ public class LabelRepository {
     /**
      * Updates the description of an existing label for the logged-in user.
      *
-     * @param labelId          The ID of the label to update.
-     * @param labelDescription The updated label description.
-     * @param loggedInUser    The logged-in user.
+     * @param labelId                       The ID of the label to update.
+     * @param updatedLabelDescription       The updated label description.
+     * @param loggedInUser                  The logged-in user.
      */
-    public void updateLabelDescription(int labelId, String labelDescription, User loggedInUser) {
+    public void updateLabelDescription(int labelId, String updatedLabelDescription, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_DESCRIPTION);
-                ps.setBytes(1, Base64.getDecoder().decode(labelDescription));
+                ps.setBytes(1, Base64.getDecoder().decode(updatedLabelDescription));
                 ps.setInt(2, labelId);
                 ps.setInt(3, loggedInUser.getUserId());
                 ps.executeUpdate();
@@ -217,16 +248,16 @@ public class LabelRepository {
     /**
      * Updates the color of an existing label for the logged-in user.
      *
-     * @param labelId         The ID of the label to update.
-     * @param labelColourId   The updated label color ID.
-     * @param loggedInUser The logged-in user.
+     * @param labelId                   The ID of the label to update.
+     * @param updatedLabelColour        The updated label color ID.
+     * @param loggedInUser              The logged-in user.
      */
-    public void updateLabelColourId(int labelId, int labelColourId, User loggedInUser) {
+    public void updateLabelColourId(int labelId, int updatedLabelColour, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_COLOUR_ID);
-                ps.setInt(1, labelColourId);
+                ps.setInt(1, updatedLabelColour);
                 ps.setInt(2, labelId);
                 ps.setInt(3, loggedInUser.getUserId());
                 ps.executeUpdate();
@@ -240,8 +271,8 @@ public class LabelRepository {
     /**
      * Deletes a label for the logged-in user.
      *
-     * @param labelId       The ID of the label to delete.
-     * @param loggedInUser The logged-in user.
+     * @param labelId           The ID of the label to delete.
+     * @param loggedInUser      The logged-in user.
      */
     public void deleteLabel(int labelId, User loggedInUser) {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
