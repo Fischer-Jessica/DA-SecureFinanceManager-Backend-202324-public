@@ -19,8 +19,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 17.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 24.07.2023 (version 1.4)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -28,29 +28,32 @@ import java.util.Objects;
 @Entity
 @Table(name = "users")
 public class User {
-    /** the id of the user */
+    /**
+     * The unique identifier for this User.
+     * It is generated automatically by the database.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pk_user_id")
     private int userId;
 
-    /** the username of the user */
+    /** The username of the user. */
     @Column(name = "username")
     private String username;
 
-    /** the password of the user */
+    /** The password of the user. */
     @Column(name = "password")
     private String password;
 
-    /** the email address of the user */
+    /** The email address of the user. */
     @Column(unique = true, name = "email_address")
     private String eMailAddress;
 
-    /** the first name of the user */
+    /** The first name of the user. */
     @Column(name = "first_name")
     private String firstName;
 
-    /** the last name of the user */
+    /** The last name of the user. */
     @Column(name = "last_name")
     private String lastName;
 
@@ -62,9 +65,7 @@ public class User {
     @JoinColumn(name = "fk_category_id")
     private List<Category> categories;
 
-    /**
-     * Constructs a new empty User instance.
-     */
+    /** Default constructor. */
     public User() {
     }
 
@@ -146,15 +147,15 @@ public class User {
      * Two User instances are considered equal if their user IDs, usernames, passwords, email addresses,
      * first names, last names, and categories are all equal.
      *
-     * @param o The object to compare this User instance against.
+     * @param other The object to compare this User instance against.
      * @return {@code true} if the objects are equal, {@code false} otherwise.
      */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (other == null || getClass() != other.getClass()) return false;
 
-        User user = (User) o;
+        User user = (User) other;
 
         if (userId != user.userId) return false;
         if (!username.equals(user.username)) return false;
