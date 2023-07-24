@@ -1,29 +1,45 @@
 package at.htlhl.financialoverview.repository;
 
 import at.htlhl.financialoverview.model.Colour;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
  * The ColourRepository class handles the persistence operations for colour data.
+ * It serves as a Spring Data JPA repository for the Colour entity.
+ *
+ * <p>
+ * This repository interfaces with the Colour entity class, which is a POJO (Plain Old Java Object) or entity class that maps to the 'colours' table in the database.
+ * It uses Spring's JdbcTemplate to perform database operations without boilerplate code.
+ * </p>
+ *
+ * <p>
+ * The ColourRepository serves as an abstraction layer between the ColourController and the underlying data storage, enabling seamless access and manipulation of Colour entities.
+ * </p>
+ *
+ * <p>
+ * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for Colour entities.
+ * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 12.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 24.07.2023 (version 1.3)
  */
 @Repository
 public class ColourRepository {
-    /** JdbcTemplate which is used in the code below but implementing the template at each usage would be unnecessary */
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    /** SQL query to retrieve all colours from the 'colours' table in the database. */
+    private static final String SELECT_COLOURS = "SELECT pk_colour_id, colour_name, colour_code " +
+            "FROM colours;";
 
-    private static final String SELECT_COLOURS = "SELECT pk_colour_id, colour_name, colour_code FROM colours;";
+    /**  SQL query to retrieve a specific colour from the 'colours' table in the database. */
+    private static final String SELECT_COLOUR = "SELECT pk_colour_id, colour_name, colour_code " +
+            "FROM colours " +
+            "WHERE pk_colour_id = ?;";
 
     /**
      * Retrieves a list of all colours.
@@ -31,7 +47,7 @@ public class ColourRepository {
      * @return A list of Colour objects representing the colours.
      */
     public List<Colour> getColours() {
-        return jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
+        return UserRepository.jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
             int colourId = rs.getInt("pk_colour_id");
             String colourName = rs.getString("colour_name");
             byte[] colourCode = rs.getBytes("colour_code");
@@ -46,16 +62,17 @@ public class ColourRepository {
      * @return The requested Colour object.
      */
     public Colour getColour(int colourId) {
-        String SELECT_COLOUR = "SELECT pk_colour_id, colour_name, colour_code FROM colours WHERE pk_colour_id = " + colourId + ";";
         try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
+            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(ColourRepository.SELECT_COLOUR);
+            ps.setInt(1, colourId);
+            ResultSet rs = ps.executeQuery();
 
-            Colour colour = new Colour();
-            ResultSet getColour = conn.createStatement().executeQuery(SELECT_COLOUR);
-            if (getColour.next()) {
-                colour = new Colour(getColour.getInt("pk_colour_id"),
-                        getColour.getString("colour_name"),
-                        getColour.getBytes("colour_code"));
+            Colour colour = null;
+            if (rs.next()) {
+                colour = new Colour(rs.getInt("pk_colour_id"),
+                        rs.getString("colour_name"),
+                        rs.getBytes("colour_code"));
             }
             conn.close();
             return colour;
