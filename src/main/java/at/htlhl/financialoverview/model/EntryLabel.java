@@ -12,21 +12,24 @@ import jakarta.persistence.*;
  * </p>
  *
  * <p>
- * This class contains two fields:
+ * This class contains three fields:
  * <ul>
+ * <li>{@code entryLabelId}: Represents the unique identifier for this EntryLabel.</li>
  * <li>{@code entry}: Represents the Entry associated with this EntryLabel.</li>
  * <li>{@code label}: Represents the Label associated with this EntryLabel.</li>
+ * <li>{@code user}: Represents the User associated with the label.</li>
  * </ul>
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 11.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 24.07.2023 (version 1.2)
  *
  * @see Entry
  * @see Label
  * @see Category (refer to the Category class for explanations of the annotations)
  */
+
 @Entity
 @Table(name = "entry_labels", uniqueConstraints = @UniqueConstraint(columnNames = {"fk_entry_id", "fk_label_id"}))
 @SecondaryTable(name = "entries", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_entry_id"))
@@ -64,5 +67,5 @@ public class EntryLabel {
      */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
-    private User userId;
+    private User user;
 }
