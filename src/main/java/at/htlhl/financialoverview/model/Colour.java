@@ -12,16 +12,17 @@ import jakarta.persistence.*;
  * </p>
  *
  * <p>
- * This class contains two fields:
+ * This class contains three fields:
  * <ul>
  * <li>{@code colourId}: Represents the primary key of the 'colours' table, mapped to the 'pk_colour_id' column.</li>
  * <li>{@code colourName}: Represents the name of the color, mapped to the 'colour_name' column.</li>
+ * <li>{@code colourCode}: Represents the hex-value of the color, mapped to the 'colour_code' column.</li>
  * </ul>
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 12.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 24.07.2023 (version 1.5)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -29,28 +30,34 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "colours")
 public class Colour {
-    /** the id of the colour */
+    /**
+     * The unique identifier for this Colour.
+     * It is generated automatically by the database.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "pk_colour_id")
-    private Integer colourId;
+    private int colourId;
 
-    /** the name of the colour */
+    /** The name of the colour. */
     @Column(name = "colour_name")
     private String colourName;
 
-    /** the hex-value of the colour */
+    /** The hex-value of the colour. */
     @Column(name = "colour_code")
     private byte[] colourCode;
 
+    /**
+     * Default constructor.
+     */
     public Colour() {}
 
     /**
      * Constructs a new Colour object with the specified ID, name, and code.
      *
-     * @param colourId    the ID of the colour
-     * @param colourName  the name of the colour
-     * @param colourCode  the code of the colour
+     * @param colourId      the ID of the colour
+     * @param colourName    the name of the colour
+     * @param colourCode    the code of the colour
      */
     public Colour(int colourId, String colourName, byte[] colourCode) {
         this.colourId = colourId;
