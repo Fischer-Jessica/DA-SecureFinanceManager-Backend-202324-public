@@ -19,11 +19,11 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 21.07.2023 (version 1.5)
+ * @version 1.6
+ * @since 24.07.2023 (version 1.6)
  */
 
-/**
+/*
  * <i>@Entity is an annotation used to mark a Java class as an entity class. An entity class represents a table in the database. It typically corresponds to a row in the table and provides a way to interact with the data stored in the table. By applying the annotation you indicate that instances of this class can be managed and persisted in the database.</i>
  * <br>
  * <i>@Table is an annotation used to specify the details of the table associated with an entity class.
@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "categories")
-/**
+/*
  * The @SecondaryTable annotation is used to specify a secondary table for an entity in Java Persistence API (JPA). It allows you to map additional columns from a secondary table to the same entity. The name attribute is used to specify the name of the secondary table.
  * In the case of @SecondaryTable(name = "colours", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_category_colour_id")), it means that the entity is associated with a secondary table named "colours". The pkJoinColumns attribute is used to specify the primary key join column(s) between the main table and the secondary table. In this case, @PrimaryKeyJoinColumn(name = "fk_category_colour_id") specifies that the column "fk_category_colour_id" in the main table is used as the primary key join column.
  * So, when the entity is fetched or persisted, the corresponding columns from the secondary table will be included and mapped to the entity's fields or properties.
@@ -41,7 +41,7 @@ import java.util.List;
 @SecondaryTable(name = "colours", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_category_colour_id"))
 @SecondaryTable(name = "users", pkJoinColumns = @PrimaryKeyJoinColumn(name = "fk_user_id"))
 public class Category {
-    /**
+    /*
      * <i>@Id is an annotation used to mark a field or property in an entity class as the primary key of the corresponding table in the database.</i>
      * <br>
      * <i>@GeneratedValue is an annotation used to specify the generation strategy for the values of the annotated field.
@@ -59,15 +59,15 @@ public class Category {
     @Column(name = "pk_category_id")
     private int categoryId;
 
-    /** the name of the category */
+    /** The name of the category. */
     @Column(name = "category_name")
     private String categoryName;
 
-    /** the description of the category */
+    /** The description of the category. */
     @Column(name = "category_description")
     private String categoryDescription;
 
-    /**
+    /*
      * <i>@ManyToOne is an annotation used to define a many-to-one relationship between two entities. It indicates that the annotated entity (or entity field) has a many-to-one association with another entity.</i>
      * <br>
      * <i>@JoinColumn is an annotation used to specify the details of the join column associated with the annotated field.
@@ -82,41 +82,57 @@ public class Category {
     /**
      * The colour associated with the category.
      * Represents a many-to-one relationship between Category and Colour.
+     * The 'insertable' and 'updatable' attributes are set to false to prevent modifications on the relationship directly from this entity.
      */
     @ManyToOne
     @JoinColumn(name = "fk_category_colour_id", referencedColumnName = "pk_colour_id", table = "colours", insertable=false, updatable=false)
-    private Colour colour;
+    private Colour categoryColour;
 
+    /** The ID of the colour associated with the category. */
     @Column(name = "fk_category_colour_id")
     private int categoryColourId;
 
     /**
      * The user associated with the category.
      * Represents a many-to-one relationship between Category and User.
+     * The 'insertable' and 'updatable' attributes are set to false to prevent modifications on the relationship directly from this entity.
      */
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
     private User categoryUser;
 
+    /** The ID of the user associated with the category. */
     @Column
     private int categoryUserId;
 
-    /**
-     * <i>@OneToMany is an annotation indicates a none-toa-many relationship between the entities. It is used to define a relationship where the annotated entity has a collection of instances of another entity.
+    /*
+     * <i>@OneToMany is an annotation indicates a one-to-many relationship between the entities. It is used to define a relationship where the annotated entity has a collection of instances of another entity.
      * The mappedBy (Java) attribute is used to specify the field or property in the target entity that owns the relationship.
      * cascade is an attribute to specify the behaviour for the relationship. The 'CascadeType.ALL' option indicates all operations (such as persisting, merging, removing, refreshing) performed on the owning entity will be cascaded to the associated entities. In this case, any operation performed on the entity containing this annotation will also affect the associated entities.</i>
      */
     /**
      * The subcategories associated with the category.
      * Represents a one-to-many relationship between Category and Subcategory.
+     * The 'mappedBy' attribute is used to specify the field in the Subcategory class that owns the relationship.
+     * The 'cascade' attribute specifies that any operations performed on the entity containing this annotation will also affect the associated subcategories (e.g., persisting, merging, removing, refreshing).
      */
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Subcategory> subcategories;
 
+    /** Default constructor. */
     public Category() {
 
     }
 
+    /**
+     * Parameterized constructor.
+     *
+     * @param categoryId         The unique identifier for this category.
+     * @param categoryName       The name of the category.
+     * @param categoryDescription The description of the category.
+     * @param categoryColourId   The ID of the associated color.
+     * @param categoryUserId     The ID of the associated user.
+     */
     public Category(int categoryId, String categoryName, String categoryDescription, int categoryColourId, int categoryUserId) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
@@ -125,19 +141,48 @@ public class Category {
         this.categoryUserId = categoryUserId;
     }
 
+    /**
+     * Returns the unique identifier of this category.
+     *
+     * @return The category ID.
+     */
     public int getCategoryId() {
         return categoryId;
     }
 
+    /**
+     * Returns the name of this category.
+     *
+     * @return The category name.
+     */
     public String getCategoryName() {
         return categoryName;
     }
 
+    /**
+     * Returns the description of this category.
+     *
+     * @return The category description.
+     */
     public String getCategoryDescription() {
         return categoryDescription;
     }
 
+    /**
+     * Returns the ID of the associated color.
+     *
+     * @return The category color ID.
+     */
     public int getCategoryColourId() {
         return categoryColourId;
+    }
+
+    /**
+     * Returns the ID of the user associated with this category.
+     *
+     * @return The ID of the associated user.
+     */
+    public int getCategoryUserId() {
+        return categoryUserId;
     }
 }
