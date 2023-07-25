@@ -1,10 +1,12 @@
 package at.htlhl.financialoverview.controller;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.Label;
 import at.htlhl.financialoverview.model.User;
 import at.htlhl.financialoverview.repository.EntryLabelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 21.07.2023 (version 1.1)
+ * @version 1.2
+ * @since 25.07.2023 (version 1.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -54,15 +56,19 @@ public class EntryLabelController {
      */
     @GetMapping("/entries/{entryId}/labels")
     @ResponseStatus(HttpStatus.OK)
-    public List<Label> getLabelsForEntry(@PathVariable int entryId,
-                                         @RequestParam int loggedInUserId,
-                                         @RequestParam String loggedInUsername,
-                                         @RequestParam String loggedInPassword,
-                                         @RequestParam String loggedInEMailAddress,
-                                         @RequestParam String loggedInFirstName,
-                                         @RequestParam String loggedInLastName) {
-        return entryLabelRepository.getLabelsForEntry(entryId,
-                new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName));
+    public ResponseEntity<List<Label>> getLabelsForEntry(@PathVariable int entryId,
+                                                         @RequestParam int loggedInUserId,
+                                                         @RequestParam String loggedInUsername,
+                                                         @RequestParam String loggedInPassword,
+                                                         @RequestParam String loggedInEMailAddress,
+                                                         @RequestParam String loggedInFirstName,
+                                                         @RequestParam String loggedInLastName) {
+        try {
+            return ResponseEntity.ok(entryLabelRepository.getLabelsForEntry(entryId,
+                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -75,10 +81,14 @@ public class EntryLabelController {
      */
     @PostMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public int addLabelToEntry(@PathVariable int entryId,
-                               @PathVariable int labelId,
-                               @RequestBody User loggedInUser) {
-        return entryLabelRepository.addLabelToEntry(entryId, labelId, loggedInUser);
+    public ResponseEntity<Integer> addLabelToEntry(@PathVariable int entryId,
+                                                   @PathVariable int labelId,
+                                                   @RequestBody User loggedInUser) {
+        try {
+            return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, loggedInUser));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -90,9 +100,14 @@ public class EntryLabelController {
      */
     @DeleteMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public void removeLabelFromEntry(@PathVariable int entryId,
-                                     @PathVariable int labelId,
-                                     @RequestBody User loggedInUser) {
-        entryLabelRepository.removeLabelFromEntry(entryId, labelId, loggedInUser);
+    public ResponseEntity removeLabelFromEntry(@PathVariable int entryId,
+                                               @PathVariable int labelId,
+                                               @RequestBody User loggedInUser) {
+        try {
+            entryLabelRepository.removeLabelFromEntry(entryId, labelId, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }
