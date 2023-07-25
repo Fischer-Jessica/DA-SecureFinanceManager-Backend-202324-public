@@ -1,11 +1,13 @@
 package at.htlhl.financialoverview.controller;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.Subcategory;
 import at.htlhl.financialoverview.model.User;
 import at.htlhl.financialoverview.repository.SubcategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 21.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 25.07.2023 (version 1.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -55,15 +57,19 @@ public class SubcategoryController {
     @GetMapping("/subcategories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all subcategories of one category")
-    public List<Subcategory> getSubcategories(@PathVariable int categoryId,
-                                              @RequestParam int loggedInUserId,
-                                              @RequestParam String loggedInUsername,
-                                              @RequestParam String loggedInPassword,
-                                              @RequestParam String loggedInEMailAddress,
-                                              @RequestParam String loggedInFirstName,
-                                              @RequestParam String loggedInLastName) {
-        return subcategoryRepository.getSubcategories(categoryId,
-                new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName));
+    public ResponseEntity<List<Subcategory>> getSubcategories(@PathVariable int categoryId,
+                                                             @RequestParam int loggedInUserId,
+                                                             @RequestParam String loggedInUsername,
+                                                             @RequestParam String loggedInPassword,
+                                                             @RequestParam String loggedInEMailAddress,
+                                                             @RequestParam String loggedInFirstName,
+                                                             @RequestParam String loggedInLastName) {
+        try {
+            return ResponseEntity.ok(subcategoryRepository.getSubcategories(categoryId,
+                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -82,16 +88,20 @@ public class SubcategoryController {
     @GetMapping("/subcategories/{subcategoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one subcategory")
-    public Subcategory getSubcategory(@PathVariable int categoryId,
-                                      @PathVariable int subcategoryId,
-                                      @RequestParam int loggedInUserId,
-                                      @RequestParam String loggedInUsername,
-                                      @RequestParam String loggedInPassword,
-                                      @RequestParam String loggedInEMailAddress,
-                                      @RequestParam String loggedInFirstName,
-                                      @RequestParam String loggedInLastName) {
-        return subcategoryRepository.getSubcategory(categoryId, subcategoryId,
-                new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName));
+    public ResponseEntity<Subcategory> getSubcategory(@PathVariable int categoryId,
+                                                      @PathVariable int subcategoryId,
+                                                      @RequestParam int loggedInUserId,
+                                                      @RequestParam String loggedInUsername,
+                                                      @RequestParam String loggedInPassword,
+                                                      @RequestParam String loggedInEMailAddress,
+                                                      @RequestParam String loggedInFirstName,
+                                                      @RequestParam String loggedInLastName) {
+        try {
+            return ResponseEntity.ok(subcategoryRepository.getSubcategory(categoryId, subcategoryId,
+                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -107,14 +117,18 @@ public class SubcategoryController {
     @PostMapping("/subcategories")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new subcategory")
-    public int addSubcategory(@PathVariable int categoryId,
-                              @RequestParam String subcategoryName,
-                              @RequestParam String subcategoryDescription,
-                              @RequestParam int subcategoryColourId,
-                              @RequestBody User loggedInUser) {
-        return subcategoryRepository.addSubcategory(categoryId,
-                subcategoryName, subcategoryDescription, subcategoryColourId,
-                loggedInUser);
+    public ResponseEntity<Integer> addSubcategory(@PathVariable int categoryId,
+                                                  @RequestParam String subcategoryName,
+                                                  @RequestParam String subcategoryDescription,
+                                                  @RequestParam int subcategoryColourId,
+                                                  @RequestBody User loggedInUser) {
+        try {
+            return ResponseEntity.ok(subcategoryRepository.addSubcategory(categoryId,
+                    subcategoryName, subcategoryDescription, subcategoryColourId,
+                    loggedInUser));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -130,15 +144,20 @@ public class SubcategoryController {
     @PatchMapping("/subcategories/{subcategoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing subcategory")
-    public void updateSubcategory(@PathVariable int categoryId,
-                                  @PathVariable int subcategoryId,
-                                  @RequestParam String updatedSubcategoryName,
-                                  @RequestParam String updatedSubcategoryDescription,
-                                  @RequestParam int updatedSubcategoryColour,
-                                  @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategory(categoryId,
+    public ResponseEntity updateSubcategory(@PathVariable int categoryId,
+                                            @PathVariable int subcategoryId,
+                                            @RequestParam String updatedSubcategoryName,
+                                            @RequestParam String updatedSubcategoryDescription,
+                                            @RequestParam int updatedSubcategoryColour,
+                                            @RequestBody User loggedInUser) {
+        try {
+            subcategoryRepository.updateSubcategory(categoryId,
                 subcategoryId, updatedSubcategoryName, updatedSubcategoryDescription, updatedSubcategoryColour,
                 loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -152,10 +171,15 @@ public class SubcategoryController {
     @PostMapping("/subcategories/{subcategoryId}/categoryOfSubcategory")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the category of a subcategory")
-    public void updateCategoryOfSubcategory(@PathVariable int categoryId,
-                                            @PathVariable int subcategoryId,
-                                            @RequestBody User loggedInUser) {
-        subcategoryRepository.updateCategoryOfSubcategory(categoryId, subcategoryId, loggedInUser);
+    public ResponseEntity updateCategoryOfSubcategory(@PathVariable int categoryId,
+                                                      @PathVariable int subcategoryId,
+                                                      @RequestBody User loggedInUser) {
+        try {
+            subcategoryRepository.updateCategoryOfSubcategory(categoryId, subcategoryId, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -169,13 +193,18 @@ public class SubcategoryController {
     @PatchMapping("/subcategories/{subcategoryId}/subcategoryName")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the name of an existing subcategory")
-    public void updateSubcategoryName(@PathVariable int categoryId,
-                                      @PathVariable int subcategoryId,
-                                      @RequestParam String updatedSubcategoryName,
-                                      @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategoryName(categoryId,
+    public ResponseEntity updateSubcategoryName(@PathVariable int categoryId,
+                                                @PathVariable int subcategoryId,
+                                                @RequestParam String updatedSubcategoryName,
+                                                @RequestBody User loggedInUser) {
+        try {
+            subcategoryRepository.updateSubcategoryName(categoryId,
                 subcategoryId, updatedSubcategoryName,
                 loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -189,13 +218,18 @@ public class SubcategoryController {
     @PatchMapping("/subcategories/{subcategoryId}/subcategoryDescription")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the description of an existing subcategory")
-    public void updateSubcategoryDescription(@PathVariable int categoryId,
-                                             @PathVariable int subcategoryId,
-                                             @RequestParam String updatedSubcategoryDescription,
-                                             @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategoryDescription(categoryId,
+    public ResponseEntity updateSubcategoryDescription(@PathVariable int categoryId,
+                                                       @PathVariable int subcategoryId,
+                                                       @RequestParam String updatedSubcategoryDescription,
+                                                       @RequestBody User loggedInUser) {
+        try {
+            subcategoryRepository.updateSubcategoryDescription(categoryId,
                 subcategoryId, updatedSubcategoryDescription,
                 loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -209,13 +243,18 @@ public class SubcategoryController {
     @PatchMapping("/subcategories/{subcategoryId}/subcategoryColour")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the colour of an existing subcategory")
-    public void updateSubcategoryColour(@PathVariable int categoryId,
-                                        @PathVariable int subcategoryId,
-                                        @RequestParam int updatedSubcategoryColour,
-                                        @RequestBody User loggedInUser) {
-        subcategoryRepository.updateSubcategoryColour(categoryId,
+    public ResponseEntity updateSubcategoryColour(@PathVariable int categoryId,
+                                                  @PathVariable int subcategoryId,
+                                                  @RequestParam int updatedSubcategoryColour,
+                                                  @RequestBody User loggedInUser) {
+        try {
+            subcategoryRepository.updateSubcategoryColour(categoryId,
                 subcategoryId, updatedSubcategoryColour,
                 loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -228,9 +267,14 @@ public class SubcategoryController {
     @DeleteMapping("/subcategories/{subcategoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a subcategory")
-    public void deleteSubcategory(@PathVariable int categoryId,
+    public ResponseEntity deleteSubcategory(@PathVariable int categoryId,
                                   @PathVariable int subcategoryId,
                                   @RequestBody User loggedInUser) {
-        subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, loggedInUser);
+        try {
+            subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

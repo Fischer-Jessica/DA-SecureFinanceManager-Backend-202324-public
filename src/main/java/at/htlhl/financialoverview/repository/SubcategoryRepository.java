@@ -1,5 +1,6 @@
 package at.htlhl.financialoverview.repository;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.Subcategory;
 import at.htlhl.financialoverview.model.User;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -30,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 24.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 25.07.2023 (version 1.3)
  */
 @Repository
 public class SubcategoryRepository {
@@ -86,7 +87,7 @@ public class SubcategoryRepository {
      * @param loggedInUser      The logged-in user.
      * @return A list of subcategories for the specified category.
      */
-    public List<Subcategory> getSubcategories(int categoryId, User loggedInUser) {
+    public List<Subcategory> getSubcategories(int categoryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -123,7 +124,7 @@ public class SubcategoryRepository {
      * @param loggedInUser      The logged-in user.
      * @return The requested subcategory.
      */
-    public Subcategory getSubcategory(int categoryId, int subcategoryId, User loggedInUser) {
+    public Subcategory getSubcategory(int categoryId, int subcategoryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -160,7 +161,7 @@ public class SubcategoryRepository {
      * @param loggedInUser              The logged-in user.
      * @return The ID of the newly created subcategory.
      */
-    public int addSubcategory(int categoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, User loggedInUser) {
+    public int addSubcategory(int categoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -196,7 +197,7 @@ public class SubcategoryRepository {
      * @param loggedInUser                          The logged-in user.
      */
     public void updateSubcategory(int categoryId, int subcategoryId, String updatedSubcategoryName,
-                                  String updatedSubcategoryDescription, int updatedSubcategoryColour, User loggedInUser) {
+                                  String updatedSubcategoryDescription, int updatedSubcategoryColour, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -222,7 +223,7 @@ public class SubcategoryRepository {
      * @param subcategoryId     The ID of the subcategory.
      * @param loggedInUser      The logged-in user.
      */
-    public void updateCategoryOfSubcategory(int categoryId, int subcategoryId, User loggedInUser) {
+    public void updateCategoryOfSubcategory(int categoryId, int subcategoryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -245,7 +246,7 @@ public class SubcategoryRepository {
      * @param updatedSubcategoryName        The updated subcategory name.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateSubcategoryName(int categoryId, int subcategoryId, String updatedSubcategoryName, User loggedInUser) {
+    public void updateSubcategoryName(int categoryId, int subcategoryId, String updatedSubcategoryName, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -269,7 +270,7 @@ public class SubcategoryRepository {
      * @param updatedSubcategoryDescription         The updated subcategory description.
      * @param loggedInUser                          The logged-in user.
      */
-    public void updateSubcategoryDescription(int categoryId, int subcategoryId, String updatedSubcategoryDescription, User loggedInUser) {
+    public void updateSubcategoryDescription(int categoryId, int subcategoryId, String updatedSubcategoryDescription, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -293,7 +294,7 @@ public class SubcategoryRepository {
      * @param updatedSubcategoryColour      The updated subcategory colour ID.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateSubcategoryColour(int categoryId, int subcategoryId, int updatedSubcategoryColour, User loggedInUser) {
+    public void updateSubcategoryColour(int categoryId, int subcategoryId, int updatedSubcategoryColour, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -317,7 +318,7 @@ public class SubcategoryRepository {
      * @param subcategoryId         The ID of the subcategory to delete.
      * @param loggedInUser          The logged-in user.
      */
-    public void deleteSubcategory(int categoryId, int subcategoryId, User loggedInUser) {
+    public void deleteSubcategory(int categoryId, int subcategoryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
