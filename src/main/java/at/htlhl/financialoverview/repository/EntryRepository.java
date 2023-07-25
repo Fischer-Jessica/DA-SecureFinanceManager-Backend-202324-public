@@ -1,5 +1,6 @@
 package at.htlhl.financialoverview.repository;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.Entry;
 import at.htlhl.financialoverview.model.User;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -23,8 +24,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 24.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 25.07.2023 (version 1.4)
  */
 @Repository
 public class EntryRepository {
@@ -85,11 +86,11 @@ public class EntryRepository {
     /**
      * Retrieves all entries from a specific subcategory for a given user.
      *
-     * @param subcategoryId    The ID of the subcategory.
-     * @param loggedInUser     The logged-in user.
+     * @param subcategoryId The ID of the subcategory.
+     * @param loggedInUser  The logged-in user.
      * @return A list of entries.
      */
-    public List<Entry> getEntries(int subcategoryId, User loggedInUser) {
+    public List<Entry> getEntries(int subcategoryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -131,7 +132,7 @@ public class EntryRepository {
      * @param loggedInUser      The logged-in user.
      * @return The entry object.
      */
-    public Entry getEntry(int subcategoryId, int entryId, User loggedInUser) {
+    public Entry getEntry(int subcategoryId, int entryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -175,7 +176,7 @@ public class EntryRepository {
      * @param loggedInUser             The logged-in user.
      * @return The ID of the added entry.
      */
-    public int addEntry(int subcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfExpense, String entryAttachment, User loggedInUser) {
+    public int addEntry(int subcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfExpense, String entryAttachment, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -219,7 +220,8 @@ public class EntryRepository {
      * @param updatedEntryAttachment            The updated attachment of the entry.
      * @param loggedInUser                      The logged-in user.
      */
-    public void updateEntry(int updatedSubcategoryId, int entryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfExpense, String updatedEntryAttachment, User loggedInUser) {
+    public void updateEntry(int updatedSubcategoryId, int entryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfExpense,
+                            String updatedEntryAttachment, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -247,7 +249,7 @@ public class EntryRepository {
      * @param entryId                   The ID of the entry to be updated.
      * @param loggedInUser              The logged-in user.
      */
-    public void updateSubcategoryOfEntry(int updatedSubcategoryId, int entryId, User loggedInUser) {
+    public void updateSubcategoryOfEntry(int updatedSubcategoryId, int entryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -271,7 +273,7 @@ public class EntryRepository {
      * @param updatedEntryName         The updated name of the entry.
      * @param loggedInUser             The logged-in user.
      */
-    public void updateEntryName(int subcategoryId, int entryId, String updatedEntryName, User loggedInUser) {
+    public void updateEntryName(int subcategoryId, int entryId, String updatedEntryName, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -296,7 +298,7 @@ public class EntryRepository {
      * @param updatedEntryDescription       The updated description of the entry.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateEntryDescription(int subcategoryId, int entryId, String updatedEntryDescription, User loggedInUser) {
+    public void updateEntryDescription(int subcategoryId, int entryId, String updatedEntryDescription, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -321,7 +323,7 @@ public class EntryRepository {
      * @param updatedEntryAmount       The updated amount of the entry.
      * @param loggedInUser             The logged-in user.
      */
-    public void updateEntryAmount(int subcategoryId, int entryId, String updatedEntryAmount, User loggedInUser) {
+    public void updateEntryAmount(int subcategoryId, int entryId, String updatedEntryAmount, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -346,7 +348,7 @@ public class EntryRepository {
      * @param updatedEntryTimeOfExpense         The updated time of expense of the entry.
      * @param loggedInUser                      The logged-in user.
      */
-    public void updateEntryTimeOfExpense(int subcategoryId, int entryId, String updatedEntryTimeOfExpense, User loggedInUser) {
+    public void updateEntryTimeOfExpense(int subcategoryId, int entryId, String updatedEntryTimeOfExpense, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -371,7 +373,7 @@ public class EntryRepository {
      * @param updatedEntryAttachment        The updated attachment of the entry.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateEntryAttachment(int subcategoryId, int entryId, String updatedEntryAttachment, User loggedInUser) {
+    public void updateEntryAttachment(int subcategoryId, int entryId, String updatedEntryAttachment, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -395,7 +397,7 @@ public class EntryRepository {
      * @param entryId                  The ID of the entry to be deleted.
      * @param loggedInUser             The logged-in user.
      */
-    public void deleteEntry(int subcategoryId, int entryId, User loggedInUser) {
+    public void deleteEntry(int subcategoryId, int entryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
