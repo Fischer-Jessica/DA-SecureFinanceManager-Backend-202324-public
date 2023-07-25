@@ -1,11 +1,13 @@
 package at.htlhl.financialoverview.controller;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.Label;
 import at.htlhl.financialoverview.model.User;
 import at.htlhl.financialoverview.repository.LabelRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 21.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 25.07.2023 (version 1.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -54,13 +56,17 @@ public class LabelController {
     @GetMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all labels")
-    public List<Label> getLabels(@RequestParam int loggedInUserId,
-                                 @RequestParam String loggedInUsername,
-                                 @RequestParam String loggedInPassword,
-                                 @RequestParam String loggedInEMailAddress,
-                                 @RequestParam String loggedInFirstName,
-                                 @RequestParam String loggedInLastName) {
-        return labelRepository.getLabels(new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName));
+    public ResponseEntity<List<Label>> getLabels(@RequestParam int loggedInUserId,
+                                                 @RequestParam String loggedInUsername,
+                                                 @RequestParam String loggedInPassword,
+                                                 @RequestParam String loggedInEMailAddress,
+                                                 @RequestParam String loggedInFirstName,
+                                                 @RequestParam String loggedInLastName) {
+        try {
+            return ResponseEntity.ok(labelRepository.getLabels(new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -78,15 +84,19 @@ public class LabelController {
     @GetMapping("/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one label")
-    public Label getLabel(@PathVariable int labelId,
-                          @RequestParam int loggedInUserId,
-                          @RequestParam String loggedInUsername,
-                          @RequestParam String loggedInPassword,
-                          @RequestParam String loggedInEMailAddress,
-                          @RequestParam String loggedInFirstName,
-                          @RequestParam String loggedInLastName) {
-        return labelRepository.getLabel(labelId,
-                new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName));
+    public ResponseEntity<Label> getLabel(@PathVariable int labelId,
+                                          @RequestParam int loggedInUserId,
+                                          @RequestParam String loggedInUsername,
+                                          @RequestParam String loggedInPassword,
+                                          @RequestParam String loggedInEMailAddress,
+                                          @RequestParam String loggedInFirstName,
+                                          @RequestParam String loggedInLastName) {
+        try {
+            return ResponseEntity.ok(labelRepository.getLabel(labelId,
+                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -101,12 +111,16 @@ public class LabelController {
     @PostMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "add a new label")
-    public int addLabel(@RequestParam String labelName,
-                        @RequestParam String labelDescription,
-                        @RequestParam int labelColourId,
-                        @RequestBody User loggedInUser) {
-        return labelRepository.addLabel(labelName, labelDescription, labelColourId,
-                loggedInUser);
+    public ResponseEntity<Integer> addLabel(@RequestParam String labelName,
+                                            @RequestParam String labelDescription,
+                                            @RequestParam int labelColourId,
+                                            @RequestBody User loggedInUser) {
+        try {
+            return ResponseEntity.ok(labelRepository.addLabel(labelName, labelDescription, labelColourId,
+                    loggedInUser));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -121,74 +135,99 @@ public class LabelController {
     @PatchMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing label")
-    public void updateLabel(@RequestParam int labelId,
-                            @RequestParam String updatedLabelName,
-                            @RequestParam String updatedLabelDescription,
-                            @RequestParam int updatedLabelColour,
-                            @RequestBody User loggedInUser) {
-        labelRepository.updateLabel(new Label(labelId, updatedLabelName, updatedLabelDescription, updatedLabelColour, loggedInUser.getUserId()),
-                loggedInUser);
+    public ResponseEntity updateLabel(@RequestParam int labelId,
+                                      @RequestParam String updatedLabelName,
+                                      @RequestParam String updatedLabelDescription,
+                                      @RequestParam int updatedLabelColour,
+                                      @RequestBody User loggedInUser) {
+        try {
+            labelRepository.updateLabel(new Label(labelId, updatedLabelName, updatedLabelDescription, updatedLabelColour, loggedInUser.getUserId()),
+                    loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
      * Changes the name of an existing label for the logged-in user.
      *
-     * @param labelId       The ID of the label to update.
-     * @param updatedLabelName     The updated label name.
-     * @param loggedInUser  The logged-in user.
+     * @param labelId          The ID of the label to update.
+     * @param updatedLabelName The updated label name.
+     * @param loggedInUser     The logged-in user.
      */
     @PatchMapping("labels/labelName")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the name of the label")
-    public void updateLabelName(@RequestParam int labelId,
-                                @RequestParam String updatedLabelName,
-                                @RequestBody User loggedInUser) {
-        labelRepository.updateLabelName(labelId, updatedLabelName, loggedInUser);
+    public ResponseEntity updateLabelName(@RequestParam int labelId,
+                                          @RequestParam String updatedLabelName,
+                                          @RequestBody User loggedInUser) {
+        try {
+            labelRepository.updateLabelName(labelId, updatedLabelName, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
      * Changes the description of an existing label for the logged-in user.
      *
-     * @param labelId               The ID of the label to update.
-     * @param updatedLabelDescription      The updated label description.
-     * @param loggedInUser          The logged-in user.
+     * @param labelId                 The ID of the label to update.
+     * @param updatedLabelDescription The updated label description.
+     * @param loggedInUser            The logged-in user.
      */
     @PatchMapping("labels/labelDescription")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the description of the label")
-    public void updateLabelDescription(@RequestParam int labelId,
-                                       @RequestParam String updatedLabelDescription,
-                                       @RequestBody User loggedInUser) {
-        labelRepository.updateLabelDescription(labelId, updatedLabelDescription, loggedInUser);
+    public ResponseEntity updateLabelDescription(@RequestParam int labelId,
+                                                 @RequestParam String updatedLabelDescription,
+                                                 @RequestBody User loggedInUser) {
+        try {
+            labelRepository.updateLabelDescription(labelId, updatedLabelDescription, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
      * Changes the color of an existing label for the logged-in user.
      *
-     * @param labelId           The ID of the label to update.
-     * @param updatedLabelColourId     The updated label color ID.
-     * @param loggedInUser      The logged-in user.
+     * @param labelId              The ID of the label to update.
+     * @param updatedLabelColourId The updated label color ID.
+     * @param loggedInUser         The logged-in user.
      */
     @PatchMapping("labels/labelColourId")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the colour of an existing label")
-    public void updateLabelColour(@RequestParam int labelId,
-                                  @RequestParam int updatedLabelColourId,
-                                  @RequestBody User loggedInUser) {
-        labelRepository.updateLabelColourId(labelId, updatedLabelColourId, loggedInUser);
+    public ResponseEntity updateLabelColour(@RequestParam int labelId,
+                                            @RequestParam int updatedLabelColourId,
+                                            @RequestBody User loggedInUser) {
+        try {
+            labelRepository.updateLabelColourId(labelId, updatedLabelColourId, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
      * Deletes a label for the logged-in user.
      *
-     * @param labelId       The ID of the label to delete.
+     * @param labelId      The ID of the label to delete.
      * @param loggedInUser The logged-in user.
      */
     @DeleteMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a label")
-    public void deleteCategory(@RequestParam int labelId,
-                               @RequestBody User loggedInUser) {
-        labelRepository.deleteLabel(labelId, loggedInUser);
+    public ResponseEntity deleteCategory(@RequestParam int labelId,
+                                         @RequestBody User loggedInUser) {
+        try {
+            labelRepository.deleteLabel(labelId, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

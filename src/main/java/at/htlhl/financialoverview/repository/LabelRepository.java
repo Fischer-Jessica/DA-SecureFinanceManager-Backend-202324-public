@@ -1,5 +1,6 @@
 package at.htlhl.financialoverview.repository;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.Label;
 import at.htlhl.financialoverview.model.User;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -30,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 24.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 25.07.2023 (version 1.4)
  */
 @Repository
 public class LabelRepository {
@@ -80,7 +81,7 @@ public class LabelRepository {
      * @param loggedInUser The logged-in user.
      * @return A list of Label objects representing the labels.
      */
-    public List<Label> getLabels(User loggedInUser) {
+    public List<Label> getLabels(User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -111,11 +112,11 @@ public class LabelRepository {
     /**
      * Retrieves a specific label for the logged-in user.
      *
-     * @param labelId           The ID of the label to retrieve.
-     * @param loggedInUser      The logged-in user.
+     * @param labelId      The ID of the label to retrieve.
+     * @param loggedInUser The logged-in user.
      * @return The requested Label object.
      */
-    public Label getLabel(int labelId, User loggedInUser) {
+    public Label getLabel(int labelId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -144,13 +145,13 @@ public class LabelRepository {
     /**
      * Adds a new label for the logged-in user.
      *
-     * @param labelName             The name of the new label.
-     * @param labelDescription      The description of the new label.
-     * @param labelColourId         The ID of the color for the new label.
-     * @param loggedInUser          The logged-in user.
+     * @param labelName        The name of the new label.
+     * @param labelDescription The description of the new label.
+     * @param labelColourId    The ID of the color for the new label.
+     * @param loggedInUser     The logged-in user.
      * @return The ID of the newly created label.
      */
-    public int addLabel(String labelName, String labelDescription, int labelColourId, User loggedInUser) {
+    public int addLabel(String labelName, String labelDescription, int labelColourId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -181,7 +182,7 @@ public class LabelRepository {
      * @param updatedLabel      The updated Label object.
      * @param loggedInUser      The logged-in user.
      */
-    public void updateLabel(Label updatedLabel, User loggedInUser) {
+    public void updateLabel(Label updatedLabel, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -206,7 +207,7 @@ public class LabelRepository {
      * @param updatedLabelName      The updated label name.
      * @param loggedInUser          The logged-in user.
      */
-    public void updateLabelName(int labelId, String updatedLabelName, User loggedInUser) {
+    public void updateLabelName(int labelId, String updatedLabelName, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -229,7 +230,7 @@ public class LabelRepository {
      * @param updatedLabelDescription       The updated label description.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateLabelDescription(int labelId, String updatedLabelDescription, User loggedInUser) {
+    public void updateLabelDescription(int labelId, String updatedLabelDescription, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -252,7 +253,7 @@ public class LabelRepository {
      * @param updatedLabelColour        The updated label color ID.
      * @param loggedInUser              The logged-in user.
      */
-    public void updateLabelColourId(int labelId, int updatedLabelColour, User loggedInUser) {
+    public void updateLabelColourId(int labelId, int updatedLabelColour, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -274,7 +275,7 @@ public class LabelRepository {
      * @param labelId           The ID of the label to delete.
      * @param loggedInUser      The logged-in user.
      */
-    public void deleteLabel(int labelId, User loggedInUser) {
+    public void deleteLabel(int labelId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
