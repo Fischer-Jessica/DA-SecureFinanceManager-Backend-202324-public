@@ -1,5 +1,6 @@
 package at.htlhl.financialoverview.repository;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.Category;
 import at.htlhl.financialoverview.model.User;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -35,8 +36,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 24.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 25.07.2023 (version 1.4)
  */
 @Repository
 public class CategoryRepository {
@@ -85,7 +86,7 @@ public class CategoryRepository {
      * @param loggedInUser The logged-in user.
      * @return A list of Category objects representing the categories.
      */
-    public List<Category> getCategories(User loggedInUser) {
+    public List<Category> getCategories(User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -117,11 +118,11 @@ public class CategoryRepository {
     /**
      * Retrieves a specific category for the logged-in user.
      *
-     * @param categoryId        The ID of the category to retrieve.
-     * @param loggedInUser      The logged-in user.
+     * @param categoryId   The ID of the category to retrieve.
+     * @param loggedInUser The logged-in user.
      * @return The requested Category object.
      */
-    public Category getCategory(int categoryId, User loggedInUser) {
+    public Category getCategory(int categoryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -156,7 +157,7 @@ public class CategoryRepository {
      * @param loggedInUser              The logged-in user.
      * @return The ID of the newly created category.
      */
-    public int addCategory(String categoryName, String categoryDescription, int categoryColourId, User loggedInUser) {
+    public int addCategory(String categoryName, String categoryDescription, int categoryColourId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -187,7 +188,7 @@ public class CategoryRepository {
      * @param updatedCategory     The updated Category object.
      * @param loggedInUser        The logged-in user.
      */
-    public void updateCategory(Category updatedCategory, User loggedInUser) {
+    public void updateCategory(Category updatedCategory, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -212,7 +213,7 @@ public class CategoryRepository {
      * @param updatedCategoryName       The updated category name.
      * @param loggedInUser              The logged-in user.
      */
-    public void updateCategoryName(int categoryId, String updatedCategoryName, User loggedInUser) {
+    public void updateCategoryName(int categoryId, String updatedCategoryName, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -235,7 +236,7 @@ public class CategoryRepository {
      * @param updatedCategoryDescription        The updated category description.
      * @param loggedInUser                      The logged-in user.
      */
-    public void updateCategoryDescription(int categoryId, String updatedCategoryDescription, User loggedInUser) {
+    public void updateCategoryDescription(int categoryId, String updatedCategoryDescription, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -258,7 +259,7 @@ public class CategoryRepository {
      * @param updatedCategoryColourId       The updated category color ID.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateCategoryColourId(int categoryId, int updatedCategoryColourId, User loggedInUser) {
+    public void updateCategoryColourId(int categoryId, int updatedCategoryColourId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -280,7 +281,7 @@ public class CategoryRepository {
      * @param categoryId        The ID of the category to delete.
      * @param loggedInUser      The logged-in user.
      */
-    public void deleteCategory(int categoryId, User loggedInUser) {
+    public void deleteCategory(int categoryId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
