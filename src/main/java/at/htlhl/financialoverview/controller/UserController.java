@@ -1,9 +1,11 @@
 package at.htlhl.financialoverview.controller;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.User;
 import at.htlhl.financialoverview.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 
@@ -33,8 +35,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 25.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 25.07.2023 (version 1.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -59,9 +61,14 @@ public class UserController {
     @GetMapping("/user")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Validates user credentials and returns true or false based on the validation result.")
-    public User authenticateUser(@RequestParam String usernameToValidate,
-                                           @RequestParam String passwordToValidate) {
-        return userRepository.authenticateUser(usernameToValidate, passwordToValidate);
+    public ResponseEntity<User> authenticateUser(@RequestParam String usernameToValidate,
+                                                 @RequestParam String passwordToValidate) {
+        User authenticatedUser = userRepository.authenticateUser(usernameToValidate, passwordToValidate);
+        if (authenticatedUser != null) {
+            return ResponseEntity.ok(authenticatedUser);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -111,14 +118,19 @@ public class UserController {
     @PatchMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing user")
-    public void updateUser(@RequestParam String updatedUsername,
-                           @RequestParam String updatedPassword,
-                           @RequestParam String updatedEMailAddress,
-                           @RequestParam String updatedFirstName,
-                           @RequestParam String updatedLastName,
-                           @RequestBody User loggedInUser) {
-        userRepository.updateUser(new User(loggedInUser.getUserId(), updatedUsername, updatedPassword, updatedEMailAddress, updatedFirstName, updatedLastName),
-                loggedInUser);
+    public ResponseEntity updateUser(@RequestParam String updatedUsername,
+                                     @RequestParam String updatedPassword,
+                                     @RequestParam String updatedEMailAddress,
+                                     @RequestParam String updatedFirstName,
+                                     @RequestParam String updatedLastName,
+                                     @RequestBody User loggedInUser) {
+        try {
+            userRepository.updateUser(new User(loggedInUser.getUserId(), updatedUsername, updatedPassword, updatedEMailAddress, updatedFirstName, updatedLastName),
+                    loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -130,9 +142,14 @@ public class UserController {
     @PatchMapping("/users/username")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the username of an existing user")
-    public void updateUsername(@RequestParam String updatedUsername,
-                               @RequestBody User loggedInUser) {
-        userRepository.updateUsername(updatedUsername, loggedInUser);
+    public ResponseEntity updateUsername(@RequestParam String updatedUsername,
+                                         @RequestBody User loggedInUser) {
+        try {
+            userRepository.updateUsername(updatedUsername, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -144,9 +161,14 @@ public class UserController {
     @PatchMapping("/users/password")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the password of an existing user")
-    public void updatePassword(@RequestParam String updatedPassword,
-                               @RequestBody User loggedInUser) {
-        userRepository.updatePassword(updatedPassword, loggedInUser);
+    public ResponseEntity updatePassword(@RequestParam String updatedPassword,
+                                         @RequestBody User loggedInUser) {
+        try {
+            userRepository.updatePassword(updatedPassword, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -158,9 +180,14 @@ public class UserController {
     @PatchMapping("/users/eMailAddress")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the e-mail-address of an existing user")
-    public void updateEMailAddress(@RequestParam String updatedEMailAddress,
-                                   @RequestBody User loggedInUser) {
-        userRepository.updateEMailAddress(updatedEMailAddress, loggedInUser);
+    public ResponseEntity updateEMailAddress(@RequestParam String updatedEMailAddress,
+                                             @RequestBody User loggedInUser) {
+        try {
+            userRepository.updateEMailAddress(updatedEMailAddress, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -172,9 +199,14 @@ public class UserController {
     @PatchMapping("/users/firstName")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the first name of an existing user")
-    public void updateFirstName(@RequestParam String updatedFirstName,
-                                @RequestBody User loggedInUser) {
-        userRepository.updateFirstName(updatedFirstName, loggedInUser);
+    public ResponseEntity updateFirstName(@RequestParam String updatedFirstName,
+                                          @RequestBody User loggedInUser) {
+        try {
+            userRepository.updateFirstName(updatedFirstName, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -186,9 +218,14 @@ public class UserController {
     @PatchMapping("/users/lastName")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change the last name of an existing user")
-    public void updateLastName(@RequestParam String updatedLastName,
-                               @RequestBody User loggedInUser) {
-        userRepository.updateLastName(updatedLastName, loggedInUser);
+    public ResponseEntity updateLastName(@RequestParam String updatedLastName,
+                                         @RequestBody User loggedInUser) {
+        try {
+            userRepository.updateLastName(updatedLastName, loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     /**
@@ -199,7 +236,12 @@ public class UserController {
     @DeleteMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "deletes an user")
-    public void deleteUser(@RequestBody User loggedInUser) {
-        userRepository.deleteUser(loggedInUser);
+    public ResponseEntity deleteUser(@RequestBody User loggedInUser) {
+        try {
+            userRepository.deleteUser(loggedInUser);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }

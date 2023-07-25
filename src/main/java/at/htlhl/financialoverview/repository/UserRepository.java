@@ -1,5 +1,6 @@
 package at.htlhl.financialoverview.repository;
 
+import at.htlhl.financialoverview.exception.ValidationException;
 import at.htlhl.financialoverview.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,8 +29,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 25.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 25.07.2023 (version 1.5)
  */
 @Repository
 public class UserRepository {
@@ -107,7 +108,7 @@ public class UserRepository {
      * @param loggedInUser The User object containing the user credentials to be validated.
      * @return True if the credentials are valid, false otherwise.
      */
-    public static boolean validateUserCredentials(User loggedInUser) {
+    public static boolean validateUserCredentials(User loggedInUser) throws ValidationException {
         User databaseUser = null;
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -131,7 +132,11 @@ public class UserRepository {
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
-        return databaseUser.equals(loggedInUser);
+        if (databaseUser == null) {
+            throw new ValidationException("Invalid credentials.");
+        } else {
+            return databaseUser.equals(loggedInUser);
+        }
     }
 
     /**
@@ -168,10 +173,10 @@ public class UserRepository {
                 databaseUser = new User(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
             }
             conn.close();
-            return databaseUser;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
+        return databaseUser;
     }
 
     /**
@@ -230,7 +235,7 @@ public class UserRepository {
      * @param updatedUser       The updated User object.
      * @param loggedInUser      The original User object to be updated.
      */
-    public void updateUser(User updatedUser, User loggedInUser) {
+    public void updateUser(User updatedUser, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -255,7 +260,7 @@ public class UserRepository {
      * @param updatedUsername       The updated username.
      * @param loggedInUser          The logged-in user performing the update.
      */
-    public void updateUsername(String updatedUsername, User loggedInUser) {
+    public void updateUsername(String updatedUsername, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -276,7 +281,7 @@ public class UserRepository {
      * @param updatedPassword       The updated password.
      * @param loggedInUser          The logged-in user performing the update.
      */
-    public void updatePassword(String updatedPassword, User loggedInUser) {
+    public void updatePassword(String updatedPassword, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -297,7 +302,7 @@ public class UserRepository {
      * @param updatedEMailAddress   The updated email address.
      * @param loggedInUser          The logged-in user performing the update.
      */
-    public void updateEMailAddress(String updatedEMailAddress, User loggedInUser) {
+    public void updateEMailAddress(String updatedEMailAddress, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -318,7 +323,7 @@ public class UserRepository {
      * @param updatedFirstName      The updated first name.
      * @param loggedInUser          The logged-in user performing the update.
      */
-    public void updateFirstName(String updatedFirstName, User loggedInUser) {
+    public void updateFirstName(String updatedFirstName, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -339,7 +344,7 @@ public class UserRepository {
      * @param updatedLastName       The updated last name.
      * @param loggedInUser          The logged-in user performing the update.
      */
-    public void updateLastName(String updatedLastName, User loggedInUser) {
+    public void updateLastName(String updatedLastName, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -359,7 +364,7 @@ public class UserRepository {
      *
      * @param loggedInUser The logged-in user performing the deletion on itself.
      */
-    public void deleteUser(User loggedInUser) {
+    public void deleteUser(User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
