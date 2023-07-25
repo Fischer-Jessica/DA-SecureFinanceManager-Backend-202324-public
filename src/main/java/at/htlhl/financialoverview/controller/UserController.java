@@ -33,8 +33,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 21.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 25.07.2023 (version 1.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -43,6 +43,26 @@ public class UserController {
     /** The UserRepository instance for accessing user data. */
     @Autowired
     UserRepository userRepository;
+
+    /**
+     * Validates user credentials and returns the authenticated user object if successful.
+     *
+     * This method authenticates the user with the provided username and password. It checks if the user
+     * with the given username exists in the database and if the provided password matches the stored password
+     * for that user. If the authentication is successful, it returns the User object representing the
+     * authenticated user; otherwise, it returns null.
+     *
+     * @param usernameToValidate The username of the user to be authenticated.
+     * @param passwordToValidate The password of the user to be authenticated.
+     * @return The User object representing the authenticated user if successful, or null if authentication fails.
+     */
+    @GetMapping("/user")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Validates user credentials and returns true or false based on the validation result.")
+    public User authenticateUser(@RequestParam String usernameToValidate,
+                                           @RequestParam String passwordToValidate) {
+        return userRepository.authenticateUser(usernameToValidate, passwordToValidate);
+    }
 
     /**
      * Returns a list of all users.

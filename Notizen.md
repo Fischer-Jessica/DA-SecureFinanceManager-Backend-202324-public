@@ -28,5 +28,5 @@
 ## ToDos
 - [x] alle Funktionen in der swagger-ui testen
 - [x] herausfinden, warum die id nicht zurückgesetzt wird beim Löschen von Einträgen
-- [] ich brauche noch eine Methode, die sagt, ob der User, der sich anmelden will, überhaupt existiert
+- [x] ich brauche noch eine Methode, die sagt, ob der User, der sich anmelden will, überhaupt existiert
 - [] spezifische Fehler hinzufügen wie ValidationUnsuccessful

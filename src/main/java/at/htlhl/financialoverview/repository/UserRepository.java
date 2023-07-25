@@ -28,8 +28,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 18.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 25.07.2023 (version 1.4)
  */
 @Repository
 public class UserRepository {
@@ -41,6 +41,12 @@ public class UserRepository {
     private static final String SELECT_USER = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
             "FROM users " +
             "WHERE pk_user_id = ?;";
+
+    /** SQL query to select user data from the database based on the provided username and password. */
+    private static final String SELECT_USER_BY_USERNAME_AND_PASSWORD = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
+            "FROM users " +
+            "WHERE username = ? AND password = ?;";
+
 
     /** SQL query to retrieve all users. */
     private static final String SELECT_USERS = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
@@ -126,6 +132,46 @@ public class UserRepository {
             throw new RuntimeException(exception);
         }
         return databaseUser.equals(loggedInUser);
+    }
+
+    /**
+     * Authenticates the user with the provided username and password.
+     *
+     * This method checks if the user with the given username exists in the database and
+     * if the provided password matches the stored password for that user. If the
+     * authentication is successful, it returns the User object representing the
+     * authenticated user; otherwise, it returns null.
+     *
+     * @param usernameToValidate The username of the user to be authenticated.
+     * @param passwordToValidate The password of the user to be authenticated.
+     * @return The User object representing the authenticated user if successful, or null if authentication fails.
+     * @throws RuntimeException If an error occurs while accessing the database.
+     */
+    public User authenticateUser(String usernameToValidate, String passwordToValidate) {
+        User databaseUser = null;
+        try {
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_USER_BY_USERNAME_AND_PASSWORD);
+            ps.setString(1, usernameToValidate);
+            ps.setBytes(2, Base64.getDecoder().decode(passwordToValidate));
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int userId = rs.getInt("pk_user_id");
+                String username = rs.getString("username");
+                byte[] password = rs.getBytes("password");
+                String eMailAddress = rs.getString("email_address");
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+
+                conn.close();
+                databaseUser = new User(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
+            }
+            conn.close();
+            return databaseUser;
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     /**
