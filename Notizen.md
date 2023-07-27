@@ -26,7 +26,16 @@
 ---------------------------------------------------------------------
 
 ## ToDos
+
 - [x] alle Funktionen in der swagger-ui testen
 - [x] herausfinden, warum die id nicht zurückgesetzt wird beim Löschen von Einträgen
 - [x] ich brauche noch eine Methode, die sagt, ob der User, der sich anmelden will, überhaupt existiert
 - [x] spezifischen Fehler hinzufügen: ValidationUnsuccessful
+
+----------------------------------------------------------------------------------
+
+## Informationen
+
+<p>Grundsätzlich wäre es üblich, dass man die User-Informationen im Header mit übergibt oder diese durch einen Session-Key ersetzt, welcher eine bestimmte Zeit lang gültig ist.</p>
+<p>Bei Post wäre es üblicher ein gesamtes Objekt zu übergeben, nicht nur Parameter</p>
+<p>Wenn ich das ganze Objekt neu mache, sollte ich einen put verwenden, bei welchem das ganze Objekt übergeben wird.</p>
