@@ -32,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 29.09.2023 (version 1.6)
+ * @version 1.7
+ * @since 29.09.2023 (version 1.7)
  */
 @RestController
 @CrossOrigin(origins = "*")

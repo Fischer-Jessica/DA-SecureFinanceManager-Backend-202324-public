@@ -24,29 +24,29 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 29.09.2023 (version 1.5)
+ * @version 1.6
+ * @since 29.09.2023 (version 1.6)
  */
 @Repository
 public class EntryRepository {
     /** SQL query to retrieve entries from the 'entries' table in the database for a specific subcategory and user. */
-    private static final String SELECT_ENTRIES = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_expense, entry_attachment " +
+    private static final String SELECT_ENTRIES = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment " +
             "FROM entries " +
             "WHERE fk_user_id = ? AND fk_subcategory_id = ?;";
 
     /** SQL query to retrieve a specific entry from the 'entries' table in the database for a specific subcategory and user. */
-    private static final String SELECT_ENTRY = "SELECT entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_expense, entry_attachment " +
+    private static final String SELECT_ENTRY = "SELECT entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment " +
             "FROM entries " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
     /** SQL query to add a new entry to the 'entries' table in the database. */
     private static final String INSERT_ENTRY = "INSERT INTO entries " +
-            "(fk_subcategory_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_expense, entry_attachment, fk_user_id) " +
+            "(fk_subcategory_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_user_id) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
     /** SQL query to update an existing entry in the 'entries' table in the database. */
     private static final String UPDATE_ENTRY = "UPDATE entries " +
-            "SET fk_subcategory_id = ?, entry_name = ?, entry_description = ?, entry_amount = ?, entry_time_of_expense = ?, entry_attachment = ? " +
+            "SET fk_subcategory_id = ?, entry_name = ?, entry_description = ?, entry_amount = ?, entry_time_of_transaction = ?, entry_attachment = ? " +
             "WHERE pk_entry_id = ? AND fk_user_id = ?;";
 
     /** SQL query to update the subcategory ID of an existing entry in the 'entries' table in the database. */
@@ -71,7 +71,7 @@ public class EntryRepository {
 
     /** SQL query to update the time of the transaction in an existing entry in the 'entries' table in the database. */
     private static final String UPDATE_ENTRY_TIME_OF_TRANSACTION = "UPDATE entries " +
-            "SET entry_time_of_expense = ? " +
+            "SET entry_time_of_transaction = ? " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
     /** SQL query to update the attachment of an existing entry in the 'entries' table in the database. */
@@ -106,7 +106,7 @@ public class EntryRepository {
                     byte[] entryDescription = rs.getBytes("entry_description");
                     byte[] entryAmount = rs.getBytes("entry_amount");
                     byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                    byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_expense");
+                    byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
                     byte[] entryAttachment = rs.getBytes("entry_attachment");
 
                     Entry entry = new Entry(entryId, Base64.getEncoder().encodeToString(entryName), Base64.getEncoder().encodeToString(entryDescription),
@@ -148,7 +148,7 @@ public class EntryRepository {
                     byte[] entryDescription = rs.getBytes("entry_description");
                     byte[] entryAmount = rs.getBytes("entry_amount");
                     byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                    byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_expense");
+                    byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
                     byte[] entryAttachment = rs.getBytes("entry_attachment");
 
                     entry = new Entry(entryId, Base64.getEncoder().encodeToString(entryName), Base64.getEncoder().encodeToString(entryDescription),

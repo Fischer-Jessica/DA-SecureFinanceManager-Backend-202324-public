@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 29.09.2023 (version 1.5)
+ * @version 1.6
+ * @since 29.09.2023 (version 1.6)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -57,7 +57,7 @@ public class Entry {
     private String entryCreationTime;
 
     /** The time of the transaction in the entry. */
-    @Column(name = "entry_time_of_expense")
+    @Column(name = "entry_time_of_transaction")
     private String entryTimeOfTransaction;
 
     /** The attachment of the entry. */
