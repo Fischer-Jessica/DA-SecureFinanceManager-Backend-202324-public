@@ -1,6 +1,7 @@
-package at.htlhl.financialoverview.model;
+package at.htlhl.securefinancemanager.model;
 
 import jakarta.persistence.*;
+
 import java.util.List;
 
 /**

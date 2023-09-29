@@ -1,8 +1,8 @@
-package at.htlhl.financialoverview.repository;
+package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.financialoverview.exception.ValidationException;
-import at.htlhl.financialoverview.model.Subcategory;
-import at.htlhl.financialoverview.model.User;
+import at.htlhl.securefinancemanager.exception.ValidationException;
+import at.htlhl.securefinancemanager.model.Subcategory;
+import at.htlhl.securefinancemanager.model.User;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 

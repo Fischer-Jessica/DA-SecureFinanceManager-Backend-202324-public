@@ -1,6 +1,6 @@
-package at.htlhl.financialoverview.repository;
+package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.financialoverview.model.Colour;
+import at.htlhl.securefinancemanager.model.Colour;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;

@@ -1,13 +1,13 @@
-package at.htlhl.financialoverview;
+package at.htlhl.securefinancemanager;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class FinancialOverviewApplication {
+public class SecureFinanceManagerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(FinancialOverviewApplication.class, args);
+		SpringApplication.run(SecureFinanceManagerApplication.class, args);
 	}
 
 }

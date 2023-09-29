@@ -1,10 +1,10 @@
-package at.htlhl.financialoverview;
+package at.htlhl.securefinancemanager;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class FinancialOverviewApplicationTests {
+class SecureFinanceManagerApplicationTests {
 
 	@Test
 	void contextLoads() {

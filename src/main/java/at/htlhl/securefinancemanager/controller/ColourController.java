@@ -1,7 +1,7 @@
-package at.htlhl.financialoverview.controller;
+package at.htlhl.securefinancemanager.controller;
 
-import at.htlhl.financialoverview.model.Colour;
-import at.htlhl.financialoverview.repository.ColourRepository;
+import at.htlhl.securefinancemanager.model.Colour;
+import at.htlhl.securefinancemanager.repository.ColourRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

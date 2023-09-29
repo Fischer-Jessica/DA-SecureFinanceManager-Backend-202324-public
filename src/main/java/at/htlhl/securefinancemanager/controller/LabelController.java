@@ -1,9 +1,9 @@
-package at.htlhl.financialoverview.controller;
+package at.htlhl.securefinancemanager.controller;
 
-import at.htlhl.financialoverview.exception.ValidationException;
-import at.htlhl.financialoverview.model.Label;
-import at.htlhl.financialoverview.model.User;
-import at.htlhl.financialoverview.repository.LabelRepository;
+import at.htlhl.securefinancemanager.exception.ValidationException;
+import at.htlhl.securefinancemanager.model.Label;
+import at.htlhl.securefinancemanager.model.User;
+import at.htlhl.securefinancemanager.repository.LabelRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

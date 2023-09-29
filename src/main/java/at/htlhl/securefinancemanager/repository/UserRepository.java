@@ -1,7 +1,7 @@
-package at.htlhl.financialoverview.repository;
+package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.financialoverview.exception.ValidationException;
-import at.htlhl.financialoverview.model.User;
+import at.htlhl.securefinancemanager.exception.ValidationException;
+import at.htlhl.securefinancemanager.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
