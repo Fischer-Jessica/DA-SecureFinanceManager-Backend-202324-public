@@ -32,12 +32,12 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 25.07.2023 (version 1.5)
+ * @version 1.6
+ * @since 29.09.2023 (version 1.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("financial-overview/subcategories/{subcategoryId}")
+@RequestMapping("secure-finance-manager/subcategories/{subcategoryId}")
 public class EntryController {
     /** The EntryRepository instance for accessing entry data. */
     @Autowired
@@ -108,13 +108,13 @@ public class EntryController {
     /**
      * Creates a new entry for a specific subcategory.
      *
-     * @param subcategoryId             The ID of the subcategory.
-     * @param entryName                 The name of the entry.
-     * @param entryDescription          The description of the entry.
-     * @param entryAmount               The amount of the entry.
-     * @param entryTimeOfExpense        The time of expense of the entry.
-     * @param entryAttachment           The attachment of the entry.
-     * @param loggedInUser              The logged-in user.
+     * @param subcategoryId                 The ID of the subcategory.
+     * @param entryName                     The name of the entry.
+     * @param entryDescription              The description of the entry.
+     * @param entryAmount                   The amount of the entry.
+     * @param entryTimeOfTransaction        The time of the transaction in the entry.
+     * @param entryAttachment               The attachment of the entry.
+     * @param loggedInUser                  The logged-in user.
      * @return The ID of the newly created entry.
      */
     @PostMapping("/entries")
@@ -124,11 +124,11 @@ public class EntryController {
                                             @RequestParam String entryName,
                                             @RequestParam String entryDescription,
                                             @RequestParam String entryAmount,
-                                            @RequestParam String entryTimeOfExpense,
+                                            @RequestParam String entryTimeOfTransaction,
                                             @RequestParam String entryAttachment,
                                             @RequestBody User loggedInUser) {
         try {
-            return ResponseEntity.ok(entryRepository.addEntry(subcategoryId, entryName, entryDescription, entryAmount, entryTimeOfExpense, entryAttachment,
+            return ResponseEntity.ok(entryRepository.addEntry(subcategoryId, entryName, entryDescription, entryAmount, entryTimeOfTransaction, entryAttachment,
                     loggedInUser));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -138,14 +138,14 @@ public class EntryController {
     /**
      * Updates an existing entry for a specific subcategory.
      *
-     * @param subcategoryId                 The ID of the subcategory in which the entry is.
-     * @param entryId                       The ID of the entry.
-     * @param updatedEntryAmount            The updated amount of the entry.
-     * @param updatedEntryAttachment        The updated attachment of the entry.
-     * @param updatedEntryDescription       The updated description of the entry.
-     * @param updatedEntryName              The updated name of the entry.
-     * @param updatedEntryTimeOfExpense     The updated time of expense of the entry.
-     * @param loggedInUser                  The logged-in user.
+     * @param subcategoryId                     The ID of the subcategory in which the entry is.
+     * @param entryId                           The ID of the entry.
+     * @param updatedEntryAmount                The updated amount of the entry.
+     * @param updatedEntryAttachment            The updated attachment of the entry.
+     * @param updatedEntryDescription           The updated description of the entry.
+     * @param updatedEntryName                  The updated name of the entry.
+     * @param updatedEntryTimeOfTransaction     The updated time the transaction in the entry.
+     * @param loggedInUser                      The logged-in user.
      */
     @PatchMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
@@ -155,12 +155,12 @@ public class EntryController {
                                       @RequestParam String updatedEntryName,
                                       @RequestParam String updatedEntryDescription,
                                       @RequestParam String updatedEntryAmount,
-                                      @RequestParam String updatedEntryTimeOfExpense,
+                                      @RequestParam String updatedEntryTimeOfTransaction,
                                       @RequestParam String updatedEntryAttachment,
                                       @RequestBody User loggedInUser) {
         try {
             entryRepository.updateEntry(subcategoryId,
-                    entryId, updatedEntryName, updatedEntryDescription, updatedEntryAmount, updatedEntryTimeOfExpense, updatedEntryAttachment,
+                    entryId, updatedEntryName, updatedEntryDescription, updatedEntryAmount, updatedEntryTimeOfTransaction, updatedEntryAttachment,
                     loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
@@ -261,22 +261,22 @@ public class EntryController {
     }
 
     /**
-     * Changes the time of expense of an existing entry for a specific subcategory.
+     * Changes the time of the transaction in an existing entry for a specific subcategory.
      *
-     * @param subcategoryId            The ID of the subcategory.
-     * @param entryId                  The ID of the entry to update.
-     * @param entryTimeOfExpense       The updated entry time of expense.
-     * @param loggedInUser             The logged-in user.
+     * @param subcategoryId                 The ID of the subcategory.
+     * @param entryId                       The ID of the entry to update.
+     * @param entryTimeOfTransaction        The updated entry time of the transaction.
+     * @param loggedInUser                  The logged-in user.
      */
-    @PatchMapping("/entries/{entryId}/entryTimeOfExpense")
+    @PatchMapping("/entries/{entryId}/entryTimeOfTransaction")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the time of expense of an existing entry")
-    public ResponseEntity updateEntryTimeOfExpense(@PathVariable int subcategoryId,
-                                                   @PathVariable int entryId,
-                                                   @RequestParam String entryTimeOfExpense,
-                                                   @RequestBody User loggedInUser) {
+    @Operation(summary = "change the time of the transaction in an existing entry")
+    public ResponseEntity updateEntryTimeOfTransaction(@PathVariable int subcategoryId,
+                                                       @PathVariable int entryId,
+                                                       @RequestParam String entryTimeOfTransaction,
+                                                       @RequestBody User loggedInUser) {
         try {
-            entryRepository.updateEntryTimeOfExpense(subcategoryId, entryId, entryTimeOfExpense, loggedInUser);
+            entryRepository.updateEntryTimeOfTransaction(subcategoryId, entryId, entryTimeOfTransaction, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

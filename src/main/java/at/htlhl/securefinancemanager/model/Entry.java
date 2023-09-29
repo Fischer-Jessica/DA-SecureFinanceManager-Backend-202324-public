@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 24.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 29.09.2023 (version 1.5)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -56,9 +56,9 @@ public class Entry {
     @Column(name = "entry_creation_time")
     private String entryCreationTime;
 
-    /** The time of expense for the entry. */
+    /** The time of the transaction in the entry. */
     @Column(name = "entry_time_of_expense")
-    private String entryTimeOfExpense;
+    private String entryTimeOfTransaction;
 
     /** The attachment of the entry. */
     @Column(name = "entry_attachment")
@@ -109,23 +109,23 @@ public class Entry {
     /**
      * Constructs a new Entry object with the specified properties.
      *
-     * @param entryId               The ID of the entry.
-     * @param entryName             The name of the entry.
-     * @param entryDescription      The description of the entry.
-     * @param entryAmount           The amount of the entry.
-     * @param entryCreationTime     The creation time of the entry.
-     * @param entryTimeOfExpense    The time of expense for the entry.
-     * @param entryAttachment       The attachment of the entry.
-     * @param entrySubcategoryId    The ID of the associated subcategory.
-     * @param entryUserId           The ID of the associated user.
+     * @param entryId                   The ID of the entry.
+     * @param entryName                 The name of the entry.
+     * @param entryDescription          The description of the entry.
+     * @param entryAmount               The amount of the entry.
+     * @param entryCreationTime         The creation time of the entry.
+     * @param entryTimeOfTransaction    The time of the transaction in the entry.
+     * @param entryAttachment           The attachment of the entry.
+     * @param entrySubcategoryId        The ID of the associated subcategory.
+     * @param entryUserId               The ID of the associated user.
      */
-    public Entry(int entryId, String entryName, String entryDescription, String entryAmount, String entryCreationTime, String entryTimeOfExpense, String entryAttachment, int entrySubcategoryId, int entryUserId) {
+    public Entry(int entryId, String entryName, String entryDescription, String entryAmount, String entryCreationTime, String entryTimeOfTransaction, String entryAttachment, int entrySubcategoryId, int entryUserId) {
         this.entryId = entryId;
         this.entryName = entryName;
         this.entryDescription = entryDescription;
         this.entryAmount = entryAmount;
         this.entryCreationTime = entryCreationTime;
-        this.entryTimeOfExpense = entryTimeOfExpense;
+        this.entryTimeOfTransaction = entryTimeOfTransaction;
         this.entryAttachment = entryAttachment;
     }
 
@@ -175,12 +175,12 @@ public class Entry {
     }
 
     /**
-     * Returns the time of expense for the entry.
+     * Returns the time of the transaction for the entry.
      *
-     * @return The time of expense for the entry.
+     * @return The time of transaction for the entry.
      */
-    public String getEntryTimeOfExpense() {
-        return entryTimeOfExpense;
+    public String getEntryTimeOfTransaction() {
+        return entryTimeOfTransaction;
     }
 
     /**

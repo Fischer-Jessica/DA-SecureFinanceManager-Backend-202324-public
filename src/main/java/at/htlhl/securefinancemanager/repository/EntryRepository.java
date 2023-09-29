@@ -24,8 +24,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 25.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 29.09.2023 (version 1.5)
  */
 @Repository
 public class EntryRepository {
@@ -69,8 +69,8 @@ public class EntryRepository {
             "SET entry_amount = ? " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
-    /** SQL query to update the time of expense of an existing entry in the 'entries' table in the database. */
-    private static final String UPDATE_ENTRY_TIME_OF_EXPENSE = "UPDATE entries " +
+    /** SQL query to update the time of the transaction in an existing entry in the 'entries' table in the database. */
+    private static final String UPDATE_ENTRY_TIME_OF_TRANSACTION = "UPDATE entries " +
             "SET entry_time_of_expense = ? " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
@@ -106,11 +106,11 @@ public class EntryRepository {
                     byte[] entryDescription = rs.getBytes("entry_description");
                     byte[] entryAmount = rs.getBytes("entry_amount");
                     byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                    byte[] entryTimeOfExpense = rs.getBytes("entry_time_of_expense");
+                    byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_expense");
                     byte[] entryAttachment = rs.getBytes("entry_attachment");
 
                     Entry entry = new Entry(entryId, Base64.getEncoder().encodeToString(entryName), Base64.getEncoder().encodeToString(entryDescription),
-                            Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime), Base64.getEncoder().encodeToString(entryTimeOfExpense),
+                            Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime), Base64.getEncoder().encodeToString(entryTimeOfTransaction),
                             Base64.getEncoder().encodeToString(entryAttachment), subcategoryId, loggedInUser.getUserId());
                     entries.add(entry);
                 }
@@ -148,11 +148,11 @@ public class EntryRepository {
                     byte[] entryDescription = rs.getBytes("entry_description");
                     byte[] entryAmount = rs.getBytes("entry_amount");
                     byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                    byte[] entryTimeOfExpense = rs.getBytes("entry_time_of_expense");
+                    byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_expense");
                     byte[] entryAttachment = rs.getBytes("entry_attachment");
 
                     entry = new Entry(entryId, Base64.getEncoder().encodeToString(entryName), Base64.getEncoder().encodeToString(entryDescription),
-                            Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime), Base64.getEncoder().encodeToString(entryTimeOfExpense),
+                            Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime), Base64.getEncoder().encodeToString(entryTimeOfTransaction),
                             Base64.getEncoder().encodeToString(entryAttachment), subcategoryId, loggedInUser.getUserId());
                 }
                 return entry;
@@ -167,16 +167,16 @@ public class EntryRepository {
     /**
      * Adds a new entry to a specific subcategory for a given user.
      *
-     * @param subcategoryId            The ID of the subcategory.
-     * @param entryName                The name of the entry.
-     * @param entryDescription         The description of the entry.
-     * @param entryAmount              The amount of the entry.
-     * @param entryTimeOfExpense       The time of expense of the entry.
-     * @param entryAttachment          The attachment of the entry.
-     * @param loggedInUser             The logged-in user.
+     * @param subcategoryId                 The ID of the subcategory.
+     * @param entryName                     The name of the entry.
+     * @param entryDescription              The description of the entry.
+     * @param entryAmount                   The amount of the entry.
+     * @param entryTimeOfTransaction        The time of the transaction in the entry.
+     * @param entryAttachment               The attachment of the entry.
+     * @param loggedInUser                  The logged-in user.
      * @return The ID of the added entry.
      */
-    public int addEntry(int subcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfExpense, String entryAttachment, User loggedInUser) throws ValidationException {
+    public int addEntry(int subcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfTransaction, String entryAttachment, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -193,7 +193,7 @@ public class EntryRepository {
                     ps.setBytes(3, Base64.getDecoder().decode(entryDescription));
                     ps.setBytes(4, Base64.getDecoder().decode(entryAmount));
                     ps.setBytes(5, entryCreationTimeBytes);
-                    ps.setBytes(6, Base64.getDecoder().decode(entryTimeOfExpense));
+                    ps.setBytes(6, Base64.getDecoder().decode(entryTimeOfTransaction));
                     ps.setBytes(7, Base64.getDecoder().decode(entryAttachment));
                     ps.setInt(8, loggedInUser.getUserId());
                     return ps;
@@ -211,16 +211,16 @@ public class EntryRepository {
     /**
      * Updates an existing entry in a specific subcategory for a given user.
      *
-     * @param updatedSubcategoryId              The updated ID of the subcategory.
-     * @param entryId                           The ID of the entry to be updated.
-     * @param updatedEntryName                  The updated name of the entry.
-     * @param updatedEntryDescription           The updated description of the entry.
-     * @param updatedEntryAmount                The updated amount of the entry.
-     * @param updatedEntryTimeOfExpense         The updated time of expense of the entry.
-     * @param updatedEntryAttachment            The updated attachment of the entry.
-     * @param loggedInUser                      The logged-in user.
+     * @param updatedSubcategoryId                      The updated ID of the subcategory.
+     * @param entryId                                   The ID of the entry to be updated.
+     * @param updatedEntryName                          The updated name of the entry.
+     * @param updatedEntryDescription                   The updated description of the entry.
+     * @param updatedEntryAmount                        The updated amount of the entry.
+     * @param updatedEntryTimeOfTransaction             The updated time of the transaction in the entry.
+     * @param updatedEntryAttachment                    The updated attachment of the entry.
+     * @param loggedInUser                              The logged-in user.
      */
-    public void updateEntry(int updatedSubcategoryId, int entryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfExpense,
+    public void updateEntry(int updatedSubcategoryId, int entryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfTransaction,
                             String updatedEntryAttachment, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
@@ -230,7 +230,7 @@ public class EntryRepository {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedEntryName));
                 ps.setBytes(3, Base64.getDecoder().decode(updatedEntryDescription));
                 ps.setBytes(4, Base64.getDecoder().decode(updatedEntryAmount));
-                ps.setBytes(5, Base64.getDecoder().decode(updatedEntryTimeOfExpense));
+                ps.setBytes(5, Base64.getDecoder().decode(updatedEntryTimeOfTransaction));
                 ps.setBytes(6, Base64.getDecoder().decode(updatedEntryAttachment));
                 ps.setInt(7, entryId);
                 ps.setInt(8, loggedInUser.getUserId());
@@ -341,19 +341,19 @@ public class EntryRepository {
     }
 
     /**
-     * Updates the time of expense of an existing entry in a specific subcategory for a given user.
+     * Updates the time of the transaction in an existing entry in a specific subcategory for a given user.
      *
-     * @param subcategoryId                     The ID of the subcategory.
-     * @param entryId                           The ID of the entry to be updated.
-     * @param updatedEntryTimeOfExpense         The updated time of expense of the entry.
-     * @param loggedInUser                      The logged-in user.
+     * @param subcategoryId                         The ID of the subcategory.
+     * @param entryId                               The ID of the entry to be updated.
+     * @param updatedEntryTimeOfTransaction         The updated time of the transaction in the entry.
+     * @param loggedInUser                          The logged-in user.
      */
-    public void updateEntryTimeOfExpense(int subcategoryId, int entryId, String updatedEntryTimeOfExpense, User loggedInUser) throws ValidationException {
+    public void updateEntryTimeOfTransaction(int subcategoryId, int entryId, String updatedEntryTimeOfTransaction, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY_TIME_OF_EXPENSE);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedEntryTimeOfExpense));
+                PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY_TIME_OF_TRANSACTION);
+                ps.setBytes(1, Base64.getDecoder().decode(updatedEntryTimeOfTransaction));
                 ps.setInt(2, entryId);
                 ps.setInt(3, loggedInUser.getUserId());
                 ps.setInt(4, subcategoryId);
