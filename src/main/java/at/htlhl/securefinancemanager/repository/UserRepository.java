@@ -29,8 +29,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 25.07.2023 (version 1.5)
+ * @version 1.6
+ * @since 03.10.2023 (version 1.6)
  */
 @Repository
 public class UserRepository {
@@ -61,31 +61,6 @@ public class UserRepository {
     /** SQL query to update an existing user. */
     private static final String UPDATE_USER = "UPDATE users " +
             "SET username = ?, password = ?, email_address = ?, first_name = ?, last_name = ? " +
-            "WHERE pk_user_id = ?;";
-
-    /** SQL query to update the username of an existing user. */
-    private static final String UPDATE_USERNAME = "UPDATE users " +
-            "SET username = ? " +
-            "WHERE pk_user_id = ?;";
-
-    /** SQL query to update the password of an existing user. */
-    private static final String UPDATE_PASSWORD = "UPDATE users " +
-            "SET password = ? " +
-            "WHERE pk_user_id = ?;";
-
-    /** SQL query to update the email address of an existing user. */
-    private static final String UPDATE_EMAIL_ADDRESS = "UPDATE users " +
-            "SET email_address = ? " +
-            "WHERE pk_user_id = ?;";
-
-    /** SQL query to update the first name of an existing user. */
-    private static final String UPDATE_FIRST_NAME = "UPDATE users " +
-            "SET first_name = ? " +
-            "WHERE pk_user_id = ?;";
-
-    /** SQL query to update the last name of an existing user. */
-    private static final String UPDATE_LAST_NAME = "UPDATE users " +
-            "SET last_name = ? " +
             "WHERE pk_user_id = ?;";
 
     /** SQL query to delete a user from the repository. */
@@ -240,117 +215,38 @@ public class UserRepository {
             try {
                 Connection conn = jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_USER);
-                ps.setString(1, updatedUser.getUsername());
-                ps.setBytes(2, Base64.getDecoder().decode(updatedUser.getPassword()));
-                ps.setString(3, updatedUser.geteMailAddress());
-                ps.setString(4, updatedUser.getFirstName());
-                ps.setString(5, updatedUser.getLastName());
-                ps.setInt(6, updatedUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
 
-    /**
-     * Updates the username of an existing user.
-     *
-     * @param updatedUsername       The updated username.
-     * @param loggedInUser          The logged-in user performing the update.
-     */
-    public void updateUsername(String updatedUsername, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_USERNAME);
-                ps.setString(1, updatedUsername);
-                ps.setInt(2, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
+                if (updatedUser.getUsername() != null) {
+                    ps.setString(1, updatedUser.getUsername());
+                } else {
+                    ps.setString(1, loggedInUser.getUsername());
+                }
 
-    /**
-     * Updates the password of an existing user.
-     *
-     * @param updatedPassword       The updated password.
-     * @param loggedInUser          The logged-in user performing the update.
-     */
-    public void updatePassword(String updatedPassword, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_PASSWORD);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedPassword));
-                ps.setInt(2, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
+                if (updatedUser.getPassword() != null) {
+                    ps.setBytes(2, Base64.getDecoder().decode(updatedUser.getPassword()));
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(loggedInUser.getPassword()));
+                }
 
-    /**
-     * Updates the email address of an existing user.
-     *
-     * @param updatedEMailAddress   The updated email address.
-     * @param loggedInUser          The logged-in user performing the update.
-     */
-    public void updateEMailAddress(String updatedEMailAddress, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_EMAIL_ADDRESS);
-                ps.setString(1, updatedEMailAddress);
-                ps.setInt(2, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
+                if (updatedUser.geteMailAddress() != null) {
+                    ps.setString(3, updatedUser.geteMailAddress());
+                } else {
+                    ps.setString(3, loggedInUser.geteMailAddress());
+                }
 
-    /**
-     * Updates the first name of an existing user.
-     *
-     * @param updatedFirstName      The updated first name.
-     * @param loggedInUser          The logged-in user performing the update.
-     */
-    public void updateFirstName(String updatedFirstName, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_FIRST_NAME);
-                ps.setString(1, updatedFirstName);
-                ps.setInt(2, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
+                if (updatedUser.getFirstName() != null) {
+                    ps.setString(4, updatedUser.getFirstName());
+                } else {
+                    ps.setString(4, loggedInUser.getFirstName());
+                }
 
-    /**
-     * Updates the last name of an existing user.
-     *
-     * @param updatedLastName       The updated last name.
-     * @param loggedInUser          The logged-in user performing the update.
-     */
-    public void updateLastName(String updatedLastName, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_LAST_NAME);
-                ps.setString(1, updatedLastName);
-                ps.setInt(2, loggedInUser.getUserId());
+                if (updatedUser.getLastName() != null) {
+                    ps.setString(5, updatedUser.getLastName());
+                } else {
+                    ps.setString(5, loggedInUser.getLastName());
+                }
+
+                ps.setInt(6, loggedInUser.getUserId());
                 ps.executeUpdate();
                 conn.close();
             } catch (SQLException exception) {

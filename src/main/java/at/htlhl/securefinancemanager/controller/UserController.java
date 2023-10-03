@@ -35,8 +35,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 03.10.2023 (version 1.5)
+ * @version 1.6
+ * @since 03.10.2023 (version 1.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -118,110 +118,15 @@ public class UserController {
     @PatchMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing user")
-    public ResponseEntity updateUser(@RequestParam String updatedUsername,
-                                     @RequestParam String updatedPassword,
-                                     @RequestParam String updatedEMailAddress,
-                                     @RequestParam String updatedFirstName,
-                                     @RequestParam String updatedLastName,
+    public ResponseEntity updateUser(@RequestParam(required = false) String updatedUsername,
+                                     @RequestParam(required = false) String updatedPassword,
+                                     @RequestParam(required = false) String updatedEMailAddress,
+                                     @RequestParam(required = false) String updatedFirstName,
+                                     @RequestParam(required = false) String updatedLastName,
                                      @RequestBody User loggedInUser) {
         try {
             userRepository.updateUser(new User(loggedInUser.getUserId(), updatedUsername, updatedPassword, updatedEMailAddress, updatedFirstName, updatedLastName),
                     loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the username of an existing user.
-     *
-     * @param updatedUsername   The updated username.
-     * @param loggedInUser      The logged-in user the update is performed on.
-     */
-    @PatchMapping("/users/username")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the username of an existing user")
-    public ResponseEntity updateUsername(@RequestParam String updatedUsername,
-                                         @RequestBody User loggedInUser) {
-        try {
-            userRepository.updateUsername(updatedUsername, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the password of an existing user.
-     *
-     * @param updatedPassword   The updated password.
-     * @param loggedInUser      The logged-in user the update is performed on.
-     */
-    @PatchMapping("/users/password")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the password of an existing user")
-    public ResponseEntity updatePassword(@RequestParam String updatedPassword,
-                                         @RequestBody User loggedInUser) {
-        try {
-            userRepository.updatePassword(updatedPassword, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the email address of an existing user.
-     *
-     * @param updatedEMailAddress   The updated email address.
-     * @param loggedInUser          The logged-in user the update is performed on.
-     */
-    @PatchMapping("/users/eMailAddress")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the e-mail-address of an existing user")
-    public ResponseEntity updateEMailAddress(@RequestParam String updatedEMailAddress,
-                                             @RequestBody User loggedInUser) {
-        try {
-            userRepository.updateEMailAddress(updatedEMailAddress, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the first name of an existing user.
-     *
-     * @param updatedFirstName  The updated first name.
-     * @param loggedInUser      The logged-in user the update is performed on.
-     */
-    @PatchMapping("/users/firstName")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the first name of an existing user")
-    public ResponseEntity updateFirstName(@RequestParam String updatedFirstName,
-                                          @RequestBody User loggedInUser) {
-        try {
-            userRepository.updateFirstName(updatedFirstName, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the last name of an existing user.
-     *
-     * @param updatedLastName   The updated last name.
-     * @param loggedInUser      The logged-in user the update is performed on.
-     */
-    @PatchMapping("/users/lastName")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the last name of an existing user")
-    public ResponseEntity updateLastName(@RequestParam String updatedLastName,
-                                         @RequestBody User loggedInUser) {
-        try {
-            userRepository.updateLastName(updatedLastName, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
