@@ -56,21 +56,6 @@ public class LabelRepository {
             "SET label_name = ?, label_description = ?, fk_label_colour_id = ? " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    /** SQL query to update the name of an existing label for the logged-in user. */
-    private static final String UPDATE_LABEL_NAME = "UPDATE labels " +
-            "SET label_name = ? " +
-            "WHERE pk_label_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the description of an existing label for the logged-in user. */
-    private static final String UPDATE_LABEL_DESCRIPTION = "UPDATE labels " +
-            "SET label_description = ? " +
-            "WHERE pk_label_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the color of an existing label for the logged-in user. */
-    private static final String UPDATE_LABEL_COLOUR_ID = "UPDATE labels " +
-            "SET fk_label_colour_id = ? " +
-            "WHERE pk_label_id = ? AND fk_user_id = ?;";
-
     /** SQL query to delete a label for the logged-in user. */
     private static final String DELETE_LABEL = "DELETE FROM labels " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
@@ -183,84 +168,32 @@ public class LabelRepository {
      * @param loggedInUser      The logged-in user.
      */
     public void updateLabel(Label updatedLabel, User loggedInUser) throws ValidationException {
+        Label oldLabel = getLabel(updatedLabel.getLabelId(), loggedInUser);
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedLabel.getLabelName()));
-                ps.setBytes(2, Base64.getDecoder().decode(updatedLabel.getLabelDescription()));
-                ps.setInt(3, updatedLabel.getLabelColourId());
+
+                if (updatedLabel.getLabelName() != null) {
+                    ps.setBytes(1, Base64.getDecoder().decode(updatedLabel.getLabelName()));
+                } else {
+                    ps.setBytes(1, Base64.getDecoder().decode(oldLabel.getLabelName()));
+                }
+
+                if (updatedLabel.getLabelDescription() != null) {
+                    ps.setBytes(2, Base64.getDecoder().decode(updatedLabel.getLabelDescription()));
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(oldLabel.getLabelDescription()));
+                }
+
+                if (updatedLabel.getLabelColourId() != -1) {
+                    ps.setInt(3, updatedLabel.getLabelColourId());
+                } else {
+                    ps.setInt(3, oldLabel.getLabelColourId());
+                }
+
                 ps.setInt(4, updatedLabel.getLabelId());
                 ps.setInt(5, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the name of an existing label for the logged-in user.
-     *
-     * @param labelId               The ID of the label to update.
-     * @param updatedLabelName      The updated label name.
-     * @param loggedInUser          The logged-in user.
-     */
-    public void updateLabelName(int labelId, String updatedLabelName, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_NAME);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedLabelName));
-                ps.setInt(2, labelId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the description of an existing label for the logged-in user.
-     *
-     * @param labelId                       The ID of the label to update.
-     * @param updatedLabelDescription       The updated label description.
-     * @param loggedInUser                  The logged-in user.
-     */
-    public void updateLabelDescription(int labelId, String updatedLabelDescription, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_DESCRIPTION);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedLabelDescription));
-                ps.setInt(2, labelId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the color of an existing label for the logged-in user.
-     *
-     * @param labelId                   The ID of the label to update.
-     * @param updatedLabelColour        The updated label color ID.
-     * @param loggedInUser              The logged-in user.
-     */
-    public void updateLabelColourId(int labelId, int updatedLabelColour, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL_COLOUR_ID);
-                ps.setInt(1, updatedLabelColour);
-                ps.setInt(2, labelId);
-                ps.setInt(3, loggedInUser.getUserId());
                 ps.executeUpdate();
                 conn.close();
             } catch (SQLException exception) {

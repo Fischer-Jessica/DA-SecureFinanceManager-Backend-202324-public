@@ -31,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 03.10.2023 (version 1.6)
+ * @version 1.7
+ * @since 03.10.2023 (version 1.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -136,76 +136,13 @@ public class LabelController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing label")
     public ResponseEntity updateLabel(@RequestParam int labelId,
-                                      @RequestParam String updatedLabelName,
-                                      @RequestParam String updatedLabelDescription,
-                                      @RequestParam int updatedLabelColour,
+                                      @RequestParam(required = false) String updatedLabelName,
+                                      @RequestParam(required = false) String updatedLabelDescription,
+                                      @RequestParam(defaultValue = "-1", required = false) int updatedLabelColour,
                                       @RequestBody User loggedInUser) {
         try {
             labelRepository.updateLabel(new Label(labelId, updatedLabelName, updatedLabelDescription, updatedLabelColour, loggedInUser.getUserId()),
                     loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the name of an existing label for the logged-in user.
-     *
-     * @param labelId          The ID of the label to update.
-     * @param updatedLabelName The updated label name.
-     * @param loggedInUser     The logged-in user.
-     */
-    @PatchMapping("labels/labelName")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the name of the label")
-    public ResponseEntity updateLabelName(@RequestParam int labelId,
-                                          @RequestParam String updatedLabelName,
-                                          @RequestBody User loggedInUser) {
-        try {
-            labelRepository.updateLabelName(labelId, updatedLabelName, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the description of an existing label for the logged-in user.
-     *
-     * @param labelId                 The ID of the label to update.
-     * @param updatedLabelDescription The updated label description.
-     * @param loggedInUser            The logged-in user.
-     */
-    @PatchMapping("labels/labelDescription")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the description of the label")
-    public ResponseEntity updateLabelDescription(@RequestParam int labelId,
-                                                 @RequestParam String updatedLabelDescription,
-                                                 @RequestBody User loggedInUser) {
-        try {
-            labelRepository.updateLabelDescription(labelId, updatedLabelDescription, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the color of an existing label for the logged-in user.
-     *
-     * @param labelId              The ID of the label to update.
-     * @param updatedLabelColourId The updated label color ID.
-     * @param loggedInUser         The logged-in user.
-     */
-    @PatchMapping("labels/labelColourId")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the colour of an existing label")
-    public ResponseEntity updateLabelColour(@RequestParam int labelId,
-                                            @RequestParam int updatedLabelColourId,
-                                            @RequestBody User loggedInUser) {
-        try {
-            labelRepository.updateLabelColourId(labelId, updatedLabelColourId, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
