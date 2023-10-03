@@ -32,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 03.10.2023 (version 1.7)
+ * @version 1.8
+ * @since 03.10.2023 (version 1.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -137,76 +137,13 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing category")
     public ResponseEntity updateCategory(@RequestParam int categoryId,
-                                         @RequestParam String updatedCategoryName,
-                                         @RequestParam String updatedCategoryDescription,
-                                         @RequestParam int updatedCategoryColourId,
+                                         @RequestParam(required = false) String updatedCategoryName,
+                                         @RequestParam(required = false) String updatedCategoryDescription,
+                                         @RequestParam(defaultValue = "-1", required = false) int updatedCategoryColourId,
                                          @RequestBody User loggedInUser) {
         try {
             categoryRepository.updateCategory(new Category(categoryId, updatedCategoryName, updatedCategoryDescription, updatedCategoryColourId, loggedInUser.getUserId()),
                     loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the name of an existing category for the logged-in user.
-     *
-     * @param categoryId          The ID of the category to update.
-     * @param updatedCategoryName The updated category name.
-     * @param loggedInUser        The logged-in user.
-     */
-    @PatchMapping("/categories/categoryName")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the name of an existing category")
-    public ResponseEntity updateCategoryName(@RequestParam int categoryId,
-                                             @RequestParam String updatedCategoryName,
-                                             @RequestBody User loggedInUser) {
-        try {
-            categoryRepository.updateCategoryName(categoryId, updatedCategoryName, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the description of an existing category for the logged-in user.
-     *
-     * @param categoryId                 The ID of the category to update.
-     * @param updatedCategoryDescription The updated category description.
-     * @param loggedInUser               The logged-in user.
-     */
-    @PatchMapping("/categories/categoryDescription")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the description of an existing category")
-    public ResponseEntity updateCategoryDescription(@RequestParam int categoryId,
-                                                    @RequestParam String updatedCategoryDescription,
-                                                    @RequestBody User loggedInUser) {
-        try {
-            categoryRepository.updateCategoryDescription(categoryId, updatedCategoryDescription, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the color of an existing category for the logged-in user.
-     *
-     * @param categoryId              The ID of the category to update.
-     * @param updatedCategoryColourId The updated category color ID.
-     * @param loggedInUser            The logged-in user.
-     */
-    @PatchMapping("/categories/categoryColourId")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the colour of an existing category")
-    public ResponseEntity updateCategoryColourId(@RequestParam int categoryId,
-                                                 @RequestParam int updatedCategoryColourId,
-                                                 @RequestBody User loggedInUser) {
-        try {
-            categoryRepository.updateCategoryColourId(categoryId, updatedCategoryColourId, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

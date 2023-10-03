@@ -36,8 +36,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 25.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 03.10.2023 (version 1.5)
  */
 @Repository
 public class CategoryRepository {
@@ -59,21 +59,6 @@ public class CategoryRepository {
     /** SQL query to update an existing category for the logged-in user in the 'categories' table in the database. */
     private static final String UPDATE_CATEGORY = "UPDATE categories " +
             "SET category_name = ?, category_description = ?, fk_category_colour_id = ? " +
-            "WHERE pk_category_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the name of an existing category for the logged-in user in the 'categories' table in the database. */
-    private static final String UPDATE_CATEGORY_NAME = "UPDATE categories " +
-            "SET category_name = ? " +
-            "WHERE pk_category_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the description of an existing category for the logged-in user in the 'categories' table in the database. */
-    private static final String UPDATE_CATEGORY_DESCRIPTION = "UPDATE categories " +
-            "SET category_description = ? " +
-            "WHERE pk_category_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the color of an existing category for the logged-in user in the 'categories' table in the database. */
-    private static final String UPDATE_COLOUR_ID = "UPDATE categories " +
-            "SET fk_category_colour_id = ? " +
             "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
     /** SQL query to delete a category for the logged-in user from the 'categories' table in the database. */
@@ -189,84 +174,32 @@ public class CategoryRepository {
      * @param loggedInUser        The logged-in user.
      */
     public void updateCategory(Category updatedCategory, User loggedInUser) throws ValidationException {
+        Category oldCategory = getCategory(updatedCategory.getCategoryId(), loggedInUser);
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedCategory.getCategoryName()));
-                ps.setBytes(2, Base64.getDecoder().decode(updatedCategory.getCategoryDescription()));
-                ps.setInt(3, updatedCategory.getCategoryColourId());
+
+                if (updatedCategory.getCategoryName() != null) {
+                    ps.setBytes(1, Base64.getDecoder().decode(updatedCategory.getCategoryName()));
+                } else {
+                    ps.setBytes(1, Base64.getDecoder().decode(oldCategory.getCategoryName()));
+                }
+
+                if (updatedCategory.getCategoryDescription() != null) {
+                    ps.setBytes(2, Base64.getDecoder().decode(updatedCategory.getCategoryDescription()));
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(oldCategory.getCategoryDescription()));
+                }
+
+                if (updatedCategory.getCategoryColourId() != -1) {
+                    ps.setInt(3, updatedCategory.getCategoryColourId());
+                } else {
+                    ps.setInt(3, oldCategory.getCategoryColourId());
+                }
+
                 ps.setInt(4, updatedCategory.getCategoryId());
                 ps.setInt(5, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the name of an existing category for the logged-in user.
-     *
-     * @param categoryId                The ID of the category to update.
-     * @param updatedCategoryName       The updated category name.
-     * @param loggedInUser              The logged-in user.
-     */
-    public void updateCategoryName(int categoryId, String updatedCategoryName, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY_NAME);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedCategoryName));
-                ps.setInt(2, categoryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the description of an existing category for the logged-in user.
-     *
-     * @param categoryId                        The ID of the category to update.
-     * @param updatedCategoryDescription        The updated category description.
-     * @param loggedInUser                      The logged-in user.
-     */
-    public void updateCategoryDescription(int categoryId, String updatedCategoryDescription, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY_DESCRIPTION);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedCategoryDescription));
-                ps.setInt(2, categoryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the color of an existing category for the logged-in user.
-     *
-     * @param categoryId                    The ID of the category to update.
-     * @param updatedCategoryColourId       The updated category color ID.
-     * @param loggedInUser                  The logged-in user.
-     */
-    public void updateCategoryColourId(int categoryId, int updatedCategoryColourId, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_COLOUR_ID);
-                ps.setInt(1, updatedCategoryColourId);
-                ps.setInt(2, categoryId);
-                ps.setInt(3, loggedInUser.getUserId());
                 ps.executeUpdate();
                 conn.close();
             } catch (SQLException exception) {
