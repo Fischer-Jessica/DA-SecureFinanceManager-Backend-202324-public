@@ -31,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 03.10.2023 (version 1.6)
+ * @version 1.7
+ * @since 03.10.2023 (version 1.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -136,9 +136,10 @@ public class SubcategoryController {
      *
      * @param categoryId                            The ID of the category.
      * @param subcategoryId                         The ID of the subcategory to update.
+     * @param updatedCategoryId                     The updated ID of the superior category.
      * @param updatedSubcategoryName                The updated name of the subcategory.
      * @param updatedSubcategoryDescription         The updated description of the subcategory.
-     * @param updatedSubcategoryColour              The updated colour of the subcategory.
+     * @param updatedSubcategoryColourId            The updated colour of the subcategory.
      * @param loggedInUser                          The logged-in user.
      */
     @PatchMapping("/subcategories/{subcategoryId}")
@@ -146,110 +147,14 @@ public class SubcategoryController {
     @Operation(summary = "change an existing subcategory")
     public ResponseEntity updateSubcategory(@PathVariable int categoryId,
                                             @PathVariable int subcategoryId,
-                                            @RequestParam String updatedSubcategoryName,
-                                            @RequestParam String updatedSubcategoryDescription,
-                                            @RequestParam int updatedSubcategoryColour,
+                                            @RequestParam(defaultValue = "-1", required = false) int updatedCategoryId,
+                                            @RequestParam(required = false) String updatedSubcategoryName,
+                                            @RequestParam(required = false) String updatedSubcategoryDescription,
+                                            @RequestParam(defaultValue = "-1", required = false) int updatedSubcategoryColourId,
                                             @RequestBody User loggedInUser) {
         try {
-            subcategoryRepository.updateSubcategory(categoryId,
-                subcategoryId, updatedSubcategoryName, updatedSubcategoryDescription, updatedSubcategoryColour,
-                loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changing which category the subcategory is subordinate.
-     *
-     * @param categoryId        The updated categoryId.
-     * @param subcategoryId     The ID of the subcategory.
-     * @param loggedInUser      The logged-in User.
-     */
-
-    @PostMapping("/subcategories/{subcategoryId}/categoryOfSubcategory")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the category of a subcategory")
-    public ResponseEntity updateCategoryOfSubcategory(@PathVariable int categoryId,
-                                                      @PathVariable int subcategoryId,
-                                                      @RequestBody User loggedInUser) {
-        try {
-            subcategoryRepository.updateCategoryOfSubcategory(categoryId, subcategoryId, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the name of an existing subcategory for a specific category.
-     *
-     * @param categoryId                The ID of the category.
-     * @param subcategoryId             The ID of the subcategory to update.
-     * @param updatedSubcategoryName    The updated subcategory name.
-     * @param loggedInUser              The logged-in user.
-     */
-    @PatchMapping("/subcategories/{subcategoryId}/subcategoryName")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the name of an existing subcategory")
-    public ResponseEntity updateSubcategoryName(@PathVariable int categoryId,
-                                                @PathVariable int subcategoryId,
-                                                @RequestParam String updatedSubcategoryName,
-                                                @RequestBody User loggedInUser) {
-        try {
-            subcategoryRepository.updateSubcategoryName(categoryId,
-                subcategoryId, updatedSubcategoryName,
-                loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the description of an existing subcategory for a specific category.
-     *
-     * @param categoryId                        The ID of the category.
-     * @param subcategoryId                     The ID of the subcategory to update.
-     * @param updatedSubcategoryDescription     The updated subcategory description.
-     * @param loggedInUser                      The logged-in user.
-     */
-    @PatchMapping("/subcategories/{subcategoryId}/subcategoryDescription")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the description of an existing subcategory")
-    public ResponseEntity updateSubcategoryDescription(@PathVariable int categoryId,
-                                                       @PathVariable int subcategoryId,
-                                                       @RequestParam String updatedSubcategoryDescription,
-                                                       @RequestBody User loggedInUser) {
-        try {
-            subcategoryRepository.updateSubcategoryDescription(categoryId,
-                subcategoryId, updatedSubcategoryDescription,
-                loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the colour of an existing subcategory for a specific category.
-     *
-     * @param categoryId                    The ID of the category.
-     * @param subcategoryId                 The ID of the subcategory to update.
-     * @param updatedSubcategoryColour      The updated subcategory colour ID.
-     * @param loggedInUser                  The logged-in user.
-     */
-    @PatchMapping("/subcategories/{subcategoryId}/subcategoryColour")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the colour of an existing subcategory")
-    public ResponseEntity updateSubcategoryColour(@PathVariable int categoryId,
-                                                  @PathVariable int subcategoryId,
-                                                  @RequestParam int updatedSubcategoryColour,
-                                                  @RequestBody User loggedInUser) {
-        try {
-            subcategoryRepository.updateSubcategoryColour(categoryId,
-                subcategoryId, updatedSubcategoryColour,
+            subcategoryRepository.updateSubcategory(categoryId, subcategoryId, updatedCategoryId,
+                    updatedSubcategoryName, updatedSubcategoryDescription, updatedSubcategoryColourId,
                 loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {

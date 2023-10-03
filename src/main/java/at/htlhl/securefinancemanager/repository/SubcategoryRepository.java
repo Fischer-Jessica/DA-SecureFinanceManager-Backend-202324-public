@@ -31,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 25.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 03.10.2023 (version 1.4)
  */
 @Repository
 public class SubcategoryRepository {
@@ -54,26 +54,6 @@ public class SubcategoryRepository {
     /** SQL query to update an existing subcategory for a specific category and user. */
     private static final String UPDATE_SUBCATEGORY = "UPDATE subcategories " +
             "SET fk_category_id = ?, subcategory_name = ?, subcategory_description = ?, fk_subcategory_colour_id = ? " +
-            "WHERE pk_subcategory_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the category ID of an existing subcategory for a specific user. */
-    private static final String UPDATE_CATEGORY_ID = "UPDATE subcategories " +
-            "SET fk_category_id = ? " +
-            "WHERE pk_subcategory_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the name of an existing subcategory for a specific category and user. */
-    private static final String UPDATE_SUBCATEGORY_NAME = "UPDATE subcategories " +
-            "SET subcategory_name = ? " +
-            "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
-
-    /** SQL query to update the description of an existing subcategory for a specific category and user. */
-    private static final String UPDATE_SUBCATEGORY_DESCRIPTION = "UPDATE subcategories " +
-            "SET subcategory_description = ? " +
-            "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
-
-    /** SQL query to update the color ID of an existing subcategory for a specific category and user. */
-    private static final String UPDATE_SUBCATEGORY_COLOUR = "UPDATE subcategories " +
-            "SET fk_subcategory_colour_id = ? " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
     /** SQL query to delete a subcategory for a specific category and user. */
@@ -193,116 +173,44 @@ public class SubcategoryRepository {
      * @param categoryId                            The ID of the category.
      * @param updatedSubcategoryName                The updated subcategory name.
      * @param updatedSubcategoryDescription         The updated subcategory description.
-     * @param updatedSubcategoryColour              The updated subcategory colour.
+     * @param updatedSubcategoryColourId              The updated subcategory colour.
      * @param loggedInUser                          The logged-in user.
      */
-    public void updateSubcategory(int categoryId, int subcategoryId, String updatedSubcategoryName,
-                                  String updatedSubcategoryDescription, int updatedSubcategoryColour, User loggedInUser) throws ValidationException {
+    public void updateSubcategory(int categoryId, int subcategoryId, int updatedCategoryId, String updatedSubcategoryName,
+                                  String updatedSubcategoryDescription, int updatedSubcategoryColourId, User loggedInUser) throws ValidationException {
+        Subcategory oldSubcategory = getSubcategory(categoryId, subcategoryId, loggedInUser);
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY);
-                ps.setInt(1, categoryId);
-                ps.setBytes(2, Base64.getDecoder().decode(updatedSubcategoryName));
-                ps.setBytes(3, Base64.getDecoder().decode(updatedSubcategoryDescription));
-                ps.setInt(4, updatedSubcategoryColour);
+
+                if (updatedCategoryId != -1) {
+                    ps.setInt(1, updatedCategoryId);
+                } else {
+                    ps.setInt(1, categoryId);
+                }
+
+                if (updatedSubcategoryName != null) {
+                    ps.setBytes(2, Base64.getDecoder().decode(updatedSubcategoryName));
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(oldSubcategory.getSubcategoryName()));
+                }
+
+                if (updatedSubcategoryDescription != null) {
+                    ps.setBytes(3, Base64.getDecoder().decode(updatedSubcategoryDescription));
+                } else {
+                    ps.setBytes(3, Base64.getDecoder().decode(oldSubcategory.getSubcategoryDescription()));
+                }
+
+                if (updatedSubcategoryColourId != -1) {
+                    ps.setInt(4, updatedSubcategoryColourId);
+                } else {
+                    ps.setInt(4, oldSubcategory.getSubcategoryColourId());
+                }
+
                 ps.setInt(5, subcategoryId);
                 ps.setInt(6, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the category ID of an existing subcategory for a specific user.
-     *
-     * @param categoryId        The updated ID of the category.
-     * @param subcategoryId     The ID of the subcategory.
-     * @param loggedInUser      The logged-in user.
-     */
-    public void updateCategoryOfSubcategory(int categoryId, int subcategoryId, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY_ID);
-                ps.setInt(1, categoryId);
-                ps.setInt(2, subcategoryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Changes the name of an existing subcategory for a specific category and user.
-     *
-     * @param categoryId                    The ID of the category.
-     * @param updatedSubcategoryName        The updated subcategory name.
-     * @param loggedInUser                  The logged-in user.
-     */
-    public void updateSubcategoryName(int categoryId, int subcategoryId, String updatedSubcategoryName, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY_NAME);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedSubcategoryName));
-                ps.setInt(2, subcategoryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, categoryId);
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Changes the description of an existing subcategory for a specific category and user.
-     *
-     * @param categoryId                            The ID of the category.
-     * @param updatedSubcategoryDescription         The updated subcategory description.
-     * @param loggedInUser                          The logged-in user.
-     */
-    public void updateSubcategoryDescription(int categoryId, int subcategoryId, String updatedSubcategoryDescription, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY_DESCRIPTION);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedSubcategoryDescription));
-                ps.setInt(2, subcategoryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, categoryId);
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Changes the colour of an existing subcategory for a specific category and user.
-     *
-     * @param categoryId                    The ID of the category.
-     * @param updatedSubcategoryColour      The updated subcategory colour ID.
-     * @param loggedInUser                  The logged-in user.
-     */
-    public void updateSubcategoryColour(int categoryId, int subcategoryId, int updatedSubcategoryColour, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY_COLOUR);
-                ps.setInt(1, updatedSubcategoryColour);
-                ps.setInt(2, subcategoryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, categoryId);
+                ps.setInt(7, categoryId);
                 ps.executeUpdate();
                 conn.close();
             } catch (SQLException exception) {
