@@ -32,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 03.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 03.10.2023 (version 1.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -46,6 +46,7 @@ public class EntryController {
     /**
      * Retrieves a list of all entries for a specific subcategory.
      *
+     * @param categoryId            The ID of the category.
      * @param subcategoryId         The ID of the subcategory.
      * @param loggedInUserId        The ID of the logged-in user.
      * @param loggedInUsername      The username of the logged-in user.
@@ -58,7 +59,8 @@ public class EntryController {
     @GetMapping("/entries")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all entries of one subcategory")
-    public ResponseEntity<List<Entry>> getEntries(@PathVariable int subcategoryId,
+    public ResponseEntity<List<Entry>> getEntries(@PathVariable int categoryId,
+                                                  @PathVariable int subcategoryId,
                                                   @RequestParam int loggedInUserId,
                                                   @RequestParam String loggedInUsername,
                                                   @RequestParam String loggedInPassword,
@@ -76,6 +78,7 @@ public class EntryController {
     /**
      * Retrieves a specific entry for a specific subcategory.
      *
+     * @param categoryId            The ID of the category.
      * @param subcategoryId         The ID of the subcategory.
      * @param entryId               The ID of the entry.
      * @param loggedInUserId        The ID of the logged-in user.
@@ -89,7 +92,8 @@ public class EntryController {
     @GetMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one entry")
-    public ResponseEntity<Entry> getEntry(@PathVariable int subcategoryId,
+    public ResponseEntity<Entry> getEntry(@PathVariable int categoryId,
+                                          @PathVariable int subcategoryId,
                                           @PathVariable int entryId,
                                           @RequestParam int loggedInUserId,
                                           @RequestParam String loggedInUsername,
@@ -108,6 +112,7 @@ public class EntryController {
     /**
      * Creates a new entry for a specific subcategory.
      *
+     * @param categoryId                    The ID of the category.
      * @param subcategoryId                 The ID of the subcategory.
      * @param entryName                     The name of the entry.
      * @param entryDescription              The description of the entry.
@@ -120,7 +125,8 @@ public class EntryController {
     @PostMapping("/entries")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "create a new entry")
-    public ResponseEntity<Integer> addEntry(@PathVariable int subcategoryId,
+    public ResponseEntity<Integer> addEntry(@PathVariable int categoryId,
+                                            @PathVariable int subcategoryId,
                                             @RequestParam String entryName,
                                             @RequestParam String entryDescription,
                                             @RequestParam String entryAmount,
@@ -138,8 +144,10 @@ public class EntryController {
     /**
      * Updates an existing entry for a specific subcategory.
      *
+     * @param categoryId                        The ID of the category.
      * @param subcategoryId                     The ID of the subcategory in which the entry is.
      * @param entryId                           The ID of the entry.
+     * @param updatedSubcategoryId              The other ID in which the entry should be transferred.
      * @param updatedEntryAmount                The updated amount of the entry.
      * @param updatedEntryAttachment            The updated attachment of the entry.
      * @param updatedEntryDescription           The updated description of the entry.
@@ -150,156 +158,21 @@ public class EntryController {
     @PatchMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing entry")
-    public ResponseEntity updateEntry(@PathVariable int subcategoryId,
+    public ResponseEntity updateEntry(@PathVariable int categoryId,
+                                      @PathVariable int subcategoryId,
                                       @PathVariable int entryId,
-                                      @RequestParam String updatedEntryName,
-                                      @RequestParam String updatedEntryDescription,
-                                      @RequestParam String updatedEntryAmount,
-                                      @RequestParam String updatedEntryTimeOfTransaction,
-                                      @RequestParam String updatedEntryAttachment,
+                                      @RequestParam(defaultValue = "-1", required = false) int updatedSubcategoryId,
+                                      @RequestParam(required = false) String updatedEntryName,
+                                      @RequestParam(required = false) String updatedEntryDescription,
+                                      @RequestParam(required = false) String updatedEntryAmount,
+                                      @RequestParam(required = false) String updatedEntryTimeOfTransaction,
+                                      @RequestParam(required = false) String updatedEntryAttachment,
                                       @RequestBody User loggedInUser) {
         try {
-            entryRepository.updateEntry(subcategoryId,
-                    entryId, updatedEntryName, updatedEntryDescription, updatedEntryAmount, updatedEntryTimeOfTransaction, updatedEntryAttachment,
+            entryRepository.updateEntry(subcategoryId, entryId, updatedSubcategoryId,
+                    updatedEntryName, updatedEntryDescription, updatedEntryAmount, updatedEntryTimeOfTransaction, updatedEntryAttachment,
                     loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Updates the subcategory of an existing entry.
-     *
-     * @param subcategoryId The ID of the other subcategory.
-     * @param entryId       The ID of the entry to update the subcategoryId on.
-     * @param loggedInUser  The logged-in user.
-     */
-    @PatchMapping("/entries/{entryId}/subcategoryOfEntry")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the subcategory of an existing entry")
-    public ResponseEntity updateSubcategoryOfEntry(@PathVariable int subcategoryId,
-                                                   @PathVariable int entryId,
-                                                   @RequestBody User loggedInUser) {
-        try {
-            entryRepository.updateSubcategoryOfEntry(subcategoryId, entryId, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the name of an existing entry for a specific subcategory.
-     *
-     * @param subcategoryId      The ID of the subcategory.
-     * @param entryId            The ID of the entry to update.
-     * @param updatedEntryName   The updated entry name.
-     * @param loggedInUser       The logged-in user.
-     */
-    @PatchMapping("/entries/{entryId}/entryName")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the name of an existing entry")
-    public ResponseEntity updateEntryName(@PathVariable int subcategoryId,
-                                          @PathVariable int entryId,
-                                          @RequestParam String updatedEntryName,
-                                          @RequestBody User loggedInUser) {
-        try {
-            entryRepository.updateEntryName(subcategoryId, entryId, updatedEntryName, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the description of an existing entry for a specific subcategory.
-     *
-     * @param subcategoryId                 The ID of the subcategory.
-     * @param entryId                       The ID of the entry to update.
-     * @param updatedEntryDescription       The updated entry description.
-     * @param loggedInUser                  The logged-in user.
-     */
-    @PatchMapping("/entries/{entryId}/entryDescription")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the description of an existing entry")
-    public ResponseEntity updateEntryDescription(@PathVariable int subcategoryId,
-                                                 @PathVariable int entryId,
-                                                 @RequestParam String updatedEntryDescription,
-                                                 @RequestBody User loggedInUser) {
-        try {
-            entryRepository.updateEntryDescription(subcategoryId,
-                    entryId, updatedEntryDescription,
-                    loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the amount of an existing entry for a specific subcategory.
-     *
-     * @param subcategoryId          The ID of the subcategory.
-     * @param entryId                The ID of the entry to update.
-     * @param updatedEntryAmount     The updated entry amount.
-     * @param loggedInUser           The logged-in user.
-     */
-    @PatchMapping("/entries/{entryId}/entryAmount")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the amount of an existing entry")
-    public ResponseEntity updateEntryAmount(@PathVariable int subcategoryId,
-                                            @PathVariable int entryId,
-                                            @RequestParam String updatedEntryAmount,
-                                            @RequestBody User loggedInUser) {
-        try {
-            entryRepository.updateEntryAmount(subcategoryId, entryId, updatedEntryAmount, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Changes the time of the transaction in an existing entry for a specific subcategory.
-     *
-     * @param subcategoryId                 The ID of the subcategory.
-     * @param entryId                       The ID of the entry to update.
-     * @param entryTimeOfTransaction        The updated entry time of the transaction.
-     * @param loggedInUser                  The logged-in user.
-     */
-    @PatchMapping("/entries/{entryId}/entryTimeOfTransaction")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the time of the transaction in an existing entry")
-    public ResponseEntity updateEntryTimeOfTransaction(@PathVariable int subcategoryId,
-                                                       @PathVariable int entryId,
-                                                       @RequestParam String entryTimeOfTransaction,
-                                                       @RequestBody User loggedInUser) {
-        try {
-            entryRepository.updateEntryTimeOfTransaction(subcategoryId, entryId, entryTimeOfTransaction, loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    /**
-     * Updates the attachment of an existing entry in a specific subcategory.
-     *
-     * @param subcategoryId             The ID of the subcategory.
-     * @param entryId                   The ID of the entry to update.
-     * @param updatedEntryAttachment    The updated attachment.
-     * @param loggedInUser              The logged-in user.
-     */
-    @PatchMapping("/entries/{entryId}/entryAttachment")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "change the attachment of an existing entry")
-    public ResponseEntity updateEntryAttachment(@PathVariable int subcategoryId,
-                                                @PathVariable int entryId,
-                                                @RequestParam String updatedEntryAttachment,
-                                                @RequestBody User loggedInUser) {
-        try {
-            entryRepository.updateEntryAttachment(subcategoryId, entryId, updatedEntryAttachment, loggedInUser);
+            System.out.println("Sache macht");
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -309,14 +182,16 @@ public class EntryController {
     /**
      * Deletes an entry from a specific subcategory.
      *
-     * @param subcategoryId The ID of the subcategory.
-     * @param entryId       The ID of the entry to be deleted.
-     * @param loggedInUser  The logged-in user.
+     * @param categoryId        The ID of the category.
+     * @param subcategoryId     The ID of the subcategory.
+     * @param entryId           The ID of the entry to be deleted.
+     * @param loggedInUser      The logged-in user.
      */
     @DeleteMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete an entry")
-    public ResponseEntity deleteEntry(@PathVariable int subcategoryId,
+    public ResponseEntity deleteEntry(@PathVariable int categoryId,
+                                      @PathVariable int subcategoryId,
                                       @PathVariable int entryId,
                                       @RequestBody User loggedInUser) {
         try {

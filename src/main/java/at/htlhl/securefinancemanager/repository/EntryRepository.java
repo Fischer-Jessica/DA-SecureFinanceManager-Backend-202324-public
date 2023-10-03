@@ -24,8 +24,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 29.09.2023 (version 1.6)
+ * @version 1.7
+ * @since 03.10.2023 (version 1.7)
  */
 @Repository
 public class EntryRepository {
@@ -47,36 +47,6 @@ public class EntryRepository {
     /** SQL query to update an existing entry in the 'entries' table in the database. */
     private static final String UPDATE_ENTRY = "UPDATE entries " +
             "SET fk_subcategory_id = ?, entry_name = ?, entry_description = ?, entry_amount = ?, entry_time_of_transaction = ?, entry_attachment = ? " +
-            "WHERE pk_entry_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the subcategory ID of an existing entry in the 'entries' table in the database. */
-    private static final String UPDATE_SUBCATEGORY_ID = "UPDATE entries " +
-            "SET fk_subcategory_id = ? " +
-            "WHERE pk_entry_id = ? AND fk_user_id = ?;";
-
-    /** SQL query to update the name of an existing entry in the 'entries' table in the database. */
-    private static final String UPDATE_ENTRY_NAME = "UPDATE entries " +
-            "SET entry_name = ? " +
-            "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
-
-    /** SQL query to update the description of an existing entry in the 'entries' table in the database. */
-    private static final String UPDATE_ENTRY_DESCRIPTION = "UPDATE entries " +
-            "SET entry_description = ? " +
-            "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
-
-    /** SQL query to update the amount of an existing entry in the 'entries' table in the database. */
-    private static final String UPDATE_ENTRY_AMOUNT = "UPDATE entries " +
-            "SET entry_amount = ? " +
-            "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
-
-    /** SQL query to update the time of the transaction in an existing entry in the 'entries' table in the database. */
-    private static final String UPDATE_ENTRY_TIME_OF_TRANSACTION = "UPDATE entries " +
-            "SET entry_time_of_transaction = ? " +
-            "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
-
-    /** SQL query to update the attachment of an existing entry in the 'entries' table in the database. */
-    private static final String UPDATE_ENTRY_ATTACHMENT = "UPDATE entries " +
-            "SET entry_attachment = ? " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
     /** SQL query to delete an entry from the 'entries' table in the database. */
@@ -211,8 +181,9 @@ public class EntryRepository {
     /**
      * Updates an existing entry in a specific subcategory for a given user.
      *
-     * @param updatedSubcategoryId                      The updated ID of the subcategory.
+     * @param subcategoryId                             The ID of the subcategory.
      * @param entryId                                   The ID of the entry to be updated.
+     * @param updatedSubcategoryId                      The updated ID of the subcategory.
      * @param updatedEntryName                          The updated name of the entry.
      * @param updatedEntryDescription                   The updated description of the entry.
      * @param updatedEntryAmount                        The updated amount of the entry.
@@ -220,168 +191,53 @@ public class EntryRepository {
      * @param updatedEntryAttachment                    The updated attachment of the entry.
      * @param loggedInUser                              The logged-in user.
      */
-    public void updateEntry(int updatedSubcategoryId, int entryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfTransaction,
+    public void updateEntry(int subcategoryId, int entryId, int updatedSubcategoryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfTransaction,
                             String updatedEntryAttachment, User loggedInUser) throws ValidationException {
+        Entry oldEntry = getEntry(subcategoryId, entryId, loggedInUser);
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
                 PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY);
-                ps.setInt(1, updatedSubcategoryId);
-                ps.setBytes(2, Base64.getDecoder().decode(updatedEntryName));
-                ps.setBytes(3, Base64.getDecoder().decode(updatedEntryDescription));
-                ps.setBytes(4, Base64.getDecoder().decode(updatedEntryAmount));
-                ps.setBytes(5, Base64.getDecoder().decode(updatedEntryTimeOfTransaction));
-                ps.setBytes(6, Base64.getDecoder().decode(updatedEntryAttachment));
+
+                if (updatedSubcategoryId != -1) {
+                    ps.setInt(1, updatedSubcategoryId);
+                } else {
+                    ps.setInt(1, subcategoryId);
+                }
+
+                if (updatedEntryName != null) {
+                    ps.setBytes(2, Base64.getDecoder().decode(updatedEntryName));
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(oldEntry.getEntryName()));
+                }
+
+                if (updatedEntryDescription != null) {
+                    ps.setBytes(3, Base64.getDecoder().decode(updatedEntryDescription));
+                } else {
+                    ps.setBytes(3, Base64.getDecoder().decode(oldEntry.getEntryDescription()));
+                }
+
+                if (updatedEntryAmount != null) {
+                    ps.setBytes(4, Base64.getDecoder().decode(updatedEntryAmount));
+                } else {
+                    ps.setBytes(4, Base64.getDecoder().decode(oldEntry.getEntryAmount()));
+                }
+
+                if (updatedEntryTimeOfTransaction != null) {
+                    ps.setBytes(5, Base64.getDecoder().decode(updatedEntryTimeOfTransaction));
+                } else {
+                    ps.setBytes(5, Base64.getDecoder().decode(oldEntry.getEntryTimeOfTransaction()));
+                }
+
+                if (updatedEntryAttachment != null) {
+                    ps.setBytes(6, Base64.getDecoder().decode(updatedEntryAttachment));
+                } else {
+                    ps.setBytes(6, Base64.getDecoder().decode(oldEntry.getEntryAttachment()));
+                }
+
                 ps.setInt(7, entryId);
                 ps.setInt(8, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the subcategory of an existing entry in the 'entries' table in the database.
-     *
-     * @param updatedSubcategoryId      The updated ID of the subcategory.
-     * @param entryId                   The ID of the entry to be updated.
-     * @param loggedInUser              The logged-in user.
-     */
-    public void updateSubcategoryOfEntry(int updatedSubcategoryId, int entryId, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY_ID);
-                ps.setInt(1, updatedSubcategoryId);
-                ps.setInt(2, entryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the name of an existing entry in a specific subcategory for a given user.
-     *
-     * @param subcategoryId            The ID of the subcategory.
-     * @param entryId                  The ID of the entry to be updated.
-     * @param updatedEntryName         The updated name of the entry.
-     * @param loggedInUser             The logged-in user.
-     */
-    public void updateEntryName(int subcategoryId, int entryId, String updatedEntryName, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY_NAME);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedEntryName));
-                ps.setInt(2, entryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, subcategoryId);
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the description of an existing entry in a specific subcategory for a given user.
-     *
-     * @param subcategoryId                 The ID of the subcategory.
-     * @param entryId                       The ID of the entry to be updated.
-     * @param updatedEntryDescription       The updated description of the entry.
-     * @param loggedInUser                  The logged-in user.
-     */
-    public void updateEntryDescription(int subcategoryId, int entryId, String updatedEntryDescription, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY_DESCRIPTION);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedEntryDescription));
-                ps.setInt(2, entryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, subcategoryId);
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the amount of an existing entry in a specific subcategory for a given user.
-     *
-     * @param subcategoryId            The ID of the subcategory.
-     * @param entryId                  The ID of the entry to be updated.
-     * @param updatedEntryAmount       The updated amount of the entry.
-     * @param loggedInUser             The logged-in user.
-     */
-    public void updateEntryAmount(int subcategoryId, int entryId, String updatedEntryAmount, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY_AMOUNT);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedEntryAmount));
-                ps.setInt(2, entryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, subcategoryId);
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the time of the transaction in an existing entry in a specific subcategory for a given user.
-     *
-     * @param subcategoryId                         The ID of the subcategory.
-     * @param entryId                               The ID of the entry to be updated.
-     * @param updatedEntryTimeOfTransaction         The updated time of the transaction in the entry.
-     * @param loggedInUser                          The logged-in user.
-     */
-    public void updateEntryTimeOfTransaction(int subcategoryId, int entryId, String updatedEntryTimeOfTransaction, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY_TIME_OF_TRANSACTION);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedEntryTimeOfTransaction));
-                ps.setInt(2, entryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, subcategoryId);
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        }
-    }
-
-    /**
-     * Updates the attachment of an existing entry in a specific subcategory for a given user.
-     *
-     * @param subcategoryId                 The ID of the subcategory.
-     * @param entryId                       The ID of the entry to be updated.
-     * @param updatedEntryAttachment        The updated attachment of the entry.
-     * @param loggedInUser                  The logged-in user.
-     */
-    public void updateEntryAttachment(int subcategoryId, int entryId, String updatedEntryAttachment, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY_ATTACHMENT);
-                ps.setBytes(1, Base64.getDecoder().decode(updatedEntryAttachment));
-                ps.setInt(2, entryId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.setInt(4, subcategoryId);
+                ps.setInt(9, subcategoryId);
                 ps.executeUpdate();
                 conn.close();
             } catch (SQLException exception) {
