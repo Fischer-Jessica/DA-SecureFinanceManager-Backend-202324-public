@@ -29,12 +29,12 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 21.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 03.10.2023 (version 1.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("financial-overview")
+@RequestMapping("secure-finance-manager")
 public class ColourController {
     /** The ColourRepository instance for accessing colour data. */
     @Autowired

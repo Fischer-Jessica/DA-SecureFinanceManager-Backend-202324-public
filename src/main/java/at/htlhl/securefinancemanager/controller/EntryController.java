@@ -32,12 +32,12 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 29.09.2023 (version 1.7)
+ * @version 1.8
+ * @since 03.10.2023 (version 1.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("secure-finance-manager/subcategories/{subcategoryId}")
+@RequestMapping("secure-finance-manager/categories/{categoryId}/subcategories/{subcategoryId}")
 public class EntryController {
     /** The EntryRepository instance for accessing entry data. */
     @Autowired

@@ -32,12 +32,12 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 25.07.2023 (version 1.6)
+ * @version 1.7
+ * @since 03.10.2023 (version 1.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("financial-overview")
+@RequestMapping("secure-finance-manager")
 public class CategoryController {
     /** The CategoryRepository instance for accessing category data. */
     @Autowired

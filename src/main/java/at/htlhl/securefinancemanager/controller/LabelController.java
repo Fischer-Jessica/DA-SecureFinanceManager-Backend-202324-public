@@ -31,12 +31,12 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 25.07.2023 (version 1.5)
+ * @version 1.6
+ * @since 03.10.2023 (version 1.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("financial-overview/labels")
+@RequestMapping("secure-finance-manager/labels")
 public class LabelController {
     /** The LabelRepository instance for accessing label data. */
     @Autowired
