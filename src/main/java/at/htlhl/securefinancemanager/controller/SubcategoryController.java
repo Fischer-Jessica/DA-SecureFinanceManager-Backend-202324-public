@@ -31,8 +31,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 03.10.2023 (version 1.7)
+ * @version 1.8
+ * @since 05.10.2023 (version 1.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -117,7 +117,7 @@ public class SubcategoryController {
     @PostMapping("/subcategories")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new subcategory")
-    public ResponseEntity<Integer> addSubcategory(@PathVariable int categoryId,
+    public ResponseEntity<Subcategory> addSubcategory(@PathVariable int categoryId,
                                                   @RequestParam String subcategoryName,
                                                   @RequestParam String subcategoryDescription,
                                                   @RequestParam int subcategoryColourId,

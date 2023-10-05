@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The SubcategoryRepository class handles the persistence operations for subcategory data.
@@ -31,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 03.10.2023 (version 1.4)
+ * @version 1.5
+ * @since 05.10.2023 (version 1.5)
  */
 @Repository
 public class SubcategoryRepository {
@@ -141,7 +142,7 @@ public class SubcategoryRepository {
      * @param loggedInUser              The logged-in user.
      * @return The ID of the newly created subcategory.
      */
-    public int addSubcategory(int categoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, User loggedInUser) throws ValidationException {
+    public Subcategory addSubcategory(int categoryId, String subcategoryName, String subcategoryDescription, int subcategoryColourId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -158,12 +159,12 @@ public class SubcategoryRepository {
                     return ps;
                 }, keyHolder);
 
-                return keyHolder.getKey().intValue();
+                return new Subcategory(Objects.requireNonNull(keyHolder.getKey()).intValue(), categoryId, subcategoryName, subcategoryDescription, subcategoryColourId, loggedInUser.getUserId());
             } catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
         } else {
-            return 0;
+            return null;
         }
     }
 
