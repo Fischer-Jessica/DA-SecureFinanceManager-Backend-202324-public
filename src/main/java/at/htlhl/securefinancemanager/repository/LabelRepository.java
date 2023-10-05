@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The LabelRepository class handles the persistence operations for label data.
@@ -31,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 25.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 05.10.2023 (version 1.5)
  */
 @Repository
 public class LabelRepository {
@@ -136,7 +137,7 @@ public class LabelRepository {
      * @param loggedInUser     The logged-in user.
      * @return The ID of the newly created label.
      */
-    public int addLabel(String labelName, String labelDescription, int labelColourId, User loggedInUser) throws ValidationException {
+    public Label addLabel(String labelName, String labelDescription, int labelColourId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -152,12 +153,12 @@ public class LabelRepository {
                     return ps;
                 }, keyHolder);
 
-                return keyHolder.getKey().intValue();
+                return new Label(Objects.requireNonNull(keyHolder.getKey()).intValue(), labelName, labelDescription, labelColourId, loggedInUser.getUserId());
             } catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
         } else {
-            return 0;
+            return null;
         }
     }
 
