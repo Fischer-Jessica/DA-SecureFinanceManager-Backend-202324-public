@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The CategoryRepository class handles the persistence operations for category data.
@@ -36,8 +37,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 03.10.2023 (version 1.5)
+ * @version 1.6
+ * @since 05.10.2023 (version 1.6)
  */
 @Repository
 public class CategoryRepository {
@@ -142,7 +143,7 @@ public class CategoryRepository {
      * @param loggedInUser              The logged-in user.
      * @return The ID of the newly created category.
      */
-    public int addCategory(String categoryName, String categoryDescription, int categoryColourId, User loggedInUser) throws ValidationException {
+    public Category addCategory(String categoryName, String categoryDescription, int categoryColourId, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -158,12 +159,12 @@ public class CategoryRepository {
                     return ps;
                 }, keyHolder);
 
-                return keyHolder.getKey().intValue();
+                return new Category(Objects.requireNonNull(keyHolder.getKey()).intValue(), categoryName, categoryDescription, categoryColourId, loggedInUser.getUserId());
             } catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
         } else {
-            return 0;
+            return null;
         }
     }
 

@@ -32,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 03.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 05.10.2023 (version 1.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -112,7 +112,7 @@ public class CategoryController {
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new category")
-    public ResponseEntity<Integer> addCategory(@RequestParam String categoryName,
+    public ResponseEntity<Category> addCategory(@RequestParam String categoryName,
                                                @RequestParam String categoryDescription,
                                                @RequestParam int categoryColourId,
                                                @RequestBody User loggedInUser) {
