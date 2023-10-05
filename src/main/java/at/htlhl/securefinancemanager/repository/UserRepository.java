@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The CategoryRepository class handles the persistence operations for category data.
@@ -29,8 +30,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 03.10.2023 (version 1.6)
+ * @version 1.7
+ * @since 05.10.2023 (version 1.7)
  */
 @Repository
 public class UserRepository {
@@ -182,7 +183,7 @@ public class UserRepository {
      * @param lastName        The last name of the new user.
      * @return The ID of the newly created user.
      */
-    public int addUser(String username, String password, String eMailAddress, String firstName, String lastName) {
+    public User addUser(String username, String password, String eMailAddress, String firstName, String lastName) {
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
@@ -198,7 +199,7 @@ public class UserRepository {
                 return ps;
             }, keyHolder);
 
-            return keyHolder.getKey().intValue();
+            return new User(Objects.requireNonNull(keyHolder.getKey()).intValue(), username, password, eMailAddress, firstName, lastName);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

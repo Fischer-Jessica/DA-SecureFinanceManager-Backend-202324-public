@@ -35,8 +35,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 03.10.2023 (version 1.6)
+ * @version 1.7
+ * @since 05.10.2023 (version 1.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -97,7 +97,7 @@ public class UserController {
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
-    public int addUser(@RequestParam String username,
+    public User addUser(@RequestParam String username,
                        @RequestParam String password,
                        @RequestParam String eMailAddress,
                        @RequestParam String firstName,
