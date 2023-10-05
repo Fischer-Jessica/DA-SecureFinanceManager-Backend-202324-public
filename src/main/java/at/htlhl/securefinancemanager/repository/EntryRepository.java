@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The EntryRepository class handles the persistence operations for entry data.
@@ -24,8 +25,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 03.10.2023 (version 1.7)
+ * @version 1.8
+ * @since 05.10.2023 (version 1.8)
  */
 @Repository
 public class EntryRepository {
@@ -146,7 +147,7 @@ public class EntryRepository {
      * @param loggedInUser                  The logged-in user.
      * @return The ID of the added entry.
      */
-    public int addEntry(int subcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfTransaction, String entryAttachment, User loggedInUser) throws ValidationException {
+    public Entry addEntry(int subcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfTransaction, String entryAttachment, User loggedInUser) throws ValidationException {
         if (UserRepository.validateUserCredentials(loggedInUser)) {
             try {
                 Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -169,12 +170,12 @@ public class EntryRepository {
                     return ps;
                 }, keyHolder);
 
-                return keyHolder.getKey().intValue();
+                return new Entry (Objects.requireNonNull(keyHolder.getKey()).intValue(), entryName, entryDescription, entryAmount, Base64.getEncoder().encodeToString(entryCreationTimeBytes), entryTimeOfTransaction, entryAttachment, subcategoryId, loggedInUser.getUserId());
             } catch (SQLException exception) {
                 throw new RuntimeException(exception);
             }
         } else {
-            return 0;
+            return null;
         }
     }
 
