@@ -1,6 +1,7 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
+import at.htlhl.securefinancemanager.model.EntryLabel;
 import at.htlhl.securefinancemanager.model.Label;
 import at.htlhl.securefinancemanager.model.User;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The EntryLabelRepository class handles the persistence operations for EntryLabel data.
@@ -31,8 +33,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 06.10.2023 (version 1.3)
+ * @version 1.4
+ * @since 06.10.2023 (version 1.4)
  */
 @Repository
 public class EntryLabelRepository {
@@ -98,7 +100,7 @@ public class EntryLabelRepository {
      * @param loggedInUser The logged-in user.
      * @return The ID of the newly created entry label.
      */
-    public int addLabelToEntry(int entryId, int labelId, User loggedInUser) throws ValidationException {
+    public EntryLabel addLabelToEntry(int entryId, int labelId, User loggedInUser) throws ValidationException {
         UserRepository.validateUserCredentials(loggedInUser);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -113,7 +115,7 @@ public class EntryLabelRepository {
                 return ps;
             }, keyHolder);
 
-            return keyHolder.getKey().intValue();
+            return new EntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, loggedInUser.getUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

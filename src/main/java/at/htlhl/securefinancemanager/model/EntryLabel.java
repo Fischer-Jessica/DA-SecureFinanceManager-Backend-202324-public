@@ -22,8 +22,8 @@ import jakarta.persistence.*;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 24.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 06.10.2023 (version 1.3)
  *
  * @see Entry
  * @see Label
@@ -53,6 +53,9 @@ public class EntryLabel {
     @JoinColumn(name = "fk_entry_id", referencedColumnName = "pk_entry_id", table = "entries", insertable=false, updatable=false)
     private Entry entry;
 
+    @Column(name = "fk_entry_id")
+    private int entryId;
+
     /**
      * The Label associated with this EntryLabel.
      * Represents a many-to-one relationship between EntryLabel and Label.
@@ -61,6 +64,9 @@ public class EntryLabel {
     @JoinColumn(name = "fk_label_id", referencedColumnName = "pk_label_id", table = "labels", insertable=false, updatable=false)
     private Label label;
 
+    @Column(name = "fk_label_id")
+    private int labelId;
+
     /**
      * The User associated with the label.
      * Represents a many-to-one relationship between EntryLabel and User.
@@ -68,4 +74,14 @@ public class EntryLabel {
     @ManyToOne
     @JoinColumn(name = "fk_user_id", referencedColumnName = "pk_user_id", table = "users", insertable=false, updatable=false)
     private User user;
+
+    @Column(name = "fk_user_id")
+    private int userId;
+
+    public EntryLabel(int entryLabelId, int entryId, int labelId, int userId) {
+        this.entryLabelId = entryLabelId;
+        this.entryLabelId = entryId;
+        this.labelId = labelId;
+        this.userId = userId;
+    }
 }
