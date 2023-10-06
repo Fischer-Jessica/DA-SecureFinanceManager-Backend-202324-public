@@ -32,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 06.10.2023 (version 2.1)
+ * @version 2.2
+ * @since 06.10.2023 (version 2.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -169,10 +169,9 @@ public class EntryController {
                                       @RequestParam(required = false) String updatedEntryAttachment,
                                       @RequestBody User loggedInUser) {
         try {
-            entryRepository.updateEntry(subcategoryId, entryId, updatedSubcategoryId,
+            return ResponseEntity.ok(entryRepository.updateEntry(subcategoryId, entryId, updatedSubcategoryId,
                     updatedEntryName, updatedEntryDescription, updatedEntryAmount, updatedEntryTimeOfTransaction, updatedEntryAttachment,
-                    loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
+                    loggedInUser));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }

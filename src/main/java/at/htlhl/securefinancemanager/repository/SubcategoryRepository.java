@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 06.10.2023 (version 1.6)
+ * @version 1.7
+ * @since 06.10.2023 (version 1.7)
  */
 @Repository
 public class SubcategoryRepository {
@@ -178,7 +178,7 @@ public class SubcategoryRepository {
      * @param updatedSubcategoryColourId    The updated subcategory colour.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateSubcategory(int categoryId, int subcategoryId, int updatedCategoryId, String updatedSubcategoryName,
+    public Subcategory updateSubcategory(int categoryId, int subcategoryId, int updatedCategoryId, String updatedSubcategoryName,
                                   String updatedSubcategoryDescription, int updatedSubcategoryColourId, User loggedInUser) throws ValidationException {
         Subcategory oldSubcategory = getSubcategory(categoryId, subcategoryId, loggedInUser);
         UserRepository.validateUserCredentials(loggedInUser);
@@ -215,6 +215,7 @@ public class SubcategoryRepository {
             ps.setInt(7, categoryId);
             ps.executeUpdate();
             conn.close();
+            return getSubcategory(categoryId, subcategoryId, loggedInUser);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

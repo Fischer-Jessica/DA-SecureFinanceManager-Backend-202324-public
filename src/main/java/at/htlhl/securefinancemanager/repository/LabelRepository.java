@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 06.10.2023 (version 1.6)
+ * @version 1.7
+ * @since 06.10.2023 (version 1.7)
  */
 @Repository
 public class LabelRepository {
@@ -169,7 +169,7 @@ public class LabelRepository {
      * @param updatedLabel The updated Label object.
      * @param loggedInUser The logged-in user.
      */
-    public void updateLabel(Label updatedLabel, User loggedInUser) throws ValidationException {
+    public Label updateLabel(Label updatedLabel, User loggedInUser) throws ValidationException {
         Label oldLabel = getLabel(updatedLabel.getLabelId(), loggedInUser);
         UserRepository.validateUserCredentials(loggedInUser);
         try {
@@ -198,6 +198,7 @@ public class LabelRepository {
             ps.setInt(5, loggedInUser.getUserId());
             ps.executeUpdate();
             conn.close();
+            return getLabel(updatedLabel.getLabelId(), loggedInUser);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 06.10.2023 (version 1.9)
+ * @version 2.0
+ * @since 06.10.2023 (version 2.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -154,10 +154,9 @@ public class SubcategoryController {
                                             @RequestParam(defaultValue = "-1", required = false) int updatedSubcategoryColourId,
                                             @RequestBody User loggedInUser) {
         try {
-            subcategoryRepository.updateSubcategory(categoryId, subcategoryId, updatedCategoryId,
+            return ResponseEntity.ok(subcategoryRepository.updateSubcategory(categoryId, subcategoryId, updatedCategoryId,
                     updatedSubcategoryName, updatedSubcategoryDescription, updatedSubcategoryColourId,
-                loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
+                loggedInUser));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }

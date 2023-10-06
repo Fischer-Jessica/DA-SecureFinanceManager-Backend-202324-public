@@ -25,8 +25,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 06.10.2023 (version 1.9)
+ * @version 2.0
+ * @since 06.10.2023 (version 2.0)
  */
 @Repository
 public class EntryRepository {
@@ -193,7 +193,7 @@ public class EntryRepository {
      * @param updatedEntryAttachment        The updated attachment of the entry.
      * @param loggedInUser                  The logged-in user.
      */
-    public void updateEntry(int subcategoryId, int entryId, int updatedSubcategoryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfTransaction,
+    public Entry updateEntry(int subcategoryId, int entryId, int updatedSubcategoryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfTransaction,
                             String updatedEntryAttachment, User loggedInUser) throws ValidationException {
         Entry oldEntry = getEntry(subcategoryId, entryId, loggedInUser);
         UserRepository.validateUserCredentials(loggedInUser);
@@ -242,6 +242,7 @@ public class EntryRepository {
             ps.setInt(9, subcategoryId);
             ps.executeUpdate();
             conn.close();
+            return getEntry(subcategoryId, entryId, loggedInUser);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

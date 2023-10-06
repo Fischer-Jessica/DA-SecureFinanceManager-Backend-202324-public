@@ -37,8 +37,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 06.10.2023 (version 1.7)
+ * @version 1.8
+ * @since 06.10.2023 (version 1.8)
  */
 @Repository
 public class CategoryRepository {
@@ -175,7 +175,7 @@ public class CategoryRepository {
      * @param updatedCategory The updated Category object.
      * @param loggedInUser    The logged-in user.
      */
-    public void updateCategory(Category updatedCategory, User loggedInUser) throws ValidationException {
+    public Category updateCategory(Category updatedCategory, User loggedInUser) throws ValidationException {
         Category oldCategory = getCategory(updatedCategory.getCategoryId(), loggedInUser);
         UserRepository.validateUserCredentials(loggedInUser);
         try {
@@ -204,6 +204,7 @@ public class CategoryRepository {
             ps.setInt(5, loggedInUser.getUserId());
             ps.executeUpdate();
             conn.close();
+            return getCategory(updatedCategory.getCategoryId(), loggedInUser);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

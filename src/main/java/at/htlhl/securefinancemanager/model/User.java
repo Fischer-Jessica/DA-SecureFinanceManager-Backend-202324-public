@@ -20,8 +20,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 24.07.2023 (version 1.4)
+ * @version 1.5
+ * @since 06.10.2023 (version 1.5)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -141,6 +141,30 @@ public class User {
      */
     public String getLastName() {
         return lastName;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void seteMailAddress(String eMailAddress) {
+        this.eMailAddress = eMailAddress;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     /**

@@ -30,8 +30,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 06.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 06.10.2023 (version 1.9)
  */
 @Repository
 public class UserRepository {
@@ -230,45 +230,60 @@ public class UserRepository {
      * @param updatedUser  The updated User object.
      * @param loggedInUser The original User object to be updated.
      */
-    public void updateUser(User updatedUser, User loggedInUser) throws ValidationException {
+    public User updateUser(User updatedUser, User loggedInUser) throws ValidationException {
         UserRepository.validateUserCredentials(loggedInUser);
         try {
+            // TODO: Vielleicht wie bei allen anderen mit einer Methode abfragen, was in der Datenbank steht
+            User actualUser = new User();
+            actualUser.setUserId(loggedInUser.getUserId());
+
             Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_USER);
 
             if (updatedUser.getUsername() != null) {
                 ps.setString(1, updatedUser.getUsername());
+                actualUser.setUsername(updatedUser.getUsername());
             } else {
                 ps.setString(1, loggedInUser.getUsername());
+                actualUser.setUsername(loggedInUser.getUsername());
             }
 
             if (updatedUser.getPassword() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedUser.getPassword()));
+                actualUser.setUsername(updatedUser.getPassword());
             } else {
                 ps.setBytes(2, Base64.getDecoder().decode(loggedInUser.getPassword()));
+                actualUser.setUsername(loggedInUser.getPassword());
             }
 
             if (updatedUser.geteMailAddress() != null) {
                 ps.setString(3, updatedUser.geteMailAddress());
+                actualUser.setUsername(updatedUser.geteMailAddress());
             } else {
                 ps.setString(3, loggedInUser.geteMailAddress());
+                actualUser.setUsername(loggedInUser.geteMailAddress());
             }
 
             if (updatedUser.getFirstName() != null) {
                 ps.setString(4, updatedUser.getFirstName());
+                actualUser.setUsername(updatedUser.getFirstName());
             } else {
                 ps.setString(4, loggedInUser.getFirstName());
+                actualUser.setUsername(loggedInUser.getFirstName());
             }
 
             if (updatedUser.getLastName() != null) {
                 ps.setString(5, updatedUser.getLastName());
+                actualUser.setUsername(updatedUser.getLastName());
             } else {
                 ps.setString(5, loggedInUser.getLastName());
+                actualUser.setUsername(loggedInUser.getLastName());
             }
 
             ps.setInt(6, loggedInUser.getUserId());
             ps.executeUpdate();
             conn.close();
+            return actualUser;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

@@ -33,8 +33,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 06.10.2023 (version 2.0)
+ * @version 2.1
+ * @since 06.10.2023 (version 2.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -143,9 +143,8 @@ public class CategoryController {
                                          @RequestParam(defaultValue = "-1", required = false) int updatedCategoryColourId,
                                          @RequestBody User loggedInUser) {
         try {
-            categoryRepository.updateCategory(new Category(categoryId, updatedCategoryName, updatedCategoryDescription, updatedCategoryColourId, loggedInUser.getUserId()),
-                    loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.ok(categoryRepository.updateCategory(new Category(categoryId, updatedCategoryName, updatedCategoryDescription, updatedCategoryColourId, loggedInUser.getUserId()),
+                    loggedInUser));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }

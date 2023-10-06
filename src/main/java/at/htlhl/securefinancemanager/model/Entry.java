@@ -127,6 +127,8 @@ public class Entry {
         this.entryCreationTime = entryCreationTime;
         this.entryTimeOfTransaction = entryTimeOfTransaction;
         this.entryAttachment = entryAttachment;
+        this.entrySubcategoryId = entrySubcategoryId;
+        this.entryUserId = entryUserId;
     }
 
     /**

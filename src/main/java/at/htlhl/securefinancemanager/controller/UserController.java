@@ -36,8 +36,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 06.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 06.10.2023 (version 1.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -125,9 +125,8 @@ public class UserController {
                                      @RequestParam(required = false) String updatedLastName,
                                      @RequestBody User loggedInUser) {
         try {
-            userRepository.updateUser(new User(loggedInUser.getUserId(), updatedUsername, updatedPassword, updatedEMailAddress, updatedFirstName, updatedLastName),
-                    loggedInUser);
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.ok(userRepository.updateUser(new User(loggedInUser.getUserId(), updatedUsername, updatedPassword, updatedEMailAddress, updatedFirstName, updatedLastName),
+                    loggedInUser));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
