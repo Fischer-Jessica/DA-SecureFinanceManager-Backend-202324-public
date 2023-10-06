@@ -31,23 +31,29 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 25.07.2023 (version 1.2)
+ * @version 1.3
+ * @since 06.10.2023 (version 1.3)
  */
 @Repository
 public class EntryLabelRepository {
-    /** SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database. */
+    /**
+     * SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database.
+     */
     private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
             "FROM labels " +
             "JOIN entry_labels ON labels.pk_label_id = entry_labels.fk_label_id " +
             "WHERE entry_labels.fk_entry_id = ? AND entry_labels.fk_user_id = ? AND entry_labels.fk_user_id = ?;";
 
-    /** SQL query to add a label to an entry in the 'entry_labels' table in the database. */
+    /**
+     * SQL query to add a label to an entry in the 'entry_labels' table in the database.
+     */
     private static final String ADD_LABEL_TO_ENTRY = "INSERT INTO entry_labels " +
             "(fk_entry_id, fk_label_id, fk_user_id) " +
             "VALUES (?, ?, ?);";
 
-    /** SQL query to remove a label from an entry in the 'entry_labels' table in the database. */
+    /**
+     * SQL query to remove a label from an entry in the 'entry_labels' table in the database.
+     */
     private static final String REMOVE_LABEL_FROM_ENTRY = "DELETE FROM entry_labels " +
             "WHERE fk_entry_id = ? AND fk_label_id = ? AND fk_user_id = ?;";
 
@@ -59,87 +65,80 @@ public class EntryLabelRepository {
      * @return A list of Label objects representing the labels associated with the entry and user.
      */
     public List<Label> getLabelsForEntry(int entryId, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
-                PreparedStatement ps = conn.prepareStatement(SELECT_LABELS_FOR_ENTRY);
-                ps.setInt(1, entryId);
-                ps.setInt(2, loggedInUser.getUserId());
-                ps.setInt(3, loggedInUser.getUserId());
-                ResultSet rs = ps.executeQuery();
+        UserRepository.validateUserCredentials(loggedInUser);
+        try {
+            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_LABELS_FOR_ENTRY);
+            ps.setInt(1, entryId);
+            ps.setInt(2, loggedInUser.getUserId());
+            ps.setInt(3, loggedInUser.getUserId());
+            ResultSet rs = ps.executeQuery();
 
-                List<Label> labels = new ArrayList<>();
-                while (rs.next()) {
-                    int labelId = rs.getInt("pk_label_id");
-                    byte[] labelName = rs.getBytes("label_name");
-                    byte[] labelDescription = rs.getBytes("label_description");
-                    int labelColourId = rs.getInt("fk_label_colour_id");
+            List<Label> labels = new ArrayList<>();
+            while (rs.next()) {
+                int labelId = rs.getInt("pk_label_id");
+                byte[] labelName = rs.getBytes("label_name");
+                byte[] labelDescription = rs.getBytes("label_description");
+                int labelColourId = rs.getInt("fk_label_colour_id");
 
-                    Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, loggedInUser.getUserId());
-                    labels.add(label);
-                }
-                return labels;
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+                Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, loggedInUser.getUserId());
+                labels.add(label);
             }
-        } else {
-            return null;
+            return labels;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Adds a label to an entry in the 'entry_labels' table in the database.
      *
-     * @param entryId           The ID of the entry to add the label to.
-     * @param labelId           The ID of the label to add.
-     * @param loggedInUser      The logged-in user.
+     * @param entryId      The ID of the entry to add the label to.
+     * @param labelId      The ID of the label to add.
+     * @param loggedInUser The logged-in user.
      * @return The ID of the newly created entry label.
      */
     public int addLabelToEntry(int entryId, int labelId, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+        UserRepository.validateUserCredentials(loggedInUser);
+        try {
+            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
-                GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+            GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
-                UserRepository.jdbcTemplate.update(connection -> {
-                    PreparedStatement ps = conn.prepareStatement(ADD_LABEL_TO_ENTRY, new String[]{"pk_entry_label_id"});
-                    ps.setInt(1, entryId);
-                    ps.setInt(2, labelId);
-                    ps.setInt(3, loggedInUser.getUserId());
-                    return ps;
-                }, keyHolder);
+            UserRepository.jdbcTemplate.update(connection -> {
+                PreparedStatement ps = conn.prepareStatement(ADD_LABEL_TO_ENTRY, new String[]{"pk_entry_label_id"});
+                ps.setInt(1, entryId);
+                ps.setInt(2, labelId);
+                ps.setInt(3, loggedInUser.getUserId());
+                return ps;
+            }, keyHolder);
 
-                return keyHolder.getKey().intValue();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
-        } else {
-            return 0;
+            return keyHolder.getKey().intValue();
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
         }
     }
 
     /**
      * Removes a label from an entry in the 'entry_labels' table in the database.
      *
-     * @param entryId           The ID of the entry to remove the label from.
-     * @param labelId           The ID of the label to remove.
-     * @param loggedInUser      The logged-in user.
+     * @param entryId      The ID of the entry to remove the label from.
+     * @param labelId      The ID of the label to remove.
+     * @param loggedInUser The logged-in user.
      */
     public void removeLabelFromEntry(int entryId, int labelId, User loggedInUser) throws ValidationException {
-        if (UserRepository.validateUserCredentials(loggedInUser)) {
-            try {
-                Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+        UserRepository.validateUserCredentials(loggedInUser);
+        try {
+            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
-                PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY);
-                ps.setInt(1, entryId);
-                ps.setInt(2, labelId);
-                ps.setInt(3, loggedInUser.getUserId());
-                ps.executeUpdate();
-                conn.close();
-            } catch (SQLException exception) {
-                throw new RuntimeException(exception);
-            }
+            PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY);
+            ps.setInt(1, entryId);
+            ps.setInt(2, labelId);
+            ps.setInt(3, loggedInUser.getUserId());
+            ps.executeUpdate();
+            conn.close();
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
         }
     }
 }

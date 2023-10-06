@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The CategoryController class handles HTTP requests related to category management.
@@ -32,8 +33,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 05.10.2023 (version 1.9)
+ * @version 2.0
+ * @since 06.10.2023 (version 2.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -57,16 +58,16 @@ public class CategoryController {
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all categories")
-    public ResponseEntity<List<Category>> getCategories(@RequestParam int loggedInUserId,
-                                                        @RequestParam String loggedInUsername,
-                                                        @RequestParam String loggedInPassword,
-                                                        @RequestParam String loggedInEMailAddress,
-                                                        @RequestParam String loggedInFirstName,
-                                                        @RequestParam String loggedInLastName) {
+    public ResponseEntity<Object> getCategories(@RequestParam int loggedInUserId,
+                                                 @RequestParam String loggedInUsername,
+                                                 @RequestParam String loggedInPassword,
+                                                 @RequestParam String loggedInEMailAddress,
+                                                 @RequestParam String loggedInFirstName,
+                                                 @RequestParam String loggedInLastName) {
         try {
             return ResponseEntity.ok(categoryRepository.getCategories(new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -85,7 +86,7 @@ public class CategoryController {
     @GetMapping("/categories/{categoryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one category")
-    public ResponseEntity<Category> getCategory(@PathVariable int categoryId,
+    public ResponseEntity<Object> getCategory(@PathVariable int categoryId,
                                                 @RequestParam int loggedInUserId,
                                                 @RequestParam String loggedInUsername,
                                                 @RequestParam String loggedInPassword,
@@ -96,7 +97,7 @@ public class CategoryController {
             return ResponseEntity.ok(categoryRepository.getCategory(categoryId,
                     new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -112,7 +113,7 @@ public class CategoryController {
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new category")
-    public ResponseEntity<Category> addCategory(@RequestParam String categoryName,
+    public ResponseEntity<Object> addCategory(@RequestParam String categoryName,
                                                @RequestParam String categoryDescription,
                                                @RequestParam int categoryColourId,
                                                @RequestBody User loggedInUser) {
@@ -120,7 +121,7 @@ public class CategoryController {
             return ResponseEntity.ok(categoryRepository.addCategory(categoryName, categoryDescription, categoryColourId,
                     loggedInUser));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -136,7 +137,7 @@ public class CategoryController {
     @PatchMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing category")
-    public ResponseEntity updateCategory(@RequestParam int categoryId,
+    public ResponseEntity<Object> updateCategory(@RequestParam int categoryId,
                                          @RequestParam(required = false) String updatedCategoryName,
                                          @RequestParam(required = false) String updatedCategoryDescription,
                                          @RequestParam(defaultValue = "-1", required = false) int updatedCategoryColourId,
@@ -146,7 +147,7 @@ public class CategoryController {
                     loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -159,13 +160,13 @@ public class CategoryController {
     @DeleteMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a category")
-    public ResponseEntity deleteCategory(@RequestParam int categoryId,
+    public ResponseEntity<Object> deleteCategory(@RequestParam int categoryId,
                                          @RequestBody User loggedInUser) {
         try {
             categoryRepository.deleteCategory(categoryId, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 }

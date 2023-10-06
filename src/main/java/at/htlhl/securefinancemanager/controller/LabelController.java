@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The LabelController class handles the HTTP requests related to label management.
@@ -31,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 05.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 06.10.2023 (version 1.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -56,16 +57,16 @@ public class LabelController {
     @GetMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all labels")
-    public ResponseEntity<List<Label>> getLabels(@RequestParam int loggedInUserId,
-                                                 @RequestParam String loggedInUsername,
-                                                 @RequestParam String loggedInPassword,
-                                                 @RequestParam String loggedInEMailAddress,
-                                                 @RequestParam String loggedInFirstName,
-                                                 @RequestParam String loggedInLastName) {
+    public ResponseEntity<Object> getLabels(@RequestParam int loggedInUserId,
+                                             @RequestParam String loggedInUsername,
+                                             @RequestParam String loggedInPassword,
+                                             @RequestParam String loggedInEMailAddress,
+                                             @RequestParam String loggedInFirstName,
+                                             @RequestParam String loggedInLastName) {
         try {
             return ResponseEntity.ok(labelRepository.getLabels(new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -84,7 +85,7 @@ public class LabelController {
     @GetMapping("/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one label")
-    public ResponseEntity<Label> getLabel(@PathVariable int labelId,
+    public ResponseEntity<Object> getLabel(@PathVariable int labelId,
                                           @RequestParam int loggedInUserId,
                                           @RequestParam String loggedInUsername,
                                           @RequestParam String loggedInPassword,
@@ -95,7 +96,7 @@ public class LabelController {
             return ResponseEntity.ok(labelRepository.getLabel(labelId,
                     new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -111,7 +112,7 @@ public class LabelController {
     @PostMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "add a new label")
-    public ResponseEntity<Label> addLabel(@RequestParam String labelName,
+    public ResponseEntity<Object> addLabel(@RequestParam String labelName,
                                             @RequestParam String labelDescription,
                                             @RequestParam int labelColourId,
                                             @RequestBody User loggedInUser) {
@@ -119,7 +120,7 @@ public class LabelController {
             return ResponseEntity.ok(labelRepository.addLabel(labelName, labelDescription, labelColourId,
                     loggedInUser));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -135,7 +136,7 @@ public class LabelController {
     @PatchMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing label")
-    public ResponseEntity updateLabel(@RequestParam int labelId,
+    public ResponseEntity<Object> updateLabel(@RequestParam int labelId,
                                       @RequestParam(required = false) String updatedLabelName,
                                       @RequestParam(required = false) String updatedLabelDescription,
                                       @RequestParam(defaultValue = "-1", required = false) int updatedLabelColour,
@@ -145,7 +146,7 @@ public class LabelController {
                     loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -158,13 +159,13 @@ public class LabelController {
     @DeleteMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a label")
-    public ResponseEntity deleteCategory(@RequestParam int labelId,
+    public ResponseEntity<Object> deleteCategory(@RequestParam int labelId,
                                          @RequestBody User loggedInUser) {
         try {
             labelRepository.deleteLabel(labelId, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The EntryLabelController class handles HTTP requests related to the management of associations between Entry and Label entities (EntryLabel).
@@ -31,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 03.10.2023 (version 1.3)
+ * @version 1.4
+ * @since 06.10.2023 (version 1.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -56,18 +57,18 @@ public class EntryLabelController {
      */
     @GetMapping("/entries/{entryId}/labels")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<Label>> getLabelsForEntry(@PathVariable int entryId,
-                                                         @RequestParam int loggedInUserId,
-                                                         @RequestParam String loggedInUsername,
-                                                         @RequestParam String loggedInPassword,
-                                                         @RequestParam String loggedInEMailAddress,
-                                                         @RequestParam String loggedInFirstName,
-                                                         @RequestParam String loggedInLastName) {
+    public ResponseEntity<Object> getLabelsForEntry(@PathVariable int entryId,
+                                                     @RequestParam int loggedInUserId,
+                                                     @RequestParam String loggedInUsername,
+                                                     @RequestParam String loggedInPassword,
+                                                     @RequestParam String loggedInEMailAddress,
+                                                     @RequestParam String loggedInFirstName,
+                                                     @RequestParam String loggedInLastName) {
         try {
             return ResponseEntity.ok(entryLabelRepository.getLabelsForEntry(entryId,
                     new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -81,13 +82,13 @@ public class EntryLabelController {
      */
     @PostMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Integer> addLabelToEntry(@PathVariable int entryId,
+    public ResponseEntity<Object> addLabelToEntry(@PathVariable int entryId,
                                                    @PathVariable int labelId,
                                                    @RequestBody User loggedInUser) {
         try {
             return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, loggedInUser));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -100,14 +101,14 @@ public class EntryLabelController {
      */
     @DeleteMapping("/entries/{entryId}/labels/{labelId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity removeLabelFromEntry(@PathVariable int entryId,
+    public ResponseEntity<Object> removeLabelFromEntry(@PathVariable int entryId,
                                                @PathVariable int labelId,
                                                @RequestBody User loggedInUser) {
         try {
             entryLabelRepository.removeLabelFromEntry(entryId, labelId, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 }

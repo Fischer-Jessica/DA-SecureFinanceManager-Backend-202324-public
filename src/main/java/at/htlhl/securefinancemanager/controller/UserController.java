@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The UserController class handles the HTTP requests related to user management.
@@ -35,8 +36,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 05.10.2023 (version 1.7)
+ * @version 1.8
+ * @since 06.10.2023 (version 1.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -61,19 +62,18 @@ public class UserController {
     @GetMapping("/user")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Validates user credentials and returns true or false based on the validation result.")
-    public ResponseEntity<User> authenticateUser(@RequestParam String usernameToValidate,
-                                                 @RequestParam String passwordToValidate) {
-        User authenticatedUser = userRepository.authenticateUser(usernameToValidate, passwordToValidate);
-        if (authenticatedUser != null) {
-            return ResponseEntity.ok(authenticatedUser);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<Object> authenticateUser(@RequestParam String usernameToValidate,
+                                                    @RequestParam String passwordToValidate) {
+        try {
+            return ResponseEntity.ok(userRepository.authenticateUser(usernameToValidate, passwordToValidate));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
     /**
      * Returns a list of all users.
-     * This will be restricted or removed in the final product.
+     * TODO: This will be restricted or removed in the final product.
      *
      * @return A list of all users.
      */
@@ -118,7 +118,7 @@ public class UserController {
     @PatchMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing user")
-    public ResponseEntity updateUser(@RequestParam(required = false) String updatedUsername,
+    public ResponseEntity<Object> updateUser(@RequestParam(required = false) String updatedUsername,
                                      @RequestParam(required = false) String updatedPassword,
                                      @RequestParam(required = false) String updatedEMailAddress,
                                      @RequestParam(required = false) String updatedFirstName,
@@ -129,7 +129,7 @@ public class UserController {
                     loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -141,12 +141,12 @@ public class UserController {
     @DeleteMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "deletes an user")
-    public ResponseEntity deleteUser(@RequestBody User loggedInUser) {
+    public ResponseEntity<Object> deleteUser(@RequestBody User loggedInUser) {
         try {
             userRepository.deleteUser(loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 }

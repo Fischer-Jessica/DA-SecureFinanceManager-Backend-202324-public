@@ -32,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 05.10.2023 (version 2.0)
+ * @version 2.1
+ * @since 06.10.2023 (version 2.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -59,7 +59,7 @@ public class EntryController {
     @GetMapping("/entries")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all entries of one subcategory")
-    public ResponseEntity<List<Entry>> getEntries(@PathVariable int categoryId,
+    public ResponseEntity<Object> getEntries(@PathVariable int categoryId,
                                                   @PathVariable int subcategoryId,
                                                   @RequestParam int loggedInUserId,
                                                   @RequestParam String loggedInUsername,
@@ -71,7 +71,7 @@ public class EntryController {
             return ResponseEntity.ok(entryRepository.getEntries(subcategoryId,
                     new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -92,7 +92,7 @@ public class EntryController {
     @GetMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one entry")
-    public ResponseEntity<Entry> getEntry(@PathVariable int categoryId,
+    public ResponseEntity<Object> getEntry(@PathVariable int categoryId,
                                           @PathVariable int subcategoryId,
                                           @PathVariable int entryId,
                                           @RequestParam int loggedInUserId,
@@ -105,7 +105,7 @@ public class EntryController {
             return ResponseEntity.ok(entryRepository.getEntry(subcategoryId, entryId,
                     new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -125,7 +125,7 @@ public class EntryController {
     @PostMapping("/entries")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "create a new entry")
-    public ResponseEntity<Entry> addEntry(@PathVariable int categoryId,
+    public ResponseEntity<Object> addEntry(@PathVariable int categoryId,
                                             @PathVariable int subcategoryId,
                                             @RequestParam String entryName,
                                             @RequestParam String entryDescription,
@@ -137,7 +137,7 @@ public class EntryController {
             return ResponseEntity.ok(entryRepository.addEntry(subcategoryId, entryName, entryDescription, entryAmount, entryTimeOfTransaction, entryAttachment,
                     loggedInUser));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -158,7 +158,7 @@ public class EntryController {
     @PatchMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing entry")
-    public ResponseEntity updateEntry(@PathVariable int categoryId,
+    public ResponseEntity<Object> updateEntry(@PathVariable int categoryId,
                                       @PathVariable int subcategoryId,
                                       @PathVariable int entryId,
                                       @RequestParam(defaultValue = "-1", required = false) int updatedSubcategoryId,
@@ -172,10 +172,9 @@ public class EntryController {
             entryRepository.updateEntry(subcategoryId, entryId, updatedSubcategoryId,
                     updatedEntryName, updatedEntryDescription, updatedEntryAmount, updatedEntryTimeOfTransaction, updatedEntryAttachment,
                     loggedInUser);
-            System.out.println("Sache macht");
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 
@@ -190,7 +189,7 @@ public class EntryController {
     @DeleteMapping("/entries/{entryId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete an entry")
-    public ResponseEntity deleteEntry(@PathVariable int categoryId,
+    public ResponseEntity<Object> deleteEntry(@PathVariable int categoryId,
                                       @PathVariable int subcategoryId,
                                       @PathVariable int entryId,
                                       @RequestBody User loggedInUser) {
@@ -198,7 +197,7 @@ public class EntryController {
             entryRepository.deleteEntry(subcategoryId, entryId, loggedInUser);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
 }
