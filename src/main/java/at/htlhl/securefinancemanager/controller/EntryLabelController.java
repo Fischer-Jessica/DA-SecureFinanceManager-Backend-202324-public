@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 06.10.2023 (version 1.4)
+ * @version 1.5
+ * @since 06.10.2023 (version 1.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -55,7 +55,7 @@ public class EntryLabelController {
      * @param loggedInLastName      The last name of the logged-in user.
      * @return A list of labels associated with the entry.
      */
-    @GetMapping("/entries/{entryId}/labels")
+    @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> getLabelsForEntry(@PathVariable int entryId,
                                                      @RequestParam int loggedInUserId,
@@ -80,7 +80,7 @@ public class EntryLabelController {
      * @param loggedInUser The logged-in user.
      * @return The ID of the newly created EntryLabel association.
      */
-    @PostMapping("/entries/{entryId}/labels/{labelId}")
+    @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> addLabelToEntry(@PathVariable int entryId,
                                                    @PathVariable int labelId,
@@ -99,7 +99,7 @@ public class EntryLabelController {
      * @param labelId      The ID of the label to remove.
      * @param loggedInUser The logged-in user.
      */
-    @DeleteMapping("/entries/{entryId}/labels/{labelId}")
+    @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> removeLabelFromEntry(@PathVariable int entryId,
                                                @PathVariable int labelId,

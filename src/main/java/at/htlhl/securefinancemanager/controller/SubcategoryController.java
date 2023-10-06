@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 06.10.2023 (version 2.0)
+ * @version 2.1
+ * @since 06.10.2023 (version 2.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -55,7 +55,7 @@ public class SubcategoryController {
      * @param loggedInLastName      The last name of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
-    @GetMapping("/subcategories")
+    @GetMapping(value = "/subcategories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all subcategories of one category")
     public ResponseEntity<Object> getSubcategories(@PathVariable int categoryId,
@@ -86,7 +86,7 @@ public class SubcategoryController {
      * @param loggedInLastName      The last name of the logged-in user.
      * @return The requested subcategory.
      */
-    @GetMapping("/subcategories/{subcategoryId}")
+    @GetMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one subcategory")
     public ResponseEntity<Object> getSubcategory(@PathVariable int categoryId,
@@ -115,7 +115,7 @@ public class SubcategoryController {
      * @param loggedInUser              The logged-in user.
      * @return The ID of the newly created subcategory.
      */
-    @PostMapping("/subcategories")
+    @PostMapping(value = "/subcategories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new subcategory")
     public ResponseEntity<Object> addSubcategory(@PathVariable int categoryId,
@@ -143,7 +143,7 @@ public class SubcategoryController {
      * @param updatedSubcategoryColourId            The updated colour of the subcategory.
      * @param loggedInUser                          The logged-in user.
      */
-    @PatchMapping("/subcategories/{subcategoryId}")
+    @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing subcategory")
     public ResponseEntity<Object> updateSubcategory(@PathVariable int categoryId,
@@ -169,7 +169,7 @@ public class SubcategoryController {
      * @param subcategoryId    The ID of the subcategory to delete.
      * @param loggedInUser The logged-in user.
      */
-    @DeleteMapping("/subcategories/{subcategoryId}")
+    @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a subcategory")
     public ResponseEntity<Object> deleteSubcategory(@PathVariable int categoryId,

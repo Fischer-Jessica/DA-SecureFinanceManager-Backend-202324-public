@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 06.10.2023 (version 2.0)
+ * @version 2.1
+ * @since 06.10.2023 (version 2.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -54,7 +54,7 @@ public class LabelController {
      * @param loggedInLastName      The last name of the logged-in user.
      * @return A list of labels.
      */
-    @GetMapping("/labels")
+    @GetMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all labels")
     public ResponseEntity<Object> getLabels(@RequestParam int loggedInUserId,
@@ -82,7 +82,7 @@ public class LabelController {
      * @param loggedInLastName      The last name of the logged-in user.
      * @return The requested label.
      */
-    @GetMapping("/labels/{labelId}")
+    @GetMapping(value = "/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one label")
     public ResponseEntity<Object> getLabel(@PathVariable int labelId,
@@ -109,7 +109,7 @@ public class LabelController {
      * @param loggedInUser     The logged-in user.
      * @return The ID of the newly created label.
      */
-    @PostMapping("/labels")
+    @PostMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "add a new label")
     public ResponseEntity<Object> addLabel(@RequestParam String labelName,
@@ -133,7 +133,7 @@ public class LabelController {
      * @param updatedLabelColour            The updated colour of the label.
      * @param loggedInUser                  The logged-in user.
      */
-    @PatchMapping("/labels")
+    @PatchMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing label")
     public ResponseEntity<Object> updateLabel(@RequestParam int labelId,
@@ -155,7 +155,7 @@ public class LabelController {
      * @param labelId      The ID of the label to delete.
      * @param loggedInUser The logged-in user.
      */
-    @DeleteMapping("/labels")
+    @DeleteMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a label")
     public ResponseEntity<Object> deleteCategory(@RequestParam int labelId,

@@ -36,8 +36,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 06.10.2023 (version 1.9)
+ * @version 2.0
+ * @since 06.10.2023 (version 2.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -59,7 +59,7 @@ public class UserController {
      * @param passwordToValidate The password of the user to be authenticated.
      * @return The User object representing the authenticated user if successful, or null if authentication fails.
      */
-    @GetMapping("/user")
+    @GetMapping(value = "/user", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Validates user credentials and returns true or false based on the validation result.")
     public ResponseEntity<Object> authenticateUser(@RequestParam String usernameToValidate,
@@ -77,7 +77,7 @@ public class UserController {
      *
      * @return A list of all users.
      */
-    @GetMapping("/users")
+    @GetMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all users")
     public List<User> getUsers() {
@@ -94,7 +94,7 @@ public class UserController {
      * @param lastName        The last name of the new user.
      * @return The ID of the newly created user.
      */
-    @PostMapping("/users")
+    @PostMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
     public User addUser(@RequestParam String username,
@@ -115,7 +115,7 @@ public class UserController {
      * @param updatedLastName           The updated last name of the user.
      * @param loggedInUser              The logged-in user performing the update.
      */
-    @PatchMapping("/users")
+    @PatchMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing user")
     public ResponseEntity<Object> updateUser(@RequestParam(required = false) String updatedUsername,
@@ -137,7 +137,7 @@ public class UserController {
      *
      * @param loggedInUser The logged-in user the deletion is performed on.
      */
-    @DeleteMapping("/users")
+    @DeleteMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "deletes an user")
     public ResponseEntity<Object> deleteUser(@RequestBody User loggedInUser) {

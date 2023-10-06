@@ -32,8 +32,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 06.10.2023 (version 2.2)
+ * @version 2.3
+ * @since 06.10.2023 (version 2.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -56,7 +56,7 @@ public class EntryController {
      * @param loggedInLastName      The last name of the logged-in user.
      * @return A list of entries for the specified subcategory.
      */
-    @GetMapping("/entries")
+    @GetMapping(value = "/entries", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all entries of one subcategory")
     public ResponseEntity<Object> getEntries(@PathVariable int categoryId,
@@ -89,7 +89,7 @@ public class EntryController {
      * @param loggedInLastName      The last name of the logged-in user.
      * @return The requested entry.
      */
-    @GetMapping("/entries/{entryId}")
+    @GetMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one entry")
     public ResponseEntity<Object> getEntry(@PathVariable int categoryId,
@@ -122,7 +122,7 @@ public class EntryController {
      * @param loggedInUser                  The logged-in user.
      * @return The ID of the newly created entry.
      */
-    @PostMapping("/entries")
+    @PostMapping(value = "/entries", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "create a new entry")
     public ResponseEntity<Object> addEntry(@PathVariable int categoryId,
@@ -155,7 +155,7 @@ public class EntryController {
      * @param updatedEntryTimeOfTransaction     The updated time the transaction in the entry.
      * @param loggedInUser                      The logged-in user.
      */
-    @PatchMapping("/entries/{entryId}")
+    @PatchMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing entry")
     public ResponseEntity<Object> updateEntry(@PathVariable int categoryId,
@@ -185,7 +185,7 @@ public class EntryController {
      * @param entryId           The ID of the entry to be deleted.
      * @param loggedInUser      The logged-in user.
      */
-    @DeleteMapping("/entries/{entryId}")
+    @DeleteMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete an entry")
     public ResponseEntity<Object> deleteEntry(@PathVariable int categoryId,

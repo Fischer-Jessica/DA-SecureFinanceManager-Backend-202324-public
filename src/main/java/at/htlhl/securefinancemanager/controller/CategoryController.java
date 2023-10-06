@@ -33,8 +33,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 06.10.2023 (version 2.1)
+ * @version 2.2
+ * @since 06.10.2023 (version 2.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -55,7 +55,7 @@ public class CategoryController {
      * @param loggedInLastName     The last name of the logged-in user.
      * @return A list of categories.
      */
-    @GetMapping("/categories")
+    @GetMapping(value = "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all categories")
     public ResponseEntity<Object> getCategories(@RequestParam int loggedInUserId,
@@ -83,7 +83,7 @@ public class CategoryController {
      * @param loggedInLastName     The last name of the logged-in user.
      * @return The requested category.
      */
-    @GetMapping("/categories/{categoryId}")
+    @GetMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one category")
     public ResponseEntity<Object> getCategory(@PathVariable int categoryId,
@@ -110,7 +110,7 @@ public class CategoryController {
      * @param loggedInUser        The logged-in user.
      * @return The ID of the newly created category.
      */
-    @PostMapping("/categories")
+    @PostMapping(value =  "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new category")
     public ResponseEntity<Object> addCategory(@RequestParam String categoryName,
@@ -134,7 +134,7 @@ public class CategoryController {
      * @param updatedCategoryColourId       The updated category color ID.
      * @param loggedInUser                  The logged-in user.
      */
-    @PatchMapping("/categories")
+    @PatchMapping(value = "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "change an existing category")
     public ResponseEntity<Object> updateCategory(@RequestParam int categoryId,
@@ -156,7 +156,7 @@ public class CategoryController {
      * @param categoryId   The ID of the category to delete.
      * @param loggedInUser The logged-in user.
      */
-    @DeleteMapping("/categories")
+    @DeleteMapping(value = "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a category")
     public ResponseEntity<Object> deleteCategory(@RequestParam int categoryId,

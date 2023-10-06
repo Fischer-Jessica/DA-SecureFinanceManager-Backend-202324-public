@@ -29,8 +29,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 03.10.2023 (version 1.5)
+ * @version 1.6
+ * @since 06.10.2023 (version 1.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -45,7 +45,7 @@ public class ColourController {
      *
      * @return A list of colours.
      */
-    @GetMapping("/colours")
+    @GetMapping(value = "/colours", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all colours")
     public List<Colour> getColours() {
@@ -58,7 +58,7 @@ public class ColourController {
      * @param colourId The ID of the colour to retrieve.
      * @return The requested colour.
      */
-    @GetMapping("/colours/{colourId}")
+    @GetMapping(value = "/colours/{colourId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one colour")
     public Colour getColour(@PathVariable int colourId) {
