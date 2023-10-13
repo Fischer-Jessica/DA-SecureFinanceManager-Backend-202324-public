@@ -23,16 +23,8 @@
    <p>Ich hatte bei entry_description einmal den folgenden Fehler: Last unit does not have enough valid bits und habe ein paar Buchstaben hinzufügen müssen</p>
 
 <br>
+
 ---------------------------------------------------------------------
-
-## ToDos
-
-- [x] alle Funktionen in der swagger-ui testen
-- [x] herausfinden, warum die id nicht zurückgesetzt wird beim Löschen von Einträgen
-- [x] ich brauche noch eine Methode, die sagt, ob der User, der sich anmelden will, überhaupt existiert
-- [x] spezifischen Fehler hinzufügen: ValidationUnsuccessful
-
-----------------------------------------------------------------------------------
 
 ## Informationen
 
