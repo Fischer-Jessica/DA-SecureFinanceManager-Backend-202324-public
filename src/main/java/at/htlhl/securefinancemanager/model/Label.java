@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 24.07.2023 (version 1.7)
+ * @version 1.8
+ * @since 15.10.2023 (version 1.8)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -146,5 +146,25 @@ public class Label {
      */
     public int getLabelUserId() {
         return labelUserId;
+    }
+
+    /**
+     * Sets the ID of the label.
+     *
+     * @param labelId The ID to be associated with the label.
+     *               This ID uniquely identifies the label within the system.
+     */
+    public void setLabelId(int labelId) {
+        this.labelId = labelId;
+    }
+
+    /**
+     * Sets the user ID associated with this label.
+     *
+     * @param labelUserId The user ID to be associated with the label.
+     *                   This ID represents the user to whom the label belongs.
+     */
+    public void setLabelUserId(int labelUserId) {
+        this.labelUserId = labelUserId;
     }
 }

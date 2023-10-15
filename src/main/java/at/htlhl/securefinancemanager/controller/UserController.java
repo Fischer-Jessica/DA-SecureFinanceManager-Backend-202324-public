@@ -7,10 +7,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The UserController class handles the HTTP requests related to user management.
@@ -36,9 +38,10 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 06.10.2023 (version 2.0)
+ * @version 2.1
+ * @since 15.10.2023 (version 2.1)
  */
+// TODO: Is the UserId always required? That shouldn't be used anywhere
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("secure-finance-manager")
@@ -47,36 +50,14 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-    /**
-     * Validates user credentials and returns the authenticated user object if successful.
-     *
-     * This method authenticates the user with the provided username and password. It checks if the user
-     * with the given username exists in the database and if the provided password matches the stored password
-     * for that user. If the authentication is successful, it returns the User object representing the
-     * authenticated user; otherwise, it returns null.
-     *
-     * @param usernameToValidate The username of the user to be authenticated.
-     * @param passwordToValidate The password of the user to be authenticated.
-     * @return The User object representing the authenticated user if successful, or null if authentication fails.
-     */
-    @GetMapping(value = "/user", headers = "API-Version=0")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Validates user credentials and returns true or false based on the validation result.")
-    public ResponseEntity<Object> authenticateUser(@RequestParam String usernameToValidate,
-                                                    @RequestParam String passwordToValidate) {
-        try {
-            return ResponseEntity.ok(userRepository.authenticateUser(usernameToValidate, passwordToValidate));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
-        }
-    }
+    // TODO: Should there be a method simply for logging in?
 
     /**
      * Returns a list of all users.
-     * TODO: This will be restricted or removed in the final product.
      *
      * @return A list of all users.
      */
+    // TODO: This will be restricted or removed in the final product.
     @GetMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all users")
@@ -87,46 +68,37 @@ public class UserController {
     /**
      * Adds a new user.
      *
-     * @param username        The username of the new user.
-     * @param password        The password of the new user.
-     * @param eMailAddress    The email address of the new user.
-     * @param firstName       The first name of the new user.
-     * @param lastName        The last name of the new user.
+     * @param newUser The user object representing the new user to be added.
      * @return The ID of the newly created user.
      */
+
+    // TODO: make some Parameters of User not required
+    // TODO: no Authentication needed for this endpoint
     @PostMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
-    public User addUser(@RequestParam String username,
-                       @RequestParam String password,
-                       @RequestParam String eMailAddress,
-                       @RequestParam String firstName,
-                       @RequestParam String lastName) {
-        return userRepository.addUser(username, password, eMailAddress, firstName, lastName);
+    public User addUser(@RequestBody User newUser) {
+        return userRepository.addUser(newUser);
     }
 
     /**
      * Updates an existing user.
      *
-     * @param updatedUsername           The updated username of the user.
-     * @param updatedPassword           The updated password of the user.
-     * @param updatedEMailAddress       The updated e-mail-address of the user.
-     * @param updatedFirstName          The updated first name of the user.
-     * @param updatedLastName           The updated last name of the user.
-     * @param loggedInUser              The logged-in user performing the update.
+     * @param updatedUser The user object containing the updated user information.
+     * @param activeUser The UserDetails object representing the currently authenticated user.
+     * @return ResponseEntity with the updated user if successful, or an error response if validation fails.
      */
-    @PatchMapping(value = "/users", headers = "API-Version=0")
+    @PatchMapping(value = "/users/{userId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing user")
-    public ResponseEntity<Object> updateUser(@RequestParam(required = false) String updatedUsername,
-                                     @RequestParam(required = false) String updatedPassword,
-                                     @RequestParam(required = false) String updatedEMailAddress,
-                                     @RequestParam(required = false) String updatedFirstName,
-                                     @RequestParam(required = false) String updatedLastName,
-                                     @RequestBody User loggedInUser) {
+    // TODO: make some Parameters of User not required
+    // TODO: how to pass the default values?
+    public ResponseEntity<Object> updateUser(@PathVariable int userId,
+                                             @RequestBody(required = false) User updatedUser,
+                                             @AuthenticationPrincipal UserDetails activeUser) {
         try {
-            return ResponseEntity.ok(userRepository.updateUser(new User(loggedInUser.getUserId(), updatedUsername, updatedPassword, updatedEMailAddress, updatedFirstName, updatedLastName),
-                    loggedInUser));
+            return ResponseEntity.ok(userRepository.updateUser(userId, updatedUser, activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -135,14 +107,17 @@ public class UserController {
     /**
      * Deletes a user.
      *
-     * @param loggedInUser The logged-in user the deletion is performed on.
+     * @param activeUser The UserDetails object representing the currently authenticated user.
+     * @return ResponseEntity indicating the success of the deletion operation or an error response if validation fails.
      */
+    // TODO: I do not need the Id as a PathVariable, but it would be clean
     @DeleteMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes an user")
-    public ResponseEntity<Object> deleteUser(@RequestBody User loggedInUser) {
+    public ResponseEntity<Object> deleteUser(@AuthenticationPrincipal UserDetails activeUser) {
         try {
-            userRepository.deleteUser(loggedInUser);
+            userRepository.deleteUser(activeUser.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());

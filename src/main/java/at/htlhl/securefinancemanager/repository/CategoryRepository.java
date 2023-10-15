@@ -37,8 +37,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 06.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 15.10.2023 (version 1.9)
  */
 @Repository
 public class CategoryRepository {
@@ -79,15 +79,16 @@ public class CategoryRepository {
     /**
      * Retrieves a list of categories for the logged-in user.
      *
-     * @param loggedInUser The logged-in user.
+     * @param username The username of the logged-in user.
      * @return A list of Category objects representing the categories.
+     * @throws ValidationException If there is an issue with data validation.
      */
-    public List<Category> getCategories(User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public List<Category> getCategories(String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORIES);
-            ps.setInt(1, loggedInUser.getUserId());
+            ps.setInt(1, activeUserId);
             ResultSet rs = ps.executeQuery();
 
             List<Category> categories = new ArrayList<>();
@@ -97,7 +98,7 @@ public class CategoryRepository {
                 byte[] categoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                Category category = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, loggedInUser.getUserId());
+                Category category = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
                 categories.add(category);
             }
 
@@ -107,20 +108,20 @@ public class CategoryRepository {
         }
     }
 
-
     /**
      * Retrieves a specific category for the logged-in user.
      *
-     * @param categoryId   The ID of the category to retrieve.
-     * @param loggedInUser The logged-in user.
+     * @param categoryId The ID of the category to retrieve.
+     * @param username   The username of the logged-in user.
      * @return The requested Category object.
+     * @throws ValidationException If there is an issue with data validation.
      */
-    public Category getCategory(int categoryId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Category getCategory(int categoryId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORY);
-            ps.setInt(1, loggedInUser.getUserId());
+            ps.setInt(1, activeUserId);
             ps.setInt(2, categoryId);
             ResultSet rs = ps.executeQuery();
 
@@ -130,7 +131,7 @@ public class CategoryRepository {
                 byte[] categoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                getCategory = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, loggedInUser.getUserId());
+                getCategory = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
             }
             return getCategory;
         } catch (SQLException e) {
@@ -141,14 +142,11 @@ public class CategoryRepository {
     /**
      * Adds a new category for the logged-in user.
      *
-     * @param categoryName        The name of the new category.
-     * @param categoryDescription The description of the new category.
-     * @param categoryColourId    The ID of the color for the new category.
-     * @param loggedInUser        The logged-in user.
+     * @param newCategory The Category object representing the new category.
      * @return The ID of the newly created category.
+     * @throws ValidationException If there is an issue with data validation.
      */
-    public Category addCategory(String categoryName, String categoryDescription, int categoryColourId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Category addCategory(Category newCategory) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -156,14 +154,14 @@ public class CategoryRepository {
 
             UserRepository.jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_CATEGORY, new String[]{"pk_category_id"});
-                ps.setBytes(1, Base64.getDecoder().decode(categoryName));
-                ps.setBytes(2, Base64.getDecoder().decode(categoryDescription));
-                ps.setInt(3, categoryColourId);
-                ps.setInt(4, loggedInUser.getUserId());
+                ps.setBytes(1, Base64.getDecoder().decode(newCategory.getCategoryName()));
+                ps.setBytes(2, Base64.getDecoder().decode(newCategory.getCategoryDescription()));
+                ps.setInt(3, newCategory.getCategoryColourId());
+                ps.setInt(4, newCategory.getCategoryUserId());
                 return ps;
             }, keyHolder);
 
-            return new Category(Objects.requireNonNull(keyHolder.getKey()).intValue(), categoryName, categoryDescription, categoryColourId, loggedInUser.getUserId());
+            return new Category(Objects.requireNonNull(keyHolder.getKey()).intValue(), newCategory.getCategoryName(), newCategory.getCategoryDescription(), newCategory.getCategoryColourId(), newCategory.getCategoryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -173,11 +171,12 @@ public class CategoryRepository {
      * Updates an existing category for the logged-in user.
      *
      * @param updatedCategory The updated Category object.
-     * @param loggedInUser    The logged-in user.
+     * @param username        The username of the logged-in user.
+     * @return The updated Category object.
+     * @throws ValidationException If there is an issue with data validation.
      */
-    public Category updateCategory(Category updatedCategory, User loggedInUser) throws ValidationException {
-        Category oldCategory = getCategory(updatedCategory.getCategoryId(), loggedInUser);
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Category updateCategory(Category updatedCategory, String username) throws ValidationException {
+        Category oldCategory = getCategory(updatedCategory.getCategoryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY);
@@ -201,10 +200,10 @@ public class CategoryRepository {
             }
 
             ps.setInt(4, updatedCategory.getCategoryId());
-            ps.setInt(5, loggedInUser.getUserId());
+            ps.setInt(5, updatedCategory.getCategoryUserId());
             ps.executeUpdate();
             conn.close();
-            return getCategory(updatedCategory.getCategoryId(), loggedInUser);
+            return getCategory(updatedCategory.getCategoryId(), username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -213,17 +212,18 @@ public class CategoryRepository {
     /**
      * Deletes a category for the logged-in user.
      *
-     * @param categoryId   The ID of the category to delete.
-     * @param loggedInUser The logged-in user.
+     * @param categoryId The ID of the category to delete.
+     * @param username   The username of the logged-in user.
+     * @throws ValidationException If there is an issue with data validation.
      */
-    public void deleteCategory(int categoryId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public void deleteCategory(int categoryId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_CATEGORY);
             ps.setInt(1, categoryId);
-            ps.setInt(2, loggedInUser.getUserId());
+            ps.setInt(2, activeUserId);
             ps.executeUpdate();
             conn.close();
         } catch (SQLException exception) {

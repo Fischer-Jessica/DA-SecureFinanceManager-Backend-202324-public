@@ -2,16 +2,16 @@ package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.Label;
-import at.htlhl.securefinancemanager.model.User;
 import at.htlhl.securefinancemanager.repository.LabelRepository;
+import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * The LabelController class handles the HTTP requests related to label management.
@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 06.10.2023 (version 2.1)
+ * @version 2.2
+ * @since 15.10.2023 (version 2.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -46,25 +46,16 @@ public class LabelController {
     /**
      * Returns a list of all labels for the logged-in user.
      *
-     * @param loggedInUserId        The ID of the logged-in user.
-     * @param loggedInUsername      The username of the logged-in user.
-     * @param loggedInPassword      The password of the logged-in user.
-     * @param loggedInEMailAddress  The email address of the logged-in user.
-     * @param loggedInFirstName     The first name of the logged-in user.
-     * @param loggedInLastName      The last name of the logged-in user.
+     * @param userDetails The UserDetails object representing the logged-in user.
      * @return A list of labels.
      */
     @GetMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all labels")
-    public ResponseEntity<Object> getLabels(@RequestParam int loggedInUserId,
-                                             @RequestParam String loggedInUsername,
-                                             @RequestParam String loggedInPassword,
-                                             @RequestParam String loggedInEMailAddress,
-                                             @RequestParam String loggedInFirstName,
-                                             @RequestParam String loggedInLastName) {
+    public ResponseEntity<Object> getLabels(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(labelRepository.getLabels(new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(labelRepository.getLabels(userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -73,28 +64,18 @@ public class LabelController {
     /**
      * Returns a specific label for the logged-in user.
      *
-     * @param labelId               The ID of the label to retrieve.
-     * @param loggedInUserId        The ID of the logged-in user.
-     * @param loggedInUsername      The username of the logged-in user.
-     * @param loggedInPassword      The password of the logged-in user.
-     * @param loggedInEMailAddress  The email address of the logged-in user.
-     * @param loggedInFirstName     The first name of the logged-in user.
-     * @param loggedInLastName      The last name of the logged-in user.
+     * @param labelId The ID of the label to retrieve.
+     * @param userDetails The UserDetails object representing the logged-in user.
      * @return The requested label.
      */
     @GetMapping(value = "/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one label")
     public ResponseEntity<Object> getLabel(@PathVariable int labelId,
-                                          @RequestParam int loggedInUserId,
-                                          @RequestParam String loggedInUsername,
-                                          @RequestParam String loggedInPassword,
-                                          @RequestParam String loggedInEMailAddress,
-                                          @RequestParam String loggedInFirstName,
-                                          @RequestParam String loggedInLastName) {
+                                           @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(labelRepository.getLabel(labelId,
-                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(labelRepository.getLabel(labelId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -103,22 +84,19 @@ public class LabelController {
     /**
      * Adds a new label for the logged-in user.
      *
-     * @param labelName        The name of the new label.
-     * @param labelDescription The description of the new label.
-     * @param labelColourId    The ID of the color for the new label.
-     * @param loggedInUser     The logged-in user.
+     * @param newLabel The Label object representing the new label.
+     * @param userDetails The UserDetails object representing the logged-in user.
      * @return The ID of the newly created label.
      */
     @PostMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "add a new label")
-    public ResponseEntity<Object> addLabel(@RequestParam String labelName,
-                                            @RequestParam String labelDescription,
-                                            @RequestParam int labelColourId,
-                                            @RequestBody User loggedInUser) {
+    public ResponseEntity<Object> addLabel(@RequestBody Label newLabel,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(labelRepository.addLabel(labelName, labelDescription, labelColourId,
-                    loggedInUser));
+            newLabel.setLabelUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(labelRepository.addLabel(newLabel));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -127,23 +105,23 @@ public class LabelController {
     /**
      * Updates an existing label for the logged-in user.
      *
-     * @param labelId                       The ID of the label that will be changed.
-     * @param updatedLabelName              The updated name of the label.
-     * @param updatedLabelDescription       The updated description of the label.
-     * @param updatedLabelColour            The updated colour of the label.
-     * @param loggedInUser                  The logged-in user.
+     * @param labelId The ID of the label that will be changed.
+     * @param updatedLabel The Label object with updated information.
+     * @param userDetails The UserDetails object representing the logged-in user.
+     * @return The updated Label object.
      */
-    @PatchMapping(value = "/labels", headers = "API-Version=0")
+    @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing label")
-    public ResponseEntity<Object> updateLabel(@RequestParam int labelId,
-                                      @RequestParam(required = false) String updatedLabelName,
-                                      @RequestParam(required = false) String updatedLabelDescription,
-                                      @RequestParam(defaultValue = "-1", required = false) int updatedLabelColour,
-                                      @RequestBody User loggedInUser) {
+    public ResponseEntity<Object> updateLabel(@PathVariable int labelId,
+                                              @RequestBody Label updatedLabel,
+                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(labelRepository.updateLabel(new Label(labelId, updatedLabelName, updatedLabelDescription, updatedLabelColour, loggedInUser.getUserId()),
-                    loggedInUser));
+            // TODO: That does not feel clean
+            updatedLabel.setLabelId(labelId);
+            updatedLabel.setLabelUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(labelRepository.updateLabel(updatedLabel, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -152,16 +130,18 @@ public class LabelController {
     /**
      * Deletes a label for the logged-in user.
      *
-     * @param labelId      The ID of the label to delete.
-     * @param loggedInUser The logged-in user.
+     * @param labelId The ID of the label to delete.
+     * @param userDetails The UserDetails object representing the logged-in user.
+     * @return A response indicating the success of the operation.
      */
-    @DeleteMapping(value = "/labels", headers = "API-Version=0")
+    @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "delete a label")
-    public ResponseEntity<Object> deleteCategory(@RequestParam int labelId,
-                                         @RequestBody User loggedInUser) {
+    public ResponseEntity<Object> deleteCategory(@PathVariable int labelId,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            labelRepository.deleteLabel(labelId, loggedInUser);
+            labelRepository.deleteLabel(labelId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());

@@ -25,8 +25,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 06.10.2023 (version 2.0)
+ * @version 2.1
+ * @since 15.10.2023 (version 2.1)
  */
 @Repository
 public class EntryRepository {
@@ -68,15 +68,15 @@ public class EntryRepository {
      * Retrieves all entries from a specific subcategory for a given user.
      *
      * @param subcategoryId The ID of the subcategory.
-     * @param loggedInUser  The logged-in user.
+     * @param username  The logged-in user.
      * @return A list of entries.
      */
-    public List<Entry> getEntries(int subcategoryId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public List<Entry> getEntries(int subcategoryId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES);
-            ps.setInt(1, loggedInUser.getUserId());
+            ps.setInt(1, activeUserId);
             ps.setInt(2, subcategoryId);
             ResultSet rs = ps.executeQuery();
 
@@ -93,7 +93,7 @@ public class EntryRepository {
 
                 Entry entry = new Entry(entryId, Base64.getEncoder().encodeToString(entryName), Base64.getEncoder().encodeToString(entryDescription),
                         Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime), Base64.getEncoder().encodeToString(entryTimeOfTransaction),
-                        Base64.getEncoder().encodeToString(entryAttachment), subcategoryId, loggedInUser.getUserId());
+                        Base64.getEncoder().encodeToString(entryAttachment), subcategoryId, activeUserId);
                 entries.add(entry);
             }
             return entries;
@@ -107,16 +107,16 @@ public class EntryRepository {
      *
      * @param subcategoryId The ID of the subcategory.
      * @param entryId       The ID of the entry.
-     * @param loggedInUser  The logged-in user.
+     * @param username      The username of the logged-in user.
      * @return The entry object.
      */
-    public Entry getEntry(int subcategoryId, int entryId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Entry getEntry(int subcategoryId, int entryId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY);
             ps.setInt(1, entryId);
-            ps.setInt(2, loggedInUser.getUserId());
+            ps.setInt(2, activeUserId);
             ps.setInt(3, subcategoryId);
             ResultSet rs = ps.executeQuery();
 
@@ -131,7 +131,7 @@ public class EntryRepository {
 
                 entry = new Entry(entryId, Base64.getEncoder().encodeToString(entryName), Base64.getEncoder().encodeToString(entryDescription),
                         Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime), Base64.getEncoder().encodeToString(entryTimeOfTransaction),
-                        Base64.getEncoder().encodeToString(entryAttachment), subcategoryId, loggedInUser.getUserId());
+                        Base64.getEncoder().encodeToString(entryAttachment), subcategoryId, activeUserId);
             }
             return entry;
         } catch (SQLException e) {
@@ -142,17 +142,10 @@ public class EntryRepository {
     /**
      * Adds a new entry to a specific subcategory for a given user.
      *
-     * @param subcategoryId          The ID of the subcategory.
-     * @param entryName              The name of the entry.
-     * @param entryDescription       The description of the entry.
-     * @param entryAmount            The amount of the entry.
-     * @param entryTimeOfTransaction The time of the transaction in the entry.
-     * @param entryAttachment        The attachment of the entry.
-     * @param loggedInUser           The logged-in user.
+     * @param newEntry  The new entry to be added.
      * @return The ID of the added entry.
      */
-    public Entry addEntry(int subcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfTransaction, String entryAttachment, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Entry addEntry(Entry newEntry) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -163,18 +156,18 @@ public class EntryRepository {
 
             UserRepository.jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_ENTRY, new String[]{"pk_entry_id"});
-                ps.setInt(1, subcategoryId);
-                ps.setBytes(2, Base64.getDecoder().decode(entryName));
-                ps.setBytes(3, Base64.getDecoder().decode(entryDescription));
-                ps.setBytes(4, Base64.getDecoder().decode(entryAmount));
+                ps.setInt(1, newEntry.getEntrySubcategoryId());
+                ps.setBytes(2, Base64.getDecoder().decode(newEntry.getEntryName()));
+                ps.setBytes(3, Base64.getDecoder().decode(newEntry.getEntryDescription()));
+                ps.setBytes(4, Base64.getDecoder().decode(newEntry.getEntryAmount()));
                 ps.setBytes(5, entryCreationTimeBytes);
-                ps.setBytes(6, Base64.getDecoder().decode(entryTimeOfTransaction));
-                ps.setBytes(7, Base64.getDecoder().decode(entryAttachment));
-                ps.setInt(8, loggedInUser.getUserId());
+                ps.setBytes(6, Base64.getDecoder().decode(newEntry.getEntryTimeOfTransaction()));
+                ps.setBytes(7, Base64.getDecoder().decode(newEntry.getEntryAttachment()));
+                ps.setInt(8, newEntry.getEntryUserId());
                 return ps;
             }, keyHolder);
 
-            return new Entry(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryName, entryDescription, entryAmount, Base64.getEncoder().encodeToString(entryCreationTimeBytes), entryTimeOfTransaction, entryAttachment, subcategoryId, loggedInUser.getUserId());
+            return new Entry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), Base64.getEncoder().encodeToString(entryCreationTimeBytes), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), newEntry.getEntrySubcategoryId(), newEntry.getEntryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -183,66 +176,54 @@ public class EntryRepository {
     /**
      * Updates an existing entry in a specific subcategory for a given user.
      *
-     * @param subcategoryId                 The ID of the subcategory.
-     * @param entryId                       The ID of the entry to be updated.
-     * @param updatedSubcategoryId          The updated ID of the subcategory.
-     * @param updatedEntryName              The updated name of the entry.
-     * @param updatedEntryDescription       The updated description of the entry.
-     * @param updatedEntryAmount            The updated amount of the entry.
-     * @param updatedEntryTimeOfTransaction The updated time of the transaction in the entry.
-     * @param updatedEntryAttachment        The updated attachment of the entry.
-     * @param loggedInUser                  The logged-in user.
+     * @param updatedEntry  The updated entry data.
+     * @param username      The username of the logged-in user.
+     * @return The updated entry.
      */
-    public Entry updateEntry(int subcategoryId, int entryId, int updatedSubcategoryId, String updatedEntryName, String updatedEntryDescription, String updatedEntryAmount, String updatedEntryTimeOfTransaction,
-                            String updatedEntryAttachment, User loggedInUser) throws ValidationException {
-        Entry oldEntry = getEntry(subcategoryId, entryId, loggedInUser);
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Entry updateEntry(Entry updatedEntry, String username) throws ValidationException {
+        Entry oldEntry = getEntry(updatedEntry.getEntrySubcategoryId(), updatedEntry.getEntryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY);
 
-            if (updatedSubcategoryId != -1) {
-                ps.setInt(1, updatedSubcategoryId);
-            } else {
-                ps.setInt(1, subcategoryId);
-            }
+            ps.setInt(1, updatedEntry.getEntrySubcategoryId());
 
-            if (updatedEntryName != null) {
-                ps.setBytes(2, Base64.getDecoder().decode(updatedEntryName));
+            if (updatedEntry.getEntryName() != null) {
+                ps.setBytes(2, Base64.getDecoder().decode(updatedEntry.getEntryName()));
             } else {
                 ps.setBytes(2, Base64.getDecoder().decode(oldEntry.getEntryName()));
             }
 
-            if (updatedEntryDescription != null) {
-                ps.setBytes(3, Base64.getDecoder().decode(updatedEntryDescription));
+            if (updatedEntry.getEntryDescription() != null) {
+                ps.setBytes(3, Base64.getDecoder().decode(updatedEntry.getEntryDescription()));
             } else {
                 ps.setBytes(3, Base64.getDecoder().decode(oldEntry.getEntryDescription()));
             }
 
-            if (updatedEntryAmount != null) {
-                ps.setBytes(4, Base64.getDecoder().decode(updatedEntryAmount));
+            if (updatedEntry.getEntryAmount() != null) {
+                ps.setBytes(4, Base64.getDecoder().decode(updatedEntry.getEntryAmount()));
             } else {
                 ps.setBytes(4, Base64.getDecoder().decode(oldEntry.getEntryAmount()));
             }
 
-            if (updatedEntryTimeOfTransaction != null) {
-                ps.setBytes(5, Base64.getDecoder().decode(updatedEntryTimeOfTransaction));
+            if (updatedEntry.getEntryTimeOfTransaction() != null) {
+                ps.setBytes(5, Base64.getDecoder().decode(updatedEntry.getEntryTimeOfTransaction()));
             } else {
                 ps.setBytes(5, Base64.getDecoder().decode(oldEntry.getEntryTimeOfTransaction()));
             }
 
-            if (updatedEntryAttachment != null) {
-                ps.setBytes(6, Base64.getDecoder().decode(updatedEntryAttachment));
+            if (updatedEntry.getEntryAttachment() != null) {
+                ps.setBytes(6, Base64.getDecoder().decode(updatedEntry.getEntryAttachment()));
             } else {
                 ps.setBytes(6, Base64.getDecoder().decode(oldEntry.getEntryAttachment()));
             }
 
-            ps.setInt(7, entryId);
-            ps.setInt(8, loggedInUser.getUserId());
-            ps.setInt(9, subcategoryId);
+            ps.setInt(7, updatedEntry.getEntryId());
+            ps.setInt(8, updatedEntry.getEntryUserId());
+            ps.setInt(9, updatedEntry.getEntrySubcategoryId());
             ps.executeUpdate();
             conn.close();
-            return getEntry(subcategoryId, entryId, loggedInUser);
+            return getEntry(updatedEntry.getEntrySubcategoryId(), updatedEntry.getEntryId(), username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -253,16 +234,16 @@ public class EntryRepository {
      *
      * @param subcategoryId The ID of the subcategory.
      * @param entryId       The ID of the entry to be deleted.
-     * @param loggedInUser  The logged-in user.
+     * @param username      The username of the logged-in user.
      */
-    public void deleteEntry(int subcategoryId, int entryId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public void deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_ENTRY);
             ps.setInt(1, entryId);
-            ps.setInt(2, loggedInUser.getUserId());
+            ps.setInt(2, activeUserId);
             ps.setInt(3, subcategoryId);
             ps.executeUpdate();
             conn.close();

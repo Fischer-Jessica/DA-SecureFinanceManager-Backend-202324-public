@@ -2,16 +2,16 @@ package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.Category;
-import at.htlhl.securefinancemanager.model.User;
 import at.htlhl.securefinancemanager.repository.CategoryRepository;
+import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  * The CategoryController class handles HTTP requests related to category management.
@@ -33,8 +33,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 06.10.2023 (version 2.2)
+ * @version 2.3
+ * @since 15.10.2023 (version 2.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -47,25 +47,16 @@ public class CategoryController {
     /**
      * Returns a list of all categories for the logged-in user.
      *
-     * @param loggedInUserId       The ID of the logged-in user.
-     * @param loggedInUsername     The username of the logged-in user.
-     * @param loggedInPassword     The password of the logged-in user.
-     * @param loggedInEMailAddress The email address of the logged-in user.
-     * @param loggedInFirstName    The first name of the logged-in user.
-     * @param loggedInLastName     The last name of the logged-in user.
+     * @param userDetails The UserDetails object containing information about the logged-in user.
      * @return A list of categories.
      */
     @GetMapping(value = "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all categories")
-    public ResponseEntity<Object> getCategories(@RequestParam int loggedInUserId,
-                                                 @RequestParam String loggedInUsername,
-                                                 @RequestParam String loggedInPassword,
-                                                 @RequestParam String loggedInEMailAddress,
-                                                 @RequestParam String loggedInFirstName,
-                                                 @RequestParam String loggedInLastName) {
+    public ResponseEntity<Object> getCategories(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(categoryRepository.getCategories(new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(categoryRepository.getCategories(userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -74,28 +65,18 @@ public class CategoryController {
     /**
      * Returns a specific category for the logged-in user.
      *
-     * @param categoryId           The ID of the category to retrieve.
-     * @param loggedInUserId       The ID of the logged-in user.
-     * @param loggedInUsername     The username of the logged-in user.
-     * @param loggedInPassword     The password of the logged-in user.
-     * @param loggedInEMailAddress The email address of the logged-in user.
-     * @param loggedInFirstName    The first name of the logged-in user.
-     * @param loggedInLastName     The last name of the logged-in user.
+     * @param categoryId   The ID of the category to retrieve.
+     * @param userDetails  The UserDetails object containing information about the logged-in user.
      * @return The requested category.
      */
     @GetMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one category")
     public ResponseEntity<Object> getCategory(@PathVariable int categoryId,
-                                                @RequestParam int loggedInUserId,
-                                                @RequestParam String loggedInUsername,
-                                                @RequestParam String loggedInPassword,
-                                                @RequestParam String loggedInEMailAddress,
-                                                @RequestParam String loggedInFirstName,
-                                                @RequestParam String loggedInLastName) {
+                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(categoryRepository.getCategory(categoryId,
-                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(categoryRepository.getCategory(categoryId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -104,22 +85,19 @@ public class CategoryController {
     /**
      * Adds a new category for the logged-in user.
      *
-     * @param categoryName        The name of the new category.
-     * @param categoryDescription The description of the new category.
-     * @param categoryColourId    The ID of the color for the new category.
-     * @param loggedInUser        The logged-in user.
+     * @param newCategory The Category object representing the new category.
+     * @param userDetails  The UserDetails object containing information about the logged-in user.
      * @return The ID of the newly created category.
      */
     @PostMapping(value =  "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "add a new category")
-    public ResponseEntity<Object> addCategory(@RequestParam String categoryName,
-                                               @RequestParam String categoryDescription,
-                                               @RequestParam int categoryColourId,
-                                               @RequestBody User loggedInUser) {
+    public ResponseEntity<Object> addCategory(@RequestBody Category newCategory,
+                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(categoryRepository.addCategory(categoryName, categoryDescription, categoryColourId,
-                    loggedInUser));
+            newCategory.setCategoryUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(categoryRepository.addCategory(newCategory));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -128,23 +106,22 @@ public class CategoryController {
     /**
      * Updates an existing category for the logged-in user.
      *
-     * @param categoryId                    The ID of the category to update.
-     * @param updatedCategoryName           The updated category name.
-     * @param updatedCategoryDescription    The updated category description.
-     * @param updatedCategoryColourId       The updated category color ID.
-     * @param loggedInUser                  The logged-in user.
+     * @param categoryId      The ID of the category to update.
+     * @param updatedCategory The Category object representing the updated category.
+     * @param userDetails     The UserDetails object containing information about the logged-in user.
+     * @return The updated Category object.
      */
-    @PatchMapping(value = "/categories", headers = "API-Version=0")
+    @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing category")
-    public ResponseEntity<Object> updateCategory(@RequestParam int categoryId,
-                                         @RequestParam(required = false) String updatedCategoryName,
-                                         @RequestParam(required = false) String updatedCategoryDescription,
-                                         @RequestParam(defaultValue = "-1", required = false) int updatedCategoryColourId,
-                                         @RequestBody User loggedInUser) {
+    public ResponseEntity<Object> updateCategory(@PathVariable int categoryId,
+                                                 @RequestBody Category updatedCategory,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(categoryRepository.updateCategory(new Category(categoryId, updatedCategoryName, updatedCategoryDescription, updatedCategoryColourId, loggedInUser.getUserId()),
-                    loggedInUser));
+            updatedCategory.setCategoryId(categoryId);
+            updatedCategory.setCategoryUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(categoryRepository.updateCategory(updatedCategory, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -153,16 +130,18 @@ public class CategoryController {
     /**
      * Deletes a category for the logged-in user.
      *
-     * @param categoryId   The ID of the category to delete.
-     * @param loggedInUser The logged-in user.
+     * @param categoryId  The ID of the category to delete.
+     * @param userDetails The UserDetails object containing information about the logged-in user.
+     * @return An HTTP response indicating the result of the deletion.
      */
-    @DeleteMapping(value = "/categories", headers = "API-Version=0")
+    @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "delete a category")
-    public ResponseEntity<Object> deleteCategory(@RequestParam int categoryId,
-                                         @RequestBody User loggedInUser) {
+    public ResponseEntity<Object> deleteCategory(@PathVariable int categoryId,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            categoryRepository.deleteCategory(categoryId, loggedInUser);
+            categoryRepository.deleteCategory(categoryId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());

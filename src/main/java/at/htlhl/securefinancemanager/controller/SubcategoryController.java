@@ -4,10 +4,14 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.Subcategory;
 import at.htlhl.securefinancemanager.model.User;
 import at.htlhl.securefinancemanager.repository.SubcategoryRepository;
+import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +36,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 06.10.2023 (version 2.1)
+ * @version 2.2
+ * @since 15.10.2023 (version 2.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -46,28 +50,18 @@ public class SubcategoryController {
     /**
      * Returns a list of all subcategories for a specific category.
      *
-     * @param categoryId            The ID of the category.
-     * @param loggedInUserId        The ID of the logged-in user.
-     * @param loggedInUsername      The username of the logged-in user.
-     * @param loggedInPassword      The password of the logged-in user.
-     * @param loggedInEMailAddress  The email address of the logged-in user.
-     * @param loggedInFirstName     The first name of the logged-in user.
-     * @param loggedInLastName      The last name of the logged-in user.
+     * @param categoryId    The ID of the category.
+     * @param userDetails   The details of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
     @GetMapping(value = "/subcategories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all subcategories of one category")
     public ResponseEntity<Object> getSubcategories(@PathVariable int categoryId,
-                                                    @RequestParam int loggedInUserId,
-                                                    @RequestParam String loggedInUsername,
-                                                    @RequestParam String loggedInPassword,
-                                                    @RequestParam String loggedInEMailAddress,
-                                                    @RequestParam String loggedInFirstName,
-                                                    @RequestParam String loggedInLastName) {
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(subcategoryRepository.getSubcategories(categoryId,
-                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(subcategoryRepository.getSubcategories(categoryId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -76,30 +70,20 @@ public class SubcategoryController {
     /**
      * Returns a specific subcategory for a specific category.
      *
-     * @param categoryId            The ID of the category.
-     * @param subcategoryId         The ID of the subcategory.
-     * @param loggedInUserId        The ID of the logged-in user.
-     * @param loggedInUsername      The username of the logged-in user.
-     * @param loggedInPassword      The password of the logged-in user.
-     * @param loggedInEMailAddress  The email address of the logged-in user.
-     * @param loggedInFirstName     The first name of the logged-in user.
-     * @param loggedInLastName      The last name of the logged-in user.
+     * @param categoryId    The ID of the category.
+     * @param subcategoryId The ID of the subcategory.
+     * @param userDetails   The details of the logged-in user.
      * @return The requested subcategory.
      */
     @GetMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one subcategory")
     public ResponseEntity<Object> getSubcategory(@PathVariable int categoryId,
-                                                      @PathVariable int subcategoryId,
-                                                      @RequestParam int loggedInUserId,
-                                                      @RequestParam String loggedInUsername,
-                                                      @RequestParam String loggedInPassword,
-                                                      @RequestParam String loggedInEMailAddress,
-                                                      @RequestParam String loggedInFirstName,
-                                                      @RequestParam String loggedInLastName) {
+                                                 @PathVariable int subcategoryId,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(subcategoryRepository.getSubcategory(categoryId, subcategoryId,
-                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(subcategoryRepository.getSubcategory(categoryId, subcategoryId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -108,25 +92,22 @@ public class SubcategoryController {
     /**
      * Adds a new subcategory to a specific category.
      *
-     * @param categoryId                The ID of the category, in which the subcategory will be created.
-     * @param subcategoryName           The name of the new subcategory.
-     * @param subcategoryDescription    The description of the new subcategory.
-     * @param subcategoryColourId       The ID of the color for the new subcategory.
-     * @param loggedInUser              The logged-in user.
+     * @param categoryId             The ID of the category, in which the subcategory will be created.
+     * @param newSubcategory         The new subcategory to be added.
+     * @param userDetails            The details of the logged-in user.
      * @return The ID of the newly created subcategory.
      */
     @PostMapping(value = "/subcategories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "add a new subcategory")
     public ResponseEntity<Object> addSubcategory(@PathVariable int categoryId,
-                                                  @RequestParam String subcategoryName,
-                                                  @RequestParam String subcategoryDescription,
-                                                  @RequestParam int subcategoryColourId,
-                                                  @RequestBody User loggedInUser) {
+                                                 @RequestBody Subcategory newSubcategory,
+                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(subcategoryRepository.addSubcategory(categoryId,
-                    subcategoryName, subcategoryDescription, subcategoryColourId,
-                    loggedInUser));
+            newSubcategory.setSubcategoryCategoryId(categoryId);
+            newSubcategory.setSubcategoryUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(subcategoryRepository.addSubcategory(newSubcategory));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -135,28 +116,24 @@ public class SubcategoryController {
     /**
      * Updates an existing subcategory for a specific category.
      *
-     * @param categoryId                            The ID of the category.
-     * @param subcategoryId                         The ID of the subcategory to update.
-     * @param updatedCategoryId                     The updated ID of the superior category.
-     * @param updatedSubcategoryName                The updated name of the subcategory.
-     * @param updatedSubcategoryDescription         The updated description of the subcategory.
-     * @param updatedSubcategoryColourId            The updated colour of the subcategory.
-     * @param loggedInUser                          The logged-in user.
+     * @param categoryId            The ID of the category.
+     * @param subcategoryId         The ID of the subcategory to update.
+     * @param updatedSubcategory    The updated subcategory data.
+     * @param userDetails           The details of the logged-in user.
      */
     @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing subcategory")
     public ResponseEntity<Object> updateSubcategory(@PathVariable int categoryId,
-                                            @PathVariable int subcategoryId,
-                                            @RequestParam(defaultValue = "-1", required = false) int updatedCategoryId,
-                                            @RequestParam(required = false) String updatedSubcategoryName,
-                                            @RequestParam(required = false) String updatedSubcategoryDescription,
-                                            @RequestParam(defaultValue = "-1", required = false) int updatedSubcategoryColourId,
-                                            @RequestBody User loggedInUser) {
+                                                    @PathVariable int subcategoryId,
+                                                    @RequestBody Subcategory updatedSubcategory,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(subcategoryRepository.updateSubcategory(categoryId, subcategoryId, updatedCategoryId,
-                    updatedSubcategoryName, updatedSubcategoryDescription, updatedSubcategoryColourId,
-                loggedInUser));
+            updatedSubcategory.setSubcategoryCategoryId(categoryId);
+            updatedSubcategory.setSubcategoryId(subcategoryId);
+            updatedSubcategory.setSubcategoryUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(subcategoryRepository.updateSubcategory(updatedSubcategory, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -167,16 +144,17 @@ public class SubcategoryController {
      *
      * @param categoryId       The ID of the category.
      * @param subcategoryId    The ID of the subcategory to delete.
-     * @param loggedInUser The logged-in user.
+     * @param userDetails      The details of the logged-in user.
      */
     @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "delete a subcategory")
     public ResponseEntity<Object> deleteSubcategory(@PathVariable int categoryId,
-                                  @PathVariable int subcategoryId,
-                                  @RequestBody User loggedInUser) {
+                                                    @PathVariable int subcategoryId,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, loggedInUser);
+            subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());

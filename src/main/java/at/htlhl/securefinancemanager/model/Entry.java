@@ -19,8 +19,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 29.09.2023 (version 1.6)
+ * @version 1.7
+ * @since 15.10.2023 (version 1.7)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -210,5 +210,32 @@ public class Entry {
      */
     public int getEntryUserId() {
         return entryUserId;
+    }
+
+    /**
+     * Sets the ID of the entry.
+     *
+     * @param entryId The ID of the entry to set.
+     */
+    public void setEntryId(int entryId) {
+        this.entryId = entryId;
+    }
+
+    /**
+     * Sets the ID of the subcategory to which this entry belongs.
+     *
+     * @param entrySubcategoryId The ID of the subcategory for this entry.
+     */
+    public void setEntrySubcategoryId(int entrySubcategoryId) {
+        this.entrySubcategoryId = entrySubcategoryId;
+    }
+
+    /**
+     * Sets the ID of the user to whom this entry belongs.
+     *
+     * @param entryUserId The ID of the user for this entry.
+     */
+    public void setEntryUserId(int entryUserId) {
+        this.entryUserId = entryUserId;
     }
 }

@@ -20,8 +20,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 24.07.2023 (version 1.5)
+ * @version 1.6
+ * @since 15.10.2023 (version 1.6)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -168,5 +168,32 @@ public class Subcategory {
      */
     public int getSubcategoryUserId() {
         return subcategoryUserId;
+    }
+
+    /**
+     * Sets the ID of the subcategory.
+     *
+     * @param subcategoryId The ID of the subcategory to set.
+     */
+    public void setSubcategoryId(int subcategoryId) {
+        this.subcategoryId = subcategoryId;
+    }
+
+    /**
+     * Sets the ID of the category to which this subcategory belongs.
+     *
+     * @param subcategoryCategoryId The ID of the category for this subcategory.
+     */
+    public void setSubcategoryCategoryId(int subcategoryCategoryId) {
+        this.subcategoryCategoryId = subcategoryCategoryId;
+    }
+
+    /**
+     * Sets the ID of the user to whom this subcategory belongs.
+     *
+     * @param subcategoryUserId The ID of the user for this subcategory.
+     */
+    public void setSubcategoryUserId(int subcategoryUserId) {
+        this.subcategoryUserId = subcategoryUserId;
     }
 }

@@ -7,6 +7,9 @@ import at.htlhl.securefinancemanager.repository.EntryLabelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,27 +49,17 @@ public class EntryLabelController {
     /**
      * Retrieves a list of labels associated with a specific entry.
      *
-     * @param entryId               The ID of the entry.
-     * @param loggedInUserId        The ID of the logged-in user.
-     * @param loggedInUsername      The username of the logged-in user.
-     * @param loggedInPassword      The password of the logged-in user.
-     * @param loggedInEMailAddress  The email address of the logged-in user.
-     * @param loggedInFirstName     The first name of the logged-in user.
-     * @param loggedInLastName      The last name of the logged-in user.
+     * @param entryId       The ID of the entry.
+     * @param userDetails   The UserDetails object representing the logged-in user.
      * @return A list of labels associated with the entry.
      */
     @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<Object> getLabelsForEntry(@PathVariable int entryId,
-                                                     @RequestParam int loggedInUserId,
-                                                     @RequestParam String loggedInUsername,
-                                                     @RequestParam String loggedInPassword,
-                                                     @RequestParam String loggedInEMailAddress,
-                                                     @RequestParam String loggedInFirstName,
-                                                     @RequestParam String loggedInLastName) {
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(entryLabelRepository.getLabelsForEntry(entryId,
-                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(entryLabelRepository.getLabelsForEntry(entryId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -77,16 +70,16 @@ public class EntryLabelController {
      *
      * @param entryId      The ID of the entry.
      * @param labelId      The ID of the label to add.
-     * @param loggedInUser The logged-in user.
+     * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The ID of the newly created EntryLabel association.
      */
     @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> addLabelToEntry(@PathVariable int entryId,
-                                                   @PathVariable int labelId,
-                                                   @RequestBody User loggedInUser) {
+                                                  @PathVariable int labelId,
+                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, loggedInUser));
+            return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -97,15 +90,15 @@ public class EntryLabelController {
      *
      * @param entryId      The ID of the entry.
      * @param labelId      The ID of the label to remove.
-     * @param loggedInUser The logged-in user.
+     * @param userDetails  The UserDetails object representing the logged-in user.
      */
     @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> removeLabelFromEntry(@PathVariable int entryId,
-                                               @PathVariable int labelId,
-                                               @RequestBody User loggedInUser) {
+                                                       @PathVariable int labelId,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            entryLabelRepository.removeLabelFromEntry(entryId, labelId, loggedInUser);
+            entryLabelRepository.removeLabelFromEntry(entryId, labelId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());

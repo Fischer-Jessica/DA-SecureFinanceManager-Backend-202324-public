@@ -2,7 +2,6 @@ package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.Label;
-import at.htlhl.securefinancemanager.model.User;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -32,8 +31,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 06.10.2023 (version 1.7)
+ * @version 1.8
+ * @since 15.10.2023 (version 1.8)
  */
 @Repository
 public class LabelRepository {
@@ -74,15 +73,16 @@ public class LabelRepository {
     /**
      * Retrieves a list of labels for the logged-in user.
      *
-     * @param loggedInUser The logged-in user.
+     * @param username The username of the logged-in user.
      * @return A list of Label objects representing the labels.
+     * @throws ValidationException if there's a validation issue.
      */
-    public List<Label> getLabels(User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public List<Label> getLabels(String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_LABELS);
-            ps.setInt(1, loggedInUser.getUserId());
+            ps.setInt(1, activeUserId);
             ResultSet rs = ps.executeQuery();
 
             List<Label> labels = new ArrayList<>();
@@ -92,7 +92,7 @@ public class LabelRepository {
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, loggedInUser.getUserId());
+                Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
                 labels.add(label);
             }
 
@@ -105,16 +105,17 @@ public class LabelRepository {
     /**
      * Retrieves a specific label for the logged-in user.
      *
-     * @param labelId      The ID of the label to retrieve.
-     * @param loggedInUser The logged-in user.
+     * @param labelId The ID of the label to retrieve.
+     * @param username The username of the logged-in user.
      * @return The requested Label object.
+     * @throws ValidationException if there's a validation issue.
      */
-    public Label getLabel(int labelId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Label getLabel(int labelId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_LABEL);
-            ps.setInt(1, loggedInUser.getUserId());
+            ps.setInt(1, activeUserId);
             ps.setInt(2, labelId);
             ResultSet rs = ps.executeQuery();
 
@@ -124,7 +125,7 @@ public class LabelRepository {
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                getLabel = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, loggedInUser.getUserId());
+                getLabel = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
             }
             return getLabel;
         } catch (SQLException e) {
@@ -135,14 +136,11 @@ public class LabelRepository {
     /**
      * Adds a new label for the logged-in user.
      *
-     * @param labelName        The name of the new label.
-     * @param labelDescription The description of the new label.
-     * @param labelColourId    The ID of the color for the new label.
-     * @param loggedInUser     The logged-in user.
+     * @param newLabel The Label object representing the new label.
      * @return The ID of the newly created label.
+     * @throws ValidationException if there's a validation issue.
      */
-    public Label addLabel(String labelName, String labelDescription, int labelColourId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Label addLabel(Label newLabel) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -150,14 +148,14 @@ public class LabelRepository {
 
             UserRepository.jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_LABEL, new String[]{"pk_label_id"});
-                ps.setBytes(1, Base64.getDecoder().decode(labelName));
-                ps.setBytes(2, Base64.getDecoder().decode(labelDescription));
-                ps.setInt(3, labelColourId);
-                ps.setInt(4, loggedInUser.getUserId());
+                ps.setBytes(1, Base64.getDecoder().decode(newLabel.getLabelName()));
+                ps.setBytes(2, Base64.getDecoder().decode(newLabel.getLabelDescription()));
+                ps.setInt(3, newLabel.getLabelColourId());
+                ps.setInt(4, newLabel.getLabelUserId());
                 return ps;
             }, keyHolder);
 
-            return new Label(Objects.requireNonNull(keyHolder.getKey()).intValue(), labelName, labelDescription, labelColourId, loggedInUser.getUserId());
+            return new Label(Objects.requireNonNull(keyHolder.getKey()).intValue(), newLabel.getLabelName(), newLabel.getLabelDescription(), newLabel.getLabelColourId(), newLabel.getLabelUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -167,11 +165,12 @@ public class LabelRepository {
      * Updates an existing label for the logged-in user.
      *
      * @param updatedLabel The updated Label object.
-     * @param loggedInUser The logged-in user.
+     * @param username The username of the logged-in user.
+     * @return The updated Label object.
+     * @throws ValidationException if there's a validation issue.
      */
-    public Label updateLabel(Label updatedLabel, User loggedInUser) throws ValidationException {
-        Label oldLabel = getLabel(updatedLabel.getLabelId(), loggedInUser);
-        UserRepository.validateUserCredentials(loggedInUser);
+    public Label updateLabel(Label updatedLabel, String username) throws ValidationException {
+        Label oldLabel = getLabel(updatedLabel.getLabelId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL);
@@ -195,10 +194,10 @@ public class LabelRepository {
             }
 
             ps.setInt(4, updatedLabel.getLabelId());
-            ps.setInt(5, loggedInUser.getUserId());
+            ps.setInt(5, updatedLabel.getLabelUserId());
             ps.executeUpdate();
             conn.close();
-            return getLabel(updatedLabel.getLabelId(), loggedInUser);
+            return getLabel(updatedLabel.getLabelId(), username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -207,22 +206,22 @@ public class LabelRepository {
     /**
      * Deletes a label for the logged-in user.
      *
-     * @param labelId      The ID of the label to delete.
-     * @param loggedInUser The logged-in user.
+     * @param labelId The ID of the label to delete.
+     * @param username The username of the logged-in user.
+     * @throws ValidationException if there's a validation issue.
      */
-    public void deleteLabel(int labelId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public void deleteLabel(int labelId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_LABEL);
             ps.setInt(1, labelId);
-            ps.setInt(2, loggedInUser.getUserId());
+            ps.setInt(2, activeUserId);
             ps.executeUpdate();
             conn.close();
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
-
     }
 }

@@ -20,8 +20,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 24.07.2023 (version 1.7)
+ * @version 1.8
+ * @since 15.10.2023 (version 1.8)
  */
 
 /*
@@ -185,5 +185,23 @@ public class Category {
      */
     public int getCategoryUserId() {
         return categoryUserId;
+    }
+
+    /**
+     * Sets the category ID.
+     *
+     * @param categoryId The ID of the category.
+     */
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    /**
+     * Sets the user ID associated with the category.
+     *
+     * @param categoryUserId The ID of the user to associate with the category.
+     */
+    public void setCategoryUserId(int categoryUserId) {
+        this.categoryUserId = categoryUserId;
     }
 }

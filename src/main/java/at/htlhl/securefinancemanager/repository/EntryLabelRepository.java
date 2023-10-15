@@ -33,8 +33,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 06.10.2023 (version 1.4)
+ * @version 1.5
+ * @since 15.10.2023 (version 1.5)
  */
 @Repository
 public class EntryLabelRepository {
@@ -62,18 +62,18 @@ public class EntryLabelRepository {
     /**
      * Retrieves a list of labels associated with a specific entry and user from the 'labels' and 'entry_labels' tables in the database.
      *
-     * @param entryId      The ID of the entry to retrieve labels for.
-     * @param loggedInUser The logged-in user.
+     * @param entryId   The ID of the entry to retrieve labels for.
+     * @param username  The username of the logged-in user.
      * @return A list of Label objects representing the labels associated with the entry and user.
      */
-    public List<Label> getLabelsForEntry(int entryId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public List<Label> getLabelsForEntry(int entryId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_LABELS_FOR_ENTRY);
             ps.setInt(1, entryId);
-            ps.setInt(2, loggedInUser.getUserId());
-            ps.setInt(3, loggedInUser.getUserId());
+            ps.setInt(2, activeUserId);
+            ps.setInt(3, activeUserId);
             ResultSet rs = ps.executeQuery();
 
             List<Label> labels = new ArrayList<>();
@@ -83,7 +83,7 @@ public class EntryLabelRepository {
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, loggedInUser.getUserId());
+                Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
                 labels.add(label);
             }
             return labels;
@@ -95,13 +95,13 @@ public class EntryLabelRepository {
     /**
      * Adds a label to an entry in the 'entry_labels' table in the database.
      *
-     * @param entryId      The ID of the entry to add the label to.
-     * @param labelId      The ID of the label to add.
-     * @param loggedInUser The logged-in user.
+     * @param entryId   The ID of the entry to add the label to.
+     * @param labelId   The ID of the label to add.
+     * @param username  The username of the logged-in user.
      * @return The ID of the newly created entry label.
      */
-    public EntryLabel addLabelToEntry(int entryId, int labelId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public EntryLabel addLabelToEntry(int entryId, int labelId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -111,11 +111,11 @@ public class EntryLabelRepository {
                 PreparedStatement ps = conn.prepareStatement(ADD_LABEL_TO_ENTRY, new String[]{"pk_entry_label_id"});
                 ps.setInt(1, entryId);
                 ps.setInt(2, labelId);
-                ps.setInt(3, loggedInUser.getUserId());
+                ps.setInt(3, activeUserId);
                 return ps;
             }, keyHolder);
 
-            return new EntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, loggedInUser.getUserId());
+            return new EntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, activeUserId);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -124,19 +124,19 @@ public class EntryLabelRepository {
     /**
      * Removes a label from an entry in the 'entry_labels' table in the database.
      *
-     * @param entryId      The ID of the entry to remove the label from.
-     * @param labelId      The ID of the label to remove.
-     * @param loggedInUser The logged-in user.
+     * @param entryId   The ID of the entry to remove the label from.
+     * @param labelId   The ID of the label to remove.
+     * @param username  The username of the logged-in user.
      */
-    public void removeLabelFromEntry(int entryId, int labelId, User loggedInUser) throws ValidationException {
-        UserRepository.validateUserCredentials(loggedInUser);
+    public void removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
+        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY);
             ps.setInt(1, entryId);
             ps.setInt(2, labelId);
-            ps.setInt(3, loggedInUser.getUserId());
+            ps.setInt(3, activeUserId);
             ps.executeUpdate();
             conn.close();
         } catch (SQLException exception) {

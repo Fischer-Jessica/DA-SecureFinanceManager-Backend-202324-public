@@ -4,10 +4,14 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.Entry;
 import at.htlhl.securefinancemanager.model.User;
 import at.htlhl.securefinancemanager.repository.EntryRepository;
+import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +36,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 06.10.2023 (version 2.3)
+ * @version 2.4
+ * @since 15.10.2023 (version 2.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -46,30 +50,20 @@ public class EntryController {
     /**
      * Retrieves a list of all entries for a specific subcategory.
      *
-     * @param categoryId            The ID of the category.
-     * @param subcategoryId         The ID of the subcategory.
-     * @param loggedInUserId        The ID of the logged-in user.
-     * @param loggedInUsername      The username of the logged-in user.
-     * @param loggedInPassword      The password of the logged-in user.
-     * @param loggedInEMailAddress  The email address of the logged-in user.
-     * @param loggedInFirstName     The first name of the logged-in user.
-     * @param loggedInLastName      The last name of the logged-in user.
+     * @param categoryId   The ID of the category.
+     * @param subcategoryId The ID of the subcategory.
+     * @param userDetails  The UserDetails object representing the logged-in user.
      * @return A list of entries for the specified subcategory.
      */
     @GetMapping(value = "/entries", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all entries of one subcategory")
     public ResponseEntity<Object> getEntries(@PathVariable int categoryId,
-                                                  @PathVariable int subcategoryId,
-                                                  @RequestParam int loggedInUserId,
-                                                  @RequestParam String loggedInUsername,
-                                                  @RequestParam String loggedInPassword,
-                                                  @RequestParam String loggedInEMailAddress,
-                                                  @RequestParam String loggedInFirstName,
-                                                  @RequestParam String loggedInLastName) {
+                                             @PathVariable int subcategoryId,
+                                             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(entryRepository.getEntries(subcategoryId,
-                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(entryRepository.getEntries(subcategoryId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -78,32 +72,22 @@ public class EntryController {
     /**
      * Retrieves a specific entry for a specific subcategory.
      *
-     * @param categoryId            The ID of the category.
-     * @param subcategoryId         The ID of the subcategory.
-     * @param entryId               The ID of the entry.
-     * @param loggedInUserId        The ID of the logged-in user.
-     * @param loggedInUsername      The username of the logged-in user.
-     * @param loggedInPassword      The password of the logged-in user.
-     * @param loggedInEMailAddress  The email address of the logged-in user.
-     * @param loggedInFirstName     The first name of the logged-in user.
-     * @param loggedInLastName      The last name of the logged-in user.
+     * @param categoryId   The ID of the category.
+     * @param subcategoryId The ID of the subcategory.
+     * @param entryId      The ID of the entry.
+     * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The requested entry.
      */
     @GetMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one entry")
     public ResponseEntity<Object> getEntry(@PathVariable int categoryId,
-                                          @PathVariable int subcategoryId,
-                                          @PathVariable int entryId,
-                                          @RequestParam int loggedInUserId,
-                                          @RequestParam String loggedInUsername,
-                                          @RequestParam String loggedInPassword,
-                                          @RequestParam String loggedInEMailAddress,
-                                          @RequestParam String loggedInFirstName,
-                                          @RequestParam String loggedInLastName) {
+                                           @PathVariable int subcategoryId,
+                                           @PathVariable int entryId,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(entryRepository.getEntry(subcategoryId, entryId,
-                    new User(loggedInUserId, loggedInUsername, loggedInPassword, loggedInEMailAddress, loggedInFirstName, loggedInLastName)));
+            return ResponseEntity.ok(entryRepository.getEntry(subcategoryId, entryId, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -112,30 +96,24 @@ public class EntryController {
     /**
      * Creates a new entry for a specific subcategory.
      *
-     * @param categoryId                    The ID of the category.
-     * @param subcategoryId                 The ID of the subcategory.
-     * @param entryName                     The name of the entry.
-     * @param entryDescription              The description of the entry.
-     * @param entryAmount                   The amount of the entry.
-     * @param entryTimeOfTransaction        The time of the transaction in the entry.
-     * @param entryAttachment               The attachment of the entry.
-     * @param loggedInUser                  The logged-in user.
+     * @param categoryId   The ID of the category.
+     * @param subcategoryId The ID of the subcategory.
+     * @param newEntry     The new entry to be added.
+     * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The ID of the newly created entry.
      */
     @PostMapping(value = "/entries", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "create a new entry")
     public ResponseEntity<Object> addEntry(@PathVariable int categoryId,
-                                            @PathVariable int subcategoryId,
-                                            @RequestParam String entryName,
-                                            @RequestParam String entryDescription,
-                                            @RequestParam String entryAmount,
-                                            @RequestParam String entryTimeOfTransaction,
-                                            @RequestParam String entryAttachment,
-                                            @RequestBody User loggedInUser) {
+                                           @PathVariable int subcategoryId,
+                                           @RequestBody Entry newEntry,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(entryRepository.addEntry(subcategoryId, entryName, entryDescription, entryAmount, entryTimeOfTransaction, entryAttachment,
-                    loggedInUser));
+            newEntry.setEntrySubcategoryId(subcategoryId);
+            newEntry.setEntryUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(entryRepository.addEntry(newEntry));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -144,34 +122,29 @@ public class EntryController {
     /**
      * Updates an existing entry for a specific subcategory.
      *
-     * @param categoryId                        The ID of the category.
-     * @param subcategoryId                     The ID of the subcategory in which the entry is.
-     * @param entryId                           The ID of the entry.
-     * @param updatedSubcategoryId              The other ID in which the entry should be transferred.
-     * @param updatedEntryAmount                The updated amount of the entry.
-     * @param updatedEntryAttachment            The updated attachment of the entry.
-     * @param updatedEntryDescription           The updated description of the entry.
-     * @param updatedEntryName                  The updated name of the entry.
-     * @param updatedEntryTimeOfTransaction     The updated time the transaction in the entry.
-     * @param loggedInUser                      The logged-in user.
+     * @param categoryId   The ID of the category.
+     * @param subcategoryId The ID of the subcategory in which the entry is.
+     * @param entryId      The ID of the entry.
+     * @param updatedEntry The updated entry data.
+     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @return The updated entry.
      */
     @PatchMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing entry")
     public ResponseEntity<Object> updateEntry(@PathVariable int categoryId,
-                                      @PathVariable int subcategoryId,
-                                      @PathVariable int entryId,
-                                      @RequestParam(defaultValue = "-1", required = false) int updatedSubcategoryId,
-                                      @RequestParam(required = false) String updatedEntryName,
-                                      @RequestParam(required = false) String updatedEntryDescription,
-                                      @RequestParam(required = false) String updatedEntryAmount,
-                                      @RequestParam(required = false) String updatedEntryTimeOfTransaction,
-                                      @RequestParam(required = false) String updatedEntryAttachment,
-                                      @RequestBody User loggedInUser) {
+                                              @PathVariable int subcategoryId,
+                                              @PathVariable int entryId,
+                                              @RequestBody Entry updatedEntry,
+                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(entryRepository.updateEntry(subcategoryId, entryId, updatedSubcategoryId,
-                    updatedEntryName, updatedEntryDescription, updatedEntryAmount, updatedEntryTimeOfTransaction, updatedEntryAttachment,
-                    loggedInUser));
+            updatedEntry.setEntryId(entryId);
+            if (updatedEntry.getEntrySubcategoryId() == -1) {
+                updatedEntry.setEntrySubcategoryId(subcategoryId);
+            }
+            updatedEntry.setEntryUserId(UserRepository.getUserId(userDetails.getUsername()));
+            return ResponseEntity.ok(entryRepository.updateEntry(updatedEntry, userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -180,20 +153,21 @@ public class EntryController {
     /**
      * Deletes an entry from a specific subcategory.
      *
-     * @param categoryId        The ID of the category.
-     * @param subcategoryId     The ID of the subcategory.
-     * @param entryId           The ID of the entry to be deleted.
-     * @param loggedInUser      The logged-in user.
+     * @param categoryId   The ID of the category.
+     * @param subcategoryId The ID of the subcategory.
+     * @param entryId      The ID of the entry to be deleted.
+     * @param userDetails  The UserDetails object representing the logged-in user.
      */
     @DeleteMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "delete an entry")
     public ResponseEntity<Object> deleteEntry(@PathVariable int categoryId,
-                                      @PathVariable int subcategoryId,
-                                      @PathVariable int entryId,
-                                      @RequestBody User loggedInUser) {
+                                              @PathVariable int subcategoryId,
+                                              @PathVariable int entryId,
+                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            entryRepository.deleteEntry(subcategoryId, entryId, loggedInUser);
+            entryRepository.deleteEntry(subcategoryId, entryId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
