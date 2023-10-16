@@ -41,7 +41,6 @@ import java.util.List;
  * @version 2.1
  * @since 15.10.2023 (version 2.1)
  */
-// TODO: Is the UserId always required? That shouldn't be used anywhere
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("secure-finance-manager")
@@ -49,8 +48,6 @@ public class UserController {
     /** The UserRepository instance for accessing user data. */
     @Autowired
     UserRepository userRepository;
-
-    // TODO: Should there be a method simply for logging in?
 
     /**
      * Returns a list of all users.
@@ -71,9 +68,6 @@ public class UserController {
      * @param newUser The user object representing the new user to be added.
      * @return The ID of the newly created user.
      */
-
-    // TODO: make some Parameters of User not required
-    // TODO: no Authentication needed for this endpoint
     @PostMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
@@ -92,8 +86,6 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing user")
-    // TODO: make some Parameters of User not required
-    // TODO: how to pass the default values?
     public ResponseEntity<Object> updateUser(@PathVariable int userId,
                                              @RequestBody(required = false) User updatedUser,
                                              @AuthenticationPrincipal UserDetails activeUser) {
@@ -110,7 +102,6 @@ public class UserController {
      * @param activeUser The UserDetails object representing the currently authenticated user.
      * @return ResponseEntity indicating the success of the deletion operation or an error response if validation fails.
      */
-    // TODO: I do not need the Id as a PathVariable, but it would be clean
     @DeleteMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
