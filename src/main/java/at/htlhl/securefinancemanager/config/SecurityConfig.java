@@ -1,7 +1,6 @@
 package at.htlhl.securefinancemanager.config;
 
 import at.htlhl.securefinancemanager.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -18,17 +17,26 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This configuration class defines security settings for the Secure Finance Manager application.
+ *
+ * @author Fischer
+ * @version 1.1
+ * @since 20.10.2023 (version 1.1)
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    // User Creation
+    /**
+     * Configures the user service that loads user information from the repository and uses it for authentication.
+     *
+     * @param encoder       The password encoder for encrypting user passwords.
+     * @param userRepository The repository that stores user data.
+     * @return A user service that loads user details from the repository.
+     */
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+    public UserDetailsService userDetailsService(PasswordEncoder encoder, UserRepository userRepository) {
         List<at.htlhl.securefinancemanager.model.User> users = userRepository.getUsers();
         List<UserDetails> userDetailsList = new ArrayList<>();
 
@@ -43,8 +51,13 @@ public class SecurityConfig {
         return new InMemoryUserDetailsManager(userDetailsList);
     }
 
-
-    // Configuring HttpSecurity
+    /**
+     * Configures HTTP security settings for the application.
+     *
+     * @param http The HttpSecurity object to configure security rules.
+     * @return A SecurityFilterChain object representing the security rules.
+     * @throws Exception If an error occurs while configuring security.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -54,25 +67,20 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/secure-finance-manager/swagger-ui/**").permitAll() // Erlaubt den Zugriff auf Swagger-UI ohne Authentifizierung
                                 .requestMatchers("/secure-finance-manager/colours/**").permitAll() // Erlaubt den Zugriff auf den Colour-Endpunkt ohne Authentifizierung
+                                .requestMatchers("/secure-finance-manager/users/**").permitAll()
                                 .requestMatchers("/secure-finance-manager/**").authenticated() // Authentifizierung erforderlich für andere Pfade
                 )
                 .httpBasic();
-        /*
-        http
-                .csrf().disable()
-                .authorizeRequests().anyRequest().authenticated()
-                .and()
-                .httpBasic();
-         */
-
         return http.build();
     }
 
-
-    // Password Encoding
+    /**
+     * Configures the password encoder for encrypting user passwords.
+     *
+     * @return A password encoder that uses the BCrypt encryption method.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
