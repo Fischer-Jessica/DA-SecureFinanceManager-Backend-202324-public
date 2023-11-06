@@ -2,8 +2,6 @@ package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.User;
-import jakarta.validation.Valid;
-import jakarta.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -32,8 +30,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 15.10.2023 (version 2.0)
+ * @version 2.1
+ * @since 06.11.2023 (version 2.1)
  */
 @Repository
 public class UserRepository {
@@ -191,13 +189,13 @@ public class UserRepository {
                 PreparedStatement ps = conn.prepareStatement(INSERT_USER, new String[]{"pk_user_id"});
                 ps.setString(1, newUser.getUsername());
                 ps.setBytes(2, Base64.getDecoder().decode(newUser.getPassword()));
-                ps.setString(3, newUser.geteMailAddress());
+                ps.setString(3, newUser.getEMailAddress());
                 ps.setString(4, newUser.getFirstName());
                 ps.setString(5, newUser.getLastName());
                 return ps;
             }, keyHolder);
 
-            return new User(Objects.requireNonNull(keyHolder.getKey()).intValue(), newUser.getUsername(), newUser.getPassword(), newUser.geteMailAddress(), newUser.getFirstName(), newUser.getLastName());
+            return new User(Objects.requireNonNull(keyHolder.getKey()).intValue(), newUser.getUsername(), newUser.getPassword(), newUser.getEMailAddress(), newUser.getFirstName(), newUser.getLastName());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -237,12 +235,12 @@ public class UserRepository {
                 actualUser.setUsername(activeUser.getPassword());
             }
 
-            if (updatedUser.geteMailAddress() != null) {
-                ps.setString(3, updatedUser.geteMailAddress());
-                actualUser.setUsername(updatedUser.geteMailAddress());
+            if (updatedUser.getEMailAddress() != null) {
+                ps.setString(3, updatedUser.getEMailAddress());
+                actualUser.setUsername(updatedUser.getEMailAddress());
             } else {
-                ps.setString(3, activeUser.geteMailAddress());
-                actualUser.setUsername(activeUser.geteMailAddress());
+                ps.setString(3, activeUser.getEMailAddress());
+                actualUser.setUsername(activeUser.getEMailAddress());
             }
 
             if (updatedUser.getFirstName() != null) {

@@ -20,8 +20,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 06.10.2023 (version 1.5)
+ * @version 1.6
+ * @since 06.11.2023 (version 1.6)
  *
  * @see Category this class (Category) for the explanations of the annotations
  */
@@ -121,7 +121,7 @@ public class User {
      *
      * @return The email address.
      */
-    public String geteMailAddress() {
+    public String getEMailAddress() {
         return eMailAddress;
     }
 
@@ -155,7 +155,7 @@ public class User {
         this.password = password;
     }
 
-    public void seteMailAddress(String eMailAddress) {
+    public void setEMailAddress(String eMailAddress) {
         this.eMailAddress = eMailAddress;
     }
 
