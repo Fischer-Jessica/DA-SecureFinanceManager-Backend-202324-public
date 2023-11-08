@@ -2,7 +2,7 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 
 CREATE ROLE backend WITH PASSWORD 'SECURE_PASSWORD';
 
-GRANT CONNECT ON DATABASE financial_overview TO backend;
+GRANT CONNECT ON DATABASE secure_finance_manager TO backend;
 
 GRANT USAGE ON SCHEMA public TO backend;
 

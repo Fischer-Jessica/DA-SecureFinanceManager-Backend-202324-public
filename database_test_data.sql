@@ -1,8 +1,17 @@
 INSERT INTO colours (colour_name, colour_code)
 VALUES
-    ('Red', E'\\xFF0000'),
-    ('Green', E'\\x00FF00'),
-    ('Blue', E'\\x0000FF');
+	('red', E'\\xFF0000'),
+	('orange', E'\\xFF7F00'),
+	('yellow', E'\\xFFFF00'),
+	('green-yellow', E'\\x7FFF00'),
+	('green', E'\\x00FF00'),
+	('mint green', E'\\x00FF7F'),
+	('turquoise', E'\\x00FFFF'),
+	('light blue', E'\\x007FFF'),
+	('blue', E'\\x0000FF'),
+	('violet', E'\\x7F00FF'),
+	('pink', E'\\xFF00FF'),
+	('magenta', E'\\xFF007F');
 
 
 INSERT INTO users (username, password, email_address, first_name, last_name)
@@ -29,7 +38,7 @@ VALUES
     (E'\\x4E6F746573' /* 'Notes' */, E'\\x54657374206C6162656C' /* 'Test label' */, 2, 1);
 
 
-INSERT INTO entries (entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_expense, entry_attachment, fk_subcategory_id, fk_user_id)
+INSERT INTO entries (entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_subcategory_id, fk_user_id)
 VALUES
     (E'\\x456E74727931' /* 'Entry1' */, E'\\x54657374206465736372697074696F6E' /* 'Test description' */, E'\\x313030' /* '100' */, E'\\x323031323031323331303030' /* '2021-07-11 10:00:00' */, E'\\x323031323031323331303030' /* '2021-07-11 10:00:00' */, NULL, 1, 1),
     (E'\\x456E74727932' /* 'Entry2' */, E'\\x54657374206465736372697074696F6E' /* 'Test description' */, E'\\x323030' /* '200' */, E'\\x323031323031323331303030' /* '2021-07-11 10:00:00' */, E'\\x323031323031323331303030' /* '2021-07-11 10:00:00' */, NULL, 2, 1);

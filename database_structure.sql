@@ -1,6 +1,6 @@
-CREATE DATABASE financial_overview;
+CREATE DATABASE secure_finance_manager;
 
-\c financial_overview;
+\c secure_finance_manager;
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -57,7 +57,7 @@ CREATE TABLE entries (
 	entry_description bytea,
 	entry_amount bytea,
 	entry_creation_time bytea,
-	entry_time_of_expense bytea,
+	entry_time_of_transaction bytea,
 	entry_attachment bytea,
 	fk_subcategory_id INT,
 	fk_user_id INT,
