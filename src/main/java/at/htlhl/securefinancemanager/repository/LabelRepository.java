@@ -5,10 +5,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -31,8 +28,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 10.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 10.11.2023 (version 2.0)
  */
 @Repository
 public class LabelRepository {
@@ -92,7 +89,11 @@ public class LabelRepository {
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
+                if (labelDescription == null) {
+                    databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), null, labelColourId, activeUserId));
+                } else {
+                    databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
+                }
             }
 
             return databaseLabels;
@@ -124,7 +125,11 @@ public class LabelRepository {
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                databaseLabel = new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
+                if (labelDescription == null) {
+                    return new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), null, labelColourId, activeUserId);
+                } else {
+                    return new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
+                }
             }
             return databaseLabel;
         } catch (SQLException e) {
@@ -148,7 +153,11 @@ public class LabelRepository {
             UserRepository.jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_LABEL, new String[]{"pk_label_id"});
                 ps.setBytes(1, Base64.getDecoder().decode(newLabel.getLabelName()));
-                ps.setBytes(2, Base64.getDecoder().decode(newLabel.getLabelDescription()));
+                if (newLabel.getLabelDescription() == null) {
+                    ps.setNull(2, Types.NULL);
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(newLabel.getLabelDescription()));
+                }
                 ps.setInt(3, newLabel.getLabelColourId());
                 ps.setInt(4, newLabel.getLabelUserId());
                 return ps;
@@ -186,7 +195,7 @@ public class LabelRepository {
                 ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseLabel.getLabelDescription()));
             }
 
-            if (updatedLabel.getLabelColourId() != -1) {
+            if (updatedLabel.getLabelColourId() != 0) {
                 ps.setInt(3, updatedLabel.getLabelColourId());
             } else {
                 ps.setInt(3, oldDatabaseLabel.getLabelColourId());

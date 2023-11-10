@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
+import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
@@ -36,8 +37,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 10.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 10.11.2023 (version 2.4)
  */
 
 @RestController
@@ -100,9 +101,16 @@ public class LabelController {
     public ResponseEntity<Object> addLabel(@RequestBody ApiLabel newApiLabel,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (newApiLabel.getLabelName() == null || newApiLabel.getLabelName().isBlank()) {
+                throw new MissingRequiredParameter("The label name is required.");
+            } else if (newApiLabel.getLabelColourId() <= 0) {
+                throw new MissingRequiredParameter("The label colour is required.");
+            }
             return ResponseEntity.ok(labelRepository.addLabel(new DatabaseLabel(newApiLabel, UserRepository.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -122,9 +130,14 @@ public class LabelController {
                                               @RequestBody ApiLabel updatedApiLabel,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (updatedApiLabel.getLabelColourId() < 0) {
+                throw new MissingRequiredParameter("The label colour can not be negative.");
+            }
             return ResponseEntity.ok(labelRepository.updateLabel(new DatabaseLabel(labelId, updatedApiLabel, UserRepository.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
