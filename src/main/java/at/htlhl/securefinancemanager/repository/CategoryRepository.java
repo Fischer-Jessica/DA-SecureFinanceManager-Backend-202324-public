@@ -1,8 +1,7 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.Category;
-import at.htlhl.securefinancemanager.model.User;
+import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -16,8 +15,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The CategoryRepository class handles the persistence operations for category data.
- * It provides methods to access and manipulate the 'categories' table in the 'financial_overview' PostgreSQL database.
+ * The {@code CategoryRepository} class handles the persistence operations for category data.
+ * It provides methods to access and manipulate the 'categories' table in the 'secure_finance_manager' PostgreSQL database.
  *
  * <p>
  * This class interacts with the Category entity class, which represents a POJO (Plain Old Java Object) or entity class that maps to the 'categories' table in the database.
@@ -25,11 +24,11 @@ import java.util.Objects;
  * </p>
  *
  * <p>
- * The CategoryRepository serves as an abstraction layer between the CategoryController and the underlying data storage, enabling seamless access and manipulation of Category entities.
+ * The {@code CategoryRepository} serves as an abstraction layer between the CategoryController and the underlying data storage, enabling seamless access and manipulation of Category entities.
  * </p>
  *
  * <p>
- * This class should be annotated with the @Repository annotation to indicate that it is a Spring-managed repository component.
+ * This class should be annotated with the {@code @Repository} annotation to indicate that it is a Spring-managed repository component.
  * </p>
  *
  * <p>
@@ -37,8 +36,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 15.10.2023 (version 1.9)
+ * @version 2.0
+ * @since 10.11.2023 (version 2.0)
  */
 @Repository
 public class CategoryRepository {
@@ -83,7 +82,7 @@ public class CategoryRepository {
      * @return A list of Category objects representing the categories.
      * @throws ValidationException If there is an issue with data validation.
      */
-    public List<Category> getCategories(String username) throws ValidationException {
+    public List<DatabaseCategory> getCategories(String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -91,18 +90,17 @@ public class CategoryRepository {
             ps.setInt(1, activeUserId);
             ResultSet rs = ps.executeQuery();
 
-            List<Category> categories = new ArrayList<>();
+            List<DatabaseCategory> databaseCategories = new ArrayList<>();
             while (rs.next()) {
                 int categoryId = rs.getInt("pk_category_id");
                 byte[] categoryName = rs.getBytes("category_name");
                 byte[] categoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                Category category = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
-                categories.add(category);
+                databaseCategories.add(new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId));
             }
 
-            return categories;
+            return databaseCategories;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -116,7 +114,7 @@ public class CategoryRepository {
      * @return The requested Category object.
      * @throws ValidationException If there is an issue with data validation.
      */
-    public Category getCategory(int categoryId, String username) throws ValidationException {
+    public DatabaseCategory getCategory(int categoryId, String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -125,15 +123,15 @@ public class CategoryRepository {
             ps.setInt(2, categoryId);
             ResultSet rs = ps.executeQuery();
 
-            Category getCategory = null;
+            DatabaseCategory databaseCategory = null;
             if (rs.next()) {
                 byte[] categoryName = rs.getBytes("category_name");
                 byte[] categoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                getCategory = new Category(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
+                databaseCategory = new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
             }
-            return getCategory;
+            return databaseCategory;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -146,7 +144,7 @@ public class CategoryRepository {
      * @return The ID of the newly created category.
      * @throws ValidationException If there is an issue with data validation.
      */
-    public Category addCategory(Category newCategory) throws ValidationException {
+    public DatabaseCategory addCategory(DatabaseCategory newCategory) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -161,7 +159,7 @@ public class CategoryRepository {
                 return ps;
             }, keyHolder);
 
-            return new Category(Objects.requireNonNull(keyHolder.getKey()).intValue(), newCategory.getCategoryName(), newCategory.getCategoryDescription(), newCategory.getCategoryColourId(), newCategory.getCategoryUserId());
+            return new DatabaseCategory(Objects.requireNonNull(keyHolder.getKey()).intValue(), newCategory.getCategoryName(), newCategory.getCategoryDescription(), newCategory.getCategoryColourId(), newCategory.getCategoryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -175,8 +173,8 @@ public class CategoryRepository {
      * @return The updated Category object.
      * @throws ValidationException If there is an issue with data validation.
      */
-    public Category updateCategory(Category updatedCategory, String username) throws ValidationException {
-        Category oldCategory = getCategory(updatedCategory.getCategoryId(), username);
+    public DatabaseCategory updateCategory(DatabaseCategory updatedCategory, String username) throws ValidationException {
+        DatabaseCategory oldDatabaseCategory = getCategory(updatedCategory.getCategoryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY);
@@ -184,19 +182,19 @@ public class CategoryRepository {
             if (updatedCategory.getCategoryName() != null) {
                 ps.setBytes(1, Base64.getDecoder().decode(updatedCategory.getCategoryName()));
             } else {
-                ps.setBytes(1, Base64.getDecoder().decode(oldCategory.getCategoryName()));
+                ps.setBytes(1, Base64.getDecoder().decode(oldDatabaseCategory.getCategoryName()));
             }
 
             if (updatedCategory.getCategoryDescription() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedCategory.getCategoryDescription()));
             } else {
-                ps.setBytes(2, Base64.getDecoder().decode(oldCategory.getCategoryDescription()));
+                ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseCategory.getCategoryDescription()));
             }
 
             if (updatedCategory.getCategoryColourId() != -1) {
                 ps.setInt(3, updatedCategory.getCategoryColourId());
             } else {
-                ps.setInt(3, oldCategory.getCategoryColourId());
+                ps.setInt(3, oldDatabaseCategory.getCategoryColourId());
             }
 
             ps.setInt(4, updatedCategory.getCategoryId());

@@ -1,5 +1,7 @@
 package at.htlhl.securefinancemanager.config;
 
+import at.htlhl.securefinancemanager.model.api.ApiUser;
+import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,12 +39,12 @@ public class SecurityConfig {
      */
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder, UserRepository userRepository) {
-        List<at.htlhl.securefinancemanager.model.User> users = userRepository.getUsers();
+        List<DatabaseUser> users = userRepository.getUsers();
         List<UserDetails> userDetailsList = new ArrayList<>();
 
-        for (at.htlhl.securefinancemanager.model.User user : users) {
-            UserDetails userDetails = User.withUsername(user.getUsername())
-                    .password(encoder.encode(user.getPassword()))
+        for (DatabaseUser apiUser : users) {
+            UserDetails userDetails = User.withUsername(apiUser.getUsername())
+                    .password(encoder.encode(apiUser.getPassword()))
                     .roles("USER")
                     .build();
             userDetailsList.add(userDetails);

@@ -1,6 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.securefinancemanager.model.Colour;
+import at.htlhl.securefinancemanager.model.database.DatabaseColour;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * The ColourRepository class handles the persistence operations for colour data.
+ * The {@code ColourRepository} class handles the persistence operations for colour data.
  * It serves as a Spring Data JPA repository for the Colour entity.
  *
  * <p>
@@ -19,7 +19,7 @@ import java.util.List;
  * </p>
  *
  * <p>
- * The ColourRepository serves as an abstraction layer between the ColourController and the underlying data storage, enabling seamless access and manipulation of Colour entities.
+ * The {@code ColourRepository} serves as an abstraction layer between the ColourController and the underlying data storage, enabling seamless access and manipulation of Colour entities.
  * </p>
  *
  * <p>
@@ -27,8 +27,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 24.07.2023 (version 1.3)
+ * @version 1.4
+ * @since 10.11.2023 (version 1.4)
  */
 @Repository
 public class ColourRepository {
@@ -46,12 +46,12 @@ public class ColourRepository {
      *
      * @return A list of Colour objects representing the colours.
      */
-    public List<Colour> getColours() {
+    public List<DatabaseColour> getColours() {
         return UserRepository.jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
             int colourId = rs.getInt("pk_colour_id");
             String colourName = rs.getString("colour_name");
             byte[] colourCode = rs.getBytes("colour_code");
-            return new Colour(colourId, colourName, colourCode);
+            return new DatabaseColour(colourId, colourName, colourCode);
         });
     }
 
@@ -61,21 +61,21 @@ public class ColourRepository {
      * @param colourId The ID of the colour to retrieve.
      * @return The requested Colour object.
      */
-    public Colour getColour(int colourId) {
+    public DatabaseColour getColour(int colourId) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(ColourRepository.SELECT_COLOUR);
             ps.setInt(1, colourId);
             ResultSet rs = ps.executeQuery();
 
-            Colour colour = null;
+            DatabaseColour databaseColour = null;
             if (rs.next()) {
-                colour = new Colour(rs.getInt("pk_colour_id"),
+                databaseColour = new DatabaseColour(rs.getInt("pk_colour_id"),
                         rs.getString("colour_name"),
                         rs.getBytes("colour_code"));
             }
             conn.close();
-            return colour;
+            return databaseColour;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

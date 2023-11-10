@@ -1,9 +1,9 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.EntryLabel;
-import at.htlhl.securefinancemanager.model.Label;
-import at.htlhl.securefinancemanager.model.User;
+import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
+import at.htlhl.securefinancemanager.model.api.ApiLabel;
+import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The EntryLabelRepository class handles the persistence operations for EntryLabel data.
+ * The {@code EntryLabelRepository} class handles the persistence operations for EntryLabel data.
  * It serves as a Spring Data JPA repository for the EntryLabel entity.
  *
  * <p>
@@ -25,7 +25,7 @@ import java.util.Objects;
  * </p>
  *
  * <p>
- * The EntryLabelRepository serves as an abstraction layer between the EntryLabelController and the underlying data storage, enabling seamless access and manipulation of EntryLabel entities.
+ * The {@code EntryLabelRepository} serves as an abstraction layer between the EntryLabelController and the underlying data storage, enabling seamless access and manipulation of EntryLabel entities.
  * </p>
  *
  * <p>
@@ -33,8 +33,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 15.10.2023 (version 1.5)
+ * @version 1.6
+ * @since 10.11.2023 (version 1.6)
  */
 @Repository
 public class EntryLabelRepository {
@@ -65,8 +65,9 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to retrieve labels for.
      * @param username  The username of the logged-in user.
      * @return A list of Label objects representing the labels associated with the entry and user.
+     * @throws ValidationException If there is an issue with data validation.
      */
-    public List<Label> getLabelsForEntry(int entryId, String username) throws ValidationException {
+    public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -76,17 +77,16 @@ public class EntryLabelRepository {
             ps.setInt(3, activeUserId);
             ResultSet rs = ps.executeQuery();
 
-            List<Label> labels = new ArrayList<>();
+            List<DatabaseLabel> databaseLabels = new ArrayList<>();
             while (rs.next()) {
                 int labelId = rs.getInt("pk_label_id");
                 byte[] labelName = rs.getBytes("label_name");
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
-                labels.add(label);
+                databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
             }
-            return labels;
+            return databaseLabels;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -99,8 +99,9 @@ public class EntryLabelRepository {
      * @param labelId   The ID of the label to add.
      * @param username  The username of the logged-in user.
      * @return The ID of the newly created entry label.
+     * @throws ValidationException If there is an issue with data validation.
      */
-    public EntryLabel addLabelToEntry(int entryId, int labelId, String username) throws ValidationException {
+    public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -115,7 +116,7 @@ public class EntryLabelRepository {
                 return ps;
             }, keyHolder);
 
-            return new EntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, activeUserId);
+            return new DatabaseEntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, activeUserId);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -127,6 +128,7 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to remove the label from.
      * @param labelId   The ID of the label to remove.
      * @param username  The username of the logged-in user.
+     * @throws ValidationException If there is an issue with data validation.
      */
     public void removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);

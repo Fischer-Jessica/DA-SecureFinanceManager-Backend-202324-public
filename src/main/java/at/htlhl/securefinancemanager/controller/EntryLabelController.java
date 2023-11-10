@@ -1,8 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.Label;
-import at.htlhl.securefinancemanager.model.User;
 import at.htlhl.securefinancemanager.repository.EntryLabelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,31 +10,32 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Objects;
-
 /**
- * The EntryLabelController class handles HTTP requests related to the management of associations between Entry and Label entities (EntryLabel).
- * It provides endpoints for adding and removing labels from entries, as well as retrieving associated labels for a specific entry.
+ * The EntryLabelController class handles HTTP requests related to the management of associations
+ * between Entry and Label entities (EntryLabel). It provides endpoints for adding and removing labels
+ * from entries, as well as retrieving associated labels for a specific entry.
  *
  * <p>
  * This controller is responsible for handling CRUD operations (Create, Read, Update, Delete) on EntryLabel associations.
- * It interacts with the EntryLabelRepository to access and manipulate the EntryLabel entities in the 'entry_labels' table of the 'financial_overview' PostgreSQL database.
+ * It interacts with the EntryLabelRepository to access and manipulate the EntryLabel entities
+ * in the 'entry_labels' table of the 'secure_finance_manager' PostgreSQL database.
  * </p>
  *
  * <p>
- * This class is annotated with the {@link RestController} annotation, which indicates that it is a controller that handles RESTful HTTP requests.
- * The {@link CrossOrigin} annotation allows cross-origin requests to this controller, enabling it to be accessed from different domains.
- * The {@link RequestMapping} annotation specifies the base path for all the endpoints provided by this controller.
+ * This class is annotated with the {@link RestController} annotation, indicating that it is a controller
+ * that handles RESTful HTTP requests. The {@link CrossOrigin} annotation allows cross-origin requests to this controller,
+ * enabling it to be accessed from different domains. The {@link RequestMapping} annotation specifies the base path
+ * for all the endpoints provided by this controller.
  * </p>
  *
  * <p>
- * The EntryLabelController class works in conjunction with the EntryLabelRepository and other related classes to enable efficient management of Entry-Label associations in the financial overview system.
+ * The EntryLabelController class works in conjunction with the EntryLabelRepository and other related classes
+ * to enable efficient management of Entry-Label associations in the financial overview system.
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 06.10.2023 (version 1.5)
+ * @version 1.6
+ * @since 10.11.2023 (version 1.6)
  */
 @RestController
 @CrossOrigin(origins = "*")

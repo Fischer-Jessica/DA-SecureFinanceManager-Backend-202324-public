@@ -1,7 +1,8 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.User;
+import at.htlhl.securefinancemanager.model.api.ApiUser;
+import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,31 +16,36 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * The UserController class handles the HTTP requests related to user management.
+ * The UserController class handles HTTP requests related to user management.
  *
  * <p>
  * This class is responsible for handling CRUD operations (Create, Read, Update, Delete) on User entities.
- * It interacts with the UserRepository to access and manipulate the User entities in the 'users' table of the 'financial_overview' PostgreSQL database.
+ * It interacts with the UserRepository to access and manipulate the User entities
+ * in the 'users' table of the 'secure_finance_manager' PostgreSQL database.
  * </p>
  *
  * <p>
- * This controller provides endpoints for managing users, including adding a new user, updating an existing user, changing user information (username, password, email address, first name, last name),
- * and deleting a user. It also provides an endpoint for retrieving a list of all users, although this functionality might be restricted or removed in the final product for security and privacy reasons.
+ * This controller provides endpoints for managing users, including adding a new user, updating an existing user,
+ * changing user information (username, password, email address, first name, last name), and deleting a user.
+ * It also provides an endpoint for retrieving a list of all users, although this functionality might be restricted or removed
+ * in the final product for security and privacy reasons.
  * </p>
  *
  * <p>
- * The UserController class is annotated with the RestController annotation, which indicates that it is a controller that handles RESTful HTTP requests.
- * The CrossOrigin annotation allows cross-origin requests to this controller, enabling it to be accessed from different domains.
- * The RequestMapping annotation specifies the base path for all the endpoints provided by this controller.
+ * The UserController class is annotated with the RestController annotation, which indicates that it is a controller
+ * that handles RESTful HTTP requests. The CrossOrigin annotation allows cross-origin requests to this controller,
+ * enabling it to be accessed from different domains. The RequestMapping annotation specifies the base path
+ * for all the endpoints provided by this controller.
  * </p>
  *
  * <p>
- * This class works in conjunction with the UserRepository and other related classes to enable efficient management of User entities in the financial overview system.
+ * This class works in conjunction with the UserRepository and other related classes to enable efficient management
+ * of User entities in the financial overview system.
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 15.10.2023 (version 2.1)
+ * @version 2.2
+ * @since 10.11.2023 (version 2.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -58,39 +64,38 @@ public class UserController {
     @GetMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all users")
-    public List<User> getUsers() {
+    public List<DatabaseUser> getUsers() {
         return userRepository.getUsers();
     }
 
     /**
      * Adds a new user.
      *
-     * @param newUser The user object representing the new user to be added.
+     * @param newApiUser The user object representing the new user to be added.
      * @return The ID of the newly created user.
      */
     @PostMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
-    public User addUser(@RequestBody User newUser) {
-        return userRepository.addUser(newUser);
+    public DatabaseUser addUser(@RequestBody ApiUser newApiUser) {
+        return userRepository.addUser(newApiUser);
     }
 
     /**
      * Updates an existing user.
      *
-     * @param updatedUser The user object containing the updated user information.
+     * @param updatedApiUser The user object containing the updated user information.
      * @param activeUser The UserDetails object representing the currently authenticated user.
      * @return ResponseEntity with the updated user if successful, or an error response if validation fails.
      */
-    @PatchMapping(value = "/users/{userId}", headers = "API-Version=0")
+    @PatchMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing user")
-    public ResponseEntity<Object> updateUser(@PathVariable int userId,
-                                             @RequestBody(required = false) User updatedUser,
+    public ResponseEntity<Object> updateUser(@RequestBody ApiUser updatedApiUser,
                                              @AuthenticationPrincipal UserDetails activeUser) {
         try {
-            return ResponseEntity.ok(userRepository.updateUser(userId, updatedUser, activeUser.getUsername()));
+            return ResponseEntity.ok(userRepository.updateUser(updatedApiUser, activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }

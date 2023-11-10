@@ -1,7 +1,8 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.Category;
+import at.htlhl.securefinancemanager.model.api.ApiCategory;
+import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import at.htlhl.securefinancemanager.repository.CategoryRepository;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,23 +19,26 @@ import org.springframework.web.bind.annotation.*;
  * It provides endpoints for retrieving, adding, updating, and deleting categories for the logged-in user.
  *
  * <p>
- * This controller is responsible for handling CRUD operations (Create, Read, Update, Delete) on Category entities.
- * It interacts with the CategoryRepository to access and manipulate the Category entities in the 'categories' table of the 'financial_overview' PostgreSQL database.
+ * This controller is responsible for handling CRUD operations (Create, Read, Update, Delete)
+ * on Category entities. It interacts with the CategoryRepository to access and manipulate
+ * the Category entities in the 'categories' table of the 'secure_finance_manager' PostgreSQL database.
  * </p>
  *
  * <p>
- * This class is annotated with the {@link RestController} annotation, which indicates that it is a controller that handles RESTful HTTP requests.
- * The {@link CrossOrigin} annotation allows cross-origin requests to this controller, enabling it to be accessed from different domains.
+ * This class is annotated with the {@link RestController} annotation, which indicates that
+ * it is a controller that handles RESTful HTTP requests. The {@link CrossOrigin} annotation allows
+ * cross-origin requests to this controller, enabling it to be accessed from different domains.
  * The {@link RequestMapping} annotation specifies the base path for all the endpoints provided by this controller.
  * </p>
  *
  * <p>
- * The CategoryController class works in conjunction with the CategoryRepository and other related classes to enable efficient management of categories in the financial overview system.
+ * The CategoryController class works in conjunction with the CategoryRepository and other related
+ * classes to enable efficient management of categories in the financial overview system.
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 15.10.2023 (version 2.3)
+ * @version 2.4
+ * @since 10.11.2023 (version 2.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -85,19 +89,19 @@ public class CategoryController {
     /**
      * Adds a new category for the logged-in user.
      *
-     * @param newCategory The Category object representing the new category.
-     * @param userDetails  The UserDetails object containing information about the logged-in user.
+     * @param newApiCategory The Category object representing the new category.
+     * @param userDetails    The UserDetails object containing information about the logged-in user.
      * @return The ID of the newly created category.
      */
     @PostMapping(value =  "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "add a new category")
-    public ResponseEntity<Object> addCategory(@RequestBody Category newCategory,
+    public ResponseEntity<Object> addCategory(@RequestBody ApiCategory newApiCategory,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            newCategory.setCategoryUserId(UserRepository.getUserId(userDetails.getUsername()));
-            return ResponseEntity.ok(categoryRepository.addCategory(newCategory));
+            return ResponseEntity.ok(
+                    categoryRepository.addCategory(new DatabaseCategory(newApiCategory, UserRepository.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -107,7 +111,7 @@ public class CategoryController {
      * Updates an existing category for the logged-in user.
      *
      * @param categoryId      The ID of the category to update.
-     * @param updatedCategory The Category object representing the updated category.
+     * @param updatedApiCategory The Category object representing the updated category.
      * @param userDetails     The UserDetails object containing information about the logged-in user.
      * @return The updated Category object.
      */
@@ -116,12 +120,11 @@ public class CategoryController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing category")
     public ResponseEntity<Object> updateCategory(@PathVariable int categoryId,
-                                                 @RequestBody Category updatedCategory,
+                                                 @RequestBody ApiCategory updatedApiCategory,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            updatedCategory.setCategoryId(categoryId);
-            updatedCategory.setCategoryUserId(UserRepository.getUserId(userDetails.getUsername()));
-            return ResponseEntity.ok(categoryRepository.updateCategory(updatedCategory, userDetails.getUsername()));
+            return ResponseEntity.ok(
+                    categoryRepository.updateCategory (new DatabaseCategory(categoryId, updatedApiCategory, UserRepository.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }

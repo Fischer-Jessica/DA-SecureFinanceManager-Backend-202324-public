@@ -1,8 +1,8 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.Entry;
-import at.htlhl.securefinancemanager.model.User;
+import at.htlhl.securefinancemanager.model.api.ApiEntry;
+import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import at.htlhl.securefinancemanager.repository.EntryRepository;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,30 +14,31 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * The EntryController class handles HTTP requests related to entries.
  * It provides endpoints for retrieving, adding, updating, and deleting entries for a specific subcategory.
  *
  * <p>
- * This controller is responsible for handling CRUD operations (Create, Read, Update, Delete) on Entry entities.
- * It interacts with the EntryRepository to access and manipulate the Entry entities in the 'entries' table of the 'financial_overview' PostgreSQL database.
+ * This controller is responsible for handling CRUD operations (Create, Read, Update, Delete)
+ * on Entry entities. It interacts with the EntryRepository to access and manipulate
+ * the Entry entities in the 'entries' table of the 'secure_finance_manager' PostgreSQL database.
  * </p>
  *
  * <p>
- * This class is annotated with the {@link RestController} annotation, which indicates that it is a controller that handles RESTful HTTP requests.
- * The {@link CrossOrigin} annotation allows cross-origin requests to this controller, enabling it to be accessed from different domains.
- * The {@link RequestMapping} annotation specifies the base path for all the endpoints provided by this controller.
+ * This class is annotated with the {@link RestController} annotation, indicating that it is a controller
+ * that handles RESTful HTTP requests. The {@link CrossOrigin} annotation allows cross-origin requests to this controller,
+ * enabling it to be accessed from different domains. The {@link RequestMapping} annotation specifies the base path
+ * for all the endpoints provided by this controller.
  * </p>
  *
  * <p>
- * The EntryController class works in conjunction with the EntryRepository and other related classes to enable efficient management of entries in the financial overview system.
+ * The EntryController class works in conjunction with the EntryRepository and other related classes to enable
+ * efficient management of entries in the financial overview system.
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 15.10.2023 (version 2.4)
+ * @version 2.5
+ * @since 10.11.2023 (version 2.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -98,7 +99,7 @@ public class EntryController {
      *
      * @param categoryId   The ID of the category.
      * @param subcategoryId The ID of the subcategory.
-     * @param newEntry     The new entry to be added.
+     * @param newApiEntry   The new entry to be added.
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The ID of the newly created entry.
      */
@@ -108,12 +109,10 @@ public class EntryController {
     @Operation(summary = "create a new entry")
     public ResponseEntity<Object> addEntry(@PathVariable int categoryId,
                                            @PathVariable int subcategoryId,
-                                           @RequestBody Entry newEntry,
+                                           @RequestBody ApiEntry newApiEntry,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            newEntry.setEntrySubcategoryId(subcategoryId);
-            newEntry.setEntryUserId(UserRepository.getUserId(userDetails.getUsername()));
-            return ResponseEntity.ok(entryRepository.addEntry(newEntry));
+            return ResponseEntity.ok(entryRepository.addEntry(new DatabaseEntry(subcategoryId, newApiEntry, UserRepository.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
@@ -125,7 +124,7 @@ public class EntryController {
      * @param categoryId   The ID of the category.
      * @param subcategoryId The ID of the subcategory in which the entry is.
      * @param entryId      The ID of the entry.
-     * @param updatedEntry The updated entry data.
+     * @param updatedApiEntry The updated entry data.
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The updated entry.
      */
@@ -136,15 +135,10 @@ public class EntryController {
     public ResponseEntity<Object> updateEntry(@PathVariable int categoryId,
                                               @PathVariable int subcategoryId,
                                               @PathVariable int entryId,
-                                              @RequestBody Entry updatedEntry,
+                                              @RequestBody ApiEntry updatedApiEntry,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            updatedEntry.setEntryId(entryId);
-            if (updatedEntry.getEntrySubcategoryId() == -1) {
-                updatedEntry.setEntrySubcategoryId(subcategoryId);
-            }
-            updatedEntry.setEntryUserId(UserRepository.getUserId(userDetails.getUsername()));
-            return ResponseEntity.ok(entryRepository.updateEntry(updatedEntry, userDetails.getUsername()));
+            return ResponseEntity.ok(entryRepository.updateEntry(new DatabaseEntry(entryId, subcategoryId, updatedApiEntry, UserRepository.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }

@@ -1,7 +1,7 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.Label;
+import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The LabelRepository class handles the persistence operations for label data.
+ * The {@code LabelRepository} class handles the persistence operations for label data.
  * It serves as a Spring Data JPA repository for the Label entity.
  *
  * <p>
- * The LabelRepository serves as an abstraction layer between the LabelController and the underlying data storage, enabling seamless access and manipulation of Label entities.
+ * The {@code LabelRepository} serves as an abstraction layer between the LabelController and the underlying data storage, enabling seamless access and manipulation of Label entities.
  * </p>
  *
  * <p>
@@ -31,8 +31,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 15.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 10.11.2023 (version 1.9)
  */
 @Repository
 public class LabelRepository {
@@ -77,7 +77,7 @@ public class LabelRepository {
      * @return A list of Label objects representing the labels.
      * @throws ValidationException if there's a validation issue.
      */
-    public List<Label> getLabels(String username) throws ValidationException {
+    public List<DatabaseLabel> getLabels(String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -85,18 +85,17 @@ public class LabelRepository {
             ps.setInt(1, activeUserId);
             ResultSet rs = ps.executeQuery();
 
-            List<Label> labels = new ArrayList<>();
+            List<DatabaseLabel> databaseLabels = new ArrayList<>();
             while (rs.next()) {
                 int labelId = rs.getInt("pk_label_id");
                 byte[] labelName = rs.getBytes("label_name");
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                Label label = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
-                labels.add(label);
+                databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
             }
 
-            return labels;
+            return databaseLabels;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -110,7 +109,7 @@ public class LabelRepository {
      * @return The requested Label object.
      * @throws ValidationException if there's a validation issue.
      */
-    public Label getLabel(int labelId, String username) throws ValidationException {
+    public DatabaseLabel getLabel(int labelId, String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -119,15 +118,15 @@ public class LabelRepository {
             ps.setInt(2, labelId);
             ResultSet rs = ps.executeQuery();
 
-            Label getLabel = null;
+            DatabaseLabel databaseLabel = null;
             if (rs.next()) {
                 byte[] labelName = rs.getBytes("label_name");
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                getLabel = new Label(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
+                databaseLabel = new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
             }
-            return getLabel;
+            return databaseLabel;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -140,7 +139,7 @@ public class LabelRepository {
      * @return The ID of the newly created label.
      * @throws ValidationException if there's a validation issue.
      */
-    public Label addLabel(Label newLabel) throws ValidationException {
+    public DatabaseLabel addLabel(DatabaseLabel newLabel) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -155,7 +154,7 @@ public class LabelRepository {
                 return ps;
             }, keyHolder);
 
-            return new Label(Objects.requireNonNull(keyHolder.getKey()).intValue(), newLabel.getLabelName(), newLabel.getLabelDescription(), newLabel.getLabelColourId(), newLabel.getLabelUserId());
+            return new DatabaseLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), newLabel.getLabelName(), newLabel.getLabelDescription(), newLabel.getLabelColourId(), newLabel.getLabelUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -169,8 +168,8 @@ public class LabelRepository {
      * @return The updated Label object.
      * @throws ValidationException if there's a validation issue.
      */
-    public Label updateLabel(Label updatedLabel, String username) throws ValidationException {
-        Label oldLabel = getLabel(updatedLabel.getLabelId(), username);
+    public DatabaseLabel updateLabel(DatabaseLabel updatedLabel, String username) throws ValidationException {
+        DatabaseLabel oldDatabaseLabel = getLabel(updatedLabel.getLabelId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL);
@@ -178,19 +177,19 @@ public class LabelRepository {
             if (updatedLabel.getLabelName() != null) {
                 ps.setBytes(1, Base64.getDecoder().decode(updatedLabel.getLabelName()));
             } else {
-                ps.setBytes(1, Base64.getDecoder().decode(oldLabel.getLabelName()));
+                ps.setBytes(1, Base64.getDecoder().decode(oldDatabaseLabel.getLabelName()));
             }
 
             if (updatedLabel.getLabelDescription() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedLabel.getLabelDescription()));
             } else {
-                ps.setBytes(2, Base64.getDecoder().decode(oldLabel.getLabelDescription()));
+                ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseLabel.getLabelDescription()));
             }
 
             if (updatedLabel.getLabelColourId() != -1) {
                 ps.setInt(3, updatedLabel.getLabelColourId());
             } else {
-                ps.setInt(3, oldLabel.getLabelColourId());
+                ps.setInt(3, oldDatabaseLabel.getLabelColourId());
             }
 
             ps.setInt(4, updatedLabel.getLabelId());

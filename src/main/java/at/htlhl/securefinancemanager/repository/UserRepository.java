@@ -1,7 +1,8 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.User;
+import at.htlhl.securefinancemanager.model.api.ApiUser;
+import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -17,8 +18,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The UserRepository class handles the persistence operations for user data.
- * It provides methods to access and manipulate the 'users' table in the 'financial_overview' PostgreSQL database.
+ * The {@code UserRepository} class handles the persistence operations for user data.
+ * It provides methods to access and manipulate the 'users' table in the 'secure_finance_manager' PostgreSQL database.
  *
  * <p>
  * This class interacts with the User entity class, which represents a POJO (Plain Old Java Object) or entity class that maps to the 'users' table in the database.
@@ -26,12 +27,12 @@ import java.util.Objects;
  * </p>
  *
  * <p>
- * The UserRepository serves as an abstraction layer between the UserController and the underlying data storage, enabling seamless access and manipulation of User entities.
+ * The {@code UserRepository} serves as an abstraction layer between the UserController and the underlying data storage, enabling seamless access and manipulation of User entities.
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 06.11.2023 (version 2.1)
+ * @version 2.2
+ * @since 10.11.2023 (version 2.2)
  */
 @Repository
 public class UserRepository {
@@ -127,8 +128,8 @@ public class UserRepository {
      * @return The User object representing the user with the given username.
      * @throws ValidationException if the user is not found.
      */
-    public static User getUserObject(String activeUsername) throws ValidationException {
-        User databaseUser = null;
+    public static DatabaseUser getUserObject(String activeUsername) throws ValidationException {
+        DatabaseUser databaseUser = null;
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_USER);
@@ -144,7 +145,7 @@ public class UserRepository {
                 String lastName = rs.getString("last_name");
 
                 conn.close();
-                databaseUser = new User(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
+                databaseUser = new DatabaseUser(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
             }
             conn.close();
         } catch (SQLException exception) {
@@ -161,7 +162,7 @@ public class UserRepository {
      *
      * @return A list of User objects representing all users.
      */
-    public List<User> getUsers() {
+    public List<DatabaseUser> getUsers() {
         return jdbcTemplate.query(SELECT_USERS, (rs, rowNum) -> {
             int userId = rs.getInt("pk_user_id");
             String username = rs.getString("username");
@@ -169,17 +170,17 @@ public class UserRepository {
             String eMailAddress = rs.getString("email_address");
             String firstName = rs.getString("first_name");
             String lastName = rs.getString("last_name");
-            return new User(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
+            return new DatabaseUser(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
         });
     }
 
     /**
      * Adds a new user to the database.
      *
-     * @param newUser The User object representing the new user to be added.
+     * @param newApiUser The User object representing the new user to be added.
      * @return The User object representing the newly created user.
      */
-    public User addUser(User newUser) {
+    public DatabaseUser addUser(ApiUser newApiUser) {
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
@@ -187,15 +188,15 @@ public class UserRepository {
 
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_USER, new String[]{"pk_user_id"});
-                ps.setString(1, newUser.getUsername());
-                ps.setBytes(2, Base64.getDecoder().decode(newUser.getPassword()));
-                ps.setString(3, newUser.getEMailAddress());
-                ps.setString(4, newUser.getFirstName());
-                ps.setString(5, newUser.getLastName());
+                ps.setString(1, newApiUser.getUsername());
+                ps.setBytes(2, Base64.getDecoder().decode(newApiUser.getPassword()));
+                ps.setString(3, newApiUser.getEMailAddress());
+                ps.setString(4, newApiUser.getFirstName());
+                ps.setString(5, newApiUser.getLastName());
                 return ps;
             }, keyHolder);
 
-            return new User(Objects.requireNonNull(keyHolder.getKey()).intValue(), newUser.getUsername(), newUser.getPassword(), newUser.getEMailAddress(), newUser.getFirstName(), newUser.getLastName());
+            return new DatabaseUser(Objects.requireNonNull(keyHolder.getKey()).intValue(), newApiUser.getUsername(), newApiUser.getPassword(), newApiUser.getEMailAddress(), newApiUser.getFirstName(), newApiUser.getLastName());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -209,12 +210,11 @@ public class UserRepository {
      * @return The User object representing the updated user.
      * @throws ValidationException if the user is not found.
      */
-    public User updateUser(int userId, User updatedUser, String username) throws ValidationException {
-        User activeUser = getUserObject(username);
-        if (activeUser.getUserId() == userId) {
+    public DatabaseUser updateUser(ApiUser updatedUser, String username) throws ValidationException {
+        DatabaseUser oldDatabaseUser = getUserObject(username);
         try {
-            User actualUser = new User();
-            actualUser.setUserId(activeUser.getUserId());
+            DatabaseUser actualUser = new DatabaseUser();
+            actualUser.setUserId(oldDatabaseUser.getUserId());
 
             Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_USER);
@@ -223,52 +223,48 @@ public class UserRepository {
                 ps.setString(1, updatedUser.getUsername());
                 actualUser.setUsername(updatedUser.getUsername());
             } else {
-                ps.setString(1, activeUser.getUsername());
-                actualUser.setUsername(activeUser.getUsername());
+                ps.setString(1, oldDatabaseUser.getUsername());
+                actualUser.setUsername(oldDatabaseUser.getUsername());
             }
 
             if (updatedUser.getPassword() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedUser.getPassword()));
-                actualUser.setUsername(updatedUser.getPassword());
+                actualUser.setPassword(updatedUser.getPassword());
             } else {
-                ps.setBytes(2, Base64.getDecoder().decode(activeUser.getPassword()));
-                actualUser.setUsername(activeUser.getPassword());
+                ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseUser.getPassword()));
+                actualUser.setPassword(oldDatabaseUser.getPassword());
             }
 
             if (updatedUser.getEMailAddress() != null) {
                 ps.setString(3, updatedUser.getEMailAddress());
-                actualUser.setUsername(updatedUser.getEMailAddress());
+                actualUser.setEMailAddress(updatedUser.getEMailAddress());
             } else {
-                ps.setString(3, activeUser.getEMailAddress());
-                actualUser.setUsername(activeUser.getEMailAddress());
+                ps.setString(3, oldDatabaseUser.getEMailAddress());
+                actualUser.setEMailAddress(oldDatabaseUser.getEMailAddress());
             }
 
             if (updatedUser.getFirstName() != null) {
                 ps.setString(4, updatedUser.getFirstName());
-                actualUser.setUsername(updatedUser.getFirstName());
+                actualUser.setFirstName(updatedUser.getFirstName());
             } else {
-                ps.setString(4, activeUser.getFirstName());
-                actualUser.setUsername(activeUser.getFirstName());
+                ps.setString(4, oldDatabaseUser.getFirstName());
+                actualUser.setFirstName(oldDatabaseUser.getFirstName());
             }
 
             if (updatedUser.getLastName() != null) {
                 ps.setString(5, updatedUser.getLastName());
-                actualUser.setUsername(updatedUser.getLastName());
+                actualUser.setLastName(updatedUser.getLastName());
             } else {
-                ps.setString(5, activeUser.getLastName());
-                actualUser.setUsername(activeUser.getLastName());
+                ps.setString(5, oldDatabaseUser.getLastName());
+                actualUser.setLastName(oldDatabaseUser.getLastName());
             }
 
-            ps.setInt(6, activeUser.getUserId());
+            ps.setInt(6, oldDatabaseUser.getUserId());
             ps.executeUpdate();
             conn.close();
             return actualUser;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
-        }
-        } else {
-            // TODO: throw error because someone tries to access data from someone else
-            return null;
         }
     }
 

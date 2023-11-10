@@ -1,8 +1,8 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.Subcategory;
-import at.htlhl.securefinancemanager.model.User;
+import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
+import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * The SubcategoryRepository class handles the persistence operations for subcategory data.
+ * The {@code SubcategoryRepository} class handles the persistence operations for subcategory data.
  * It serves as a Spring Data JPA repository for the Subcategory entity.
  *
  * <p>
- * The SubcategoryRepository serves as an abstraction layer between the SubcategoryController and the underlying data storage, enabling seamless access and manipulation of Subcategory entities.
+ * The {@code SubcategoryRepository} serves as an abstraction layer between the SubcategoryController and the underlying data storage, enabling seamless access and manipulation of Subcategory entities.
  * </p>
  *
  * <p>
@@ -32,8 +32,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 15.10.2023 (version 1.8)
+ * @version 1.9
+ * @since 10.11.2023 (version 1.9)
  */
 @Repository
 public class SubcategoryRepository {
@@ -78,7 +78,7 @@ public class SubcategoryRepository {
      * @param username     The username of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
-    public List<Subcategory> getSubcategories(int categoryId, String username) throws ValidationException {
+    public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -87,18 +87,17 @@ public class SubcategoryRepository {
             ps.setInt(2, categoryId);
             ResultSet rs = ps.executeQuery();
 
-            List<Subcategory> subcategories = new ArrayList<>();
+            List<DatabaseSubcategory> databaseSubcategories = new ArrayList<>();
             while (rs.next()) {
                 int subcategoryId = rs.getInt("pk_subcategory_id");
                 byte[] subcategoryName = rs.getBytes("subcategory_name");
                 byte[] subcategoryDescription = rs.getBytes("subcategory_description");
                 int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
 
-                Subcategory subcategory = new Subcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId);
-                subcategories.add(subcategory);
+                databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId));
             }
 
-            return subcategories;
+            return databaseSubcategories;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -112,7 +111,7 @@ public class SubcategoryRepository {
      * @param username      The username of the logged-in user.
      * @return The requested subcategory.
      */
-    public Subcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
+    public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -122,15 +121,15 @@ public class SubcategoryRepository {
             ps.setInt(3, categoryId);
             ResultSet rs = ps.executeQuery();
 
-            Subcategory getSubcategory = null;
+            DatabaseSubcategory databaseSubcategory = null;
             if (rs.next()) {
                 byte[] subcategoryName = rs.getBytes("subcategory_name");
                 byte[] subcategoryDescription = rs.getBytes("subcategory_description");
                 int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
 
-                getSubcategory = new Subcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId);
+                databaseSubcategory = new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId);
             }
-            return getSubcategory;
+            return databaseSubcategory;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -142,7 +141,7 @@ public class SubcategoryRepository {
      * @param newSubcategory The new subcategory to be added.
      * @return The ID of the newly created subcategory.
      */
-    public Subcategory addSubcategory(Subcategory newSubcategory) throws ValidationException {
+    public DatabaseSubcategory addSubcategory(DatabaseSubcategory newSubcategory) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -158,7 +157,7 @@ public class SubcategoryRepository {
                 return ps;
             }, keyHolder);
 
-            return new Subcategory(Objects.requireNonNull(keyHolder.getKey()).intValue(), newSubcategory.getSubcategoryCategoryId(), newSubcategory.getSubcategoryName(), newSubcategory.getSubcategoryDescription(), newSubcategory.getSubcategoryColourId(), newSubcategory.getSubcategoryUserId());
+            return new DatabaseSubcategory(Objects.requireNonNull(keyHolder.getKey()).intValue(), newSubcategory.getSubcategoryCategoryId(), newSubcategory.getSubcategoryName(), newSubcategory.getSubcategoryDescription(), newSubcategory.getSubcategoryColourId(), newSubcategory.getSubcategoryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -171,8 +170,8 @@ public class SubcategoryRepository {
      * @param username           The username of the logged-in user.
      * @return The updated subcategory.
      */
-    public Subcategory updateSubcategory(Subcategory updatedSubcategory, String username) throws ValidationException {
-        Subcategory oldSubcategory = getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
+    public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) throws ValidationException {
+        DatabaseSubcategory oldDatabaseSubcategory = getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY);
@@ -182,19 +181,19 @@ public class SubcategoryRepository {
             if (updatedSubcategory.getSubcategoryName() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedSubcategory.getSubcategoryName()));
             } else {
-                ps.setBytes(2, Base64.getDecoder().decode(oldSubcategory.getSubcategoryName()));
+                ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseSubcategory.getSubcategoryName()));
             }
 
             if (updatedSubcategory.getSubcategoryDescription() != null) {
                 ps.setBytes(3, Base64.getDecoder().decode(updatedSubcategory.getSubcategoryDescription()));
             } else {
-                ps.setBytes(3, Base64.getDecoder().decode(oldSubcategory.getSubcategoryDescription()));
+                ps.setBytes(3, Base64.getDecoder().decode(oldDatabaseSubcategory.getSubcategoryDescription()));
             }
 
             if (updatedSubcategory.getSubcategoryColourId() != -1) {
                 ps.setInt(4, updatedSubcategory.getSubcategoryColourId());
             } else {
-                ps.setInt(4, oldSubcategory.getSubcategoryColourId());
+                ps.setInt(4, oldDatabaseSubcategory.getSubcategoryColourId());
             }
 
             ps.setInt(5, updatedSubcategory.getSubcategoryId());
