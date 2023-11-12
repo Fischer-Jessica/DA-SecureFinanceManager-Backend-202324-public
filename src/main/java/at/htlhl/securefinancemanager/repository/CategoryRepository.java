@@ -5,10 +5,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -36,8 +33,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 10.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 12.11.2023 (version 2.1)
  */
 @Repository
 public class CategoryRepository {
@@ -97,7 +94,11 @@ public class CategoryRepository {
                 byte[] categoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                databaseCategories.add(new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId));
+                if (categoryDescription == null) {
+                    databaseCategories.add(new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), null, categoryColourId, activeUserId));
+                } else {
+                    databaseCategories.add(new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId));
+                }
             }
 
             return databaseCategories;
@@ -123,15 +124,18 @@ public class CategoryRepository {
             ps.setInt(2, categoryId);
             ResultSet rs = ps.executeQuery();
 
-            DatabaseCategory databaseCategory = null;
             if (rs.next()) {
                 byte[] categoryName = rs.getBytes("category_name");
                 byte[] categoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                databaseCategory = new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
+                if (categoryDescription == null) {
+                    return new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), null, categoryColourId, activeUserId);
+                } else {
+                    return new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
+                }
             }
-            return databaseCategory;
+            return null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -153,7 +157,11 @@ public class CategoryRepository {
             UserRepository.jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_CATEGORY, new String[]{"pk_category_id"});
                 ps.setBytes(1, Base64.getDecoder().decode(newCategory.getCategoryName()));
-                ps.setBytes(2, Base64.getDecoder().decode(newCategory.getCategoryDescription()));
+                if (newCategory.getCategoryDescription() == null) {
+                    ps.setNull(2, Types.NULL);
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(newCategory.getCategoryDescription()));
+                }
                 ps.setInt(3, newCategory.getCategoryColourId());
                 ps.setInt(4, newCategory.getCategoryUserId());
                 return ps;
@@ -191,7 +199,7 @@ public class CategoryRepository {
                 ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseCategory.getCategoryDescription()));
             }
 
-            if (updatedCategory.getCategoryColourId() != -1) {
+            if (updatedCategory.getCategoryColourId() != 0) {
                 ps.setInt(3, updatedCategory.getCategoryColourId());
             } else {
                 ps.setInt(3, oldDatabaseCategory.getCategoryColourId());
