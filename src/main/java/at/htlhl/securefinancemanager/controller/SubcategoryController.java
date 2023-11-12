@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
+import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
@@ -36,8 +37,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 10.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 12.11.2023 (version 2.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -105,9 +106,17 @@ public class SubcategoryController {
                                                  @RequestBody ApiSubcategory newApiSubcategory,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (newApiSubcategory.getSubcategoryName() == null || newApiSubcategory.getSubcategoryName().isBlank()) {
+                throw new MissingRequiredParameter("Subcategory name cannot be empty");
+            } else if (newApiSubcategory.getSubcategoryColourId() <= 0) {
+                throw new MissingRequiredParameter("Subcategory colour ID cannot be less than or equal to 0");
+            }
+
             return ResponseEntity.ok(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryId, newApiSubcategory, UserRepository.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -128,9 +137,14 @@ public class SubcategoryController {
                                                     @RequestBody ApiSubcategory updatedApiSubcategory,
                                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (updatedApiSubcategory.getSubcategoryColourId() < 0) {
+                throw new MissingRequiredParameter("Subcategory colour ID cannot be less than 0");
+            }
             return ResponseEntity.ok(subcategoryRepository.updateSubcategory(new DatabaseSubcategory(subcategoryId, categoryId, updatedApiSubcategory, UserRepository.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 

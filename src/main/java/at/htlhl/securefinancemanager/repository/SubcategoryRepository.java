@@ -6,10 +6,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -32,8 +29,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 10.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 12.11.2023 (version 2.0)
  */
 @Repository
 public class SubcategoryRepository {
@@ -94,7 +91,11 @@ public class SubcategoryRepository {
                 byte[] subcategoryDescription = rs.getBytes("subcategory_description");
                 int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
 
-                databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId));
+                if (subcategoryDescription == null) {
+                    databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), null, subcategoryColourId, activeUserId));
+                } else {
+                    databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId));
+                }
             }
 
             return databaseSubcategories;
@@ -121,15 +122,18 @@ public class SubcategoryRepository {
             ps.setInt(3, categoryId);
             ResultSet rs = ps.executeQuery();
 
-            DatabaseSubcategory databaseSubcategory = null;
             if (rs.next()) {
                 byte[] subcategoryName = rs.getBytes("subcategory_name");
                 byte[] subcategoryDescription = rs.getBytes("subcategory_description");
                 int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
 
-                databaseSubcategory = new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId);
+                if (subcategoryDescription == null) {
+                    return new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), null, subcategoryColourId, activeUserId);
+                } else {
+                    return new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId);
+                }
             }
-            return databaseSubcategory;
+            return null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -151,7 +155,11 @@ public class SubcategoryRepository {
                 PreparedStatement ps = conn.prepareStatement(INSERT_SUBCATEGORY, new String[]{"pk_subcategory_id"});
                 ps.setInt(1, newSubcategory.getSubcategoryCategoryId());
                 ps.setBytes(2, Base64.getDecoder().decode(newSubcategory.getSubcategoryName()));
-                ps.setBytes(3, Base64.getDecoder().decode(newSubcategory.getSubcategoryDescription()));
+                if (newSubcategory.getSubcategoryDescription() == null) {
+                    ps.setNull(3, Types.NULL);
+                } else {
+                    ps.setBytes(3, Base64.getDecoder().decode(newSubcategory.getSubcategoryDescription()));
+                }
                 ps.setInt(4, newSubcategory.getSubcategoryColourId());
                 ps.setInt(5, newSubcategory.getSubcategoryUserId());
                 return ps;
@@ -190,7 +198,7 @@ public class SubcategoryRepository {
                 ps.setBytes(3, Base64.getDecoder().decode(oldDatabaseSubcategory.getSubcategoryDescription()));
             }
 
-            if (updatedSubcategory.getSubcategoryColourId() != -1) {
+            if (updatedSubcategory.getSubcategoryColourId() != 0) {
                 ps.setInt(4, updatedSubcategory.getSubcategoryColourId());
             } else {
                 ps.setInt(4, oldDatabaseSubcategory.getSubcategoryColourId());
