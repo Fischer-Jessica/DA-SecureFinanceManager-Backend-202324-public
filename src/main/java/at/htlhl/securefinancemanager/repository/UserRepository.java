@@ -9,10 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
@@ -31,8 +28,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 10.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 12.11.2023 (version 2.3)
  */
 @Repository
 public class UserRepository {
@@ -190,9 +187,21 @@ public class UserRepository {
                 PreparedStatement ps = conn.prepareStatement(INSERT_USER, new String[]{"pk_user_id"});
                 ps.setString(1, newApiUser.getUsername());
                 ps.setBytes(2, Base64.getDecoder().decode(newApiUser.getPassword()));
-                ps.setString(3, newApiUser.getEMailAddress());
-                ps.setString(4, newApiUser.getFirstName());
-                ps.setString(5, newApiUser.getLastName());
+                if (newApiUser.getEMailAddress() == null) {
+                    ps.setNull(3, Types.NULL);
+                } else {
+                    ps.setString(3, newApiUser.getEMailAddress());
+                }
+                if (newApiUser.getFirstName() == null) {
+                    ps.setNull(4, Types.NULL);
+                } else {
+                    ps.setString(4, newApiUser.getFirstName());
+                }
+                if(newApiUser.getLastName() == null) {
+                    ps.setNull(5, Types.NULL);
+                } else {
+                    ps.setString(5, newApiUser.getLastName());
+                }
                 return ps;
             }, keyHolder);
 

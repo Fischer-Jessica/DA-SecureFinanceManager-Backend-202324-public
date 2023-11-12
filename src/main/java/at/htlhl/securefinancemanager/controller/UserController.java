@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
+import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiUser;
 import at.htlhl.securefinancemanager.model.database.DatabaseUser;
@@ -44,8 +45,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 10.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 12.11.2023 (version 2.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -77,8 +78,16 @@ public class UserController {
     @PostMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "add a new user")
-    public DatabaseUser addUser(@RequestBody ApiUser newApiUser) {
-        return userRepository.addUser(newApiUser);
+    public ResponseEntity<Object> addUser(@RequestBody ApiUser newApiUser) {
+        try {
+            if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()
+                    || newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
+                throw new MissingRequiredParameter("username and password are required");
+            }
+            return ResponseEntity.ok(userRepository.addUser(newApiUser));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        }
     }
 
     /**
