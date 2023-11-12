@@ -45,8 +45,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 12.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 12.11.2023 (version 2.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -67,6 +67,33 @@ public class UserController {
     @Operation(summary = "returns all users")
     public List<DatabaseUser> getUsers() {
         return userRepository.getUsers();
+    }
+
+    /**
+     * Retrieves information about the currently authenticated user upon successful login.
+     *
+     * This endpoint allows a user to authenticate on a device and retrieve their associated data.
+     * The user must be authenticated with the API version set to 0, and have the 'ROLE_USER' authority.
+     *
+     * @param activeUser The UserDetails object representing the currently authenticated user.
+     * @return ResponseEntity containing the user's information if authentication is successful.
+     *         Returns UNAUTHORIZED status with an error message if authentication fails.
+     *
+     * @throws ValidationException If there is an issue validating the user's authentication.
+     *
+     * @see UserDetails
+     * @see UserRepository#getUserObject(String)
+     */
+    @GetMapping(value = "/user", headers = "API-Version=0")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "returns the currently authenticated user")
+    public ResponseEntity<Object> getUser(@AuthenticationPrincipal UserDetails activeUser) {
+        try {
+            return ResponseEntity.ok(UserRepository.getUserObject(activeUser.getUsername()));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        }
     }
 
     /**
