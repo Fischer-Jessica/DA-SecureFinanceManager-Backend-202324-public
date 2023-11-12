@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
+import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
@@ -37,8 +38,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 10.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 12.11.2023 (version 2.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -112,9 +113,16 @@ public class EntryController {
                                            @RequestBody ApiEntry newApiEntry,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (newApiEntry.getEntryAmount() == null || newApiEntry.getEntryAmount().isBlank()
+                || newApiEntry.getEntryTimeOfTransaction() == null || newApiEntry.getEntryTimeOfTransaction().isBlank()) {
+                throw new MissingRequiredParameter("Amount and TimeOfTransaction are required");
+            }
+
             return ResponseEntity.ok(entryRepository.addEntry(new DatabaseEntry(subcategoryId, newApiEntry, UserRepository.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
