@@ -39,12 +39,12 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.7
- * @since 14.11.2023 (version 2.7)
+ * @version 2.8
+ * @since 14.11.2023 (version 2.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("secure-finance-manager/categories/{categoryId}/subcategories/{subcategoryId}")
+@RequestMapping("secure-finance-manager/categories/subcategories/{subcategoryId}")
 public class EntryController {
     /** The EntryRepository instance for accessing entry data. */
     @Autowired
@@ -53,7 +53,6 @@ public class EntryController {
     /**
      * Retrieves a list of all entries for a specific subcategory.
      *
-     * @param categoryId   The ID of the category.
      * @param subcategoryId The ID of the subcategory.
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return A list of entries for the specified subcategory.
@@ -62,8 +61,7 @@ public class EntryController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all entries of one subcategory")
-    public ResponseEntity<Object> getEntries(@PathVariable int categoryId,
-                                             @PathVariable int subcategoryId,
+    public ResponseEntity<Object> getEntries(@PathVariable int subcategoryId,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
             return ResponseEntity.ok(entryRepository.getEntries(subcategoryId, userDetails.getUsername()));
@@ -75,7 +73,6 @@ public class EntryController {
     /**
      * Retrieves a specific entry for a specific subcategory.
      *
-     * @param categoryId   The ID of the category.
      * @param subcategoryId The ID of the subcategory.
      * @param entryId      The ID of the entry.
      * @param userDetails  The UserDetails object representing the logged-in user.
@@ -85,8 +82,7 @@ public class EntryController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one entry")
-    public ResponseEntity<Object> getEntry(@PathVariable int categoryId,
-                                           @PathVariable int subcategoryId,
+    public ResponseEntity<Object> getEntry(@PathVariable int subcategoryId,
                                            @PathVariable int entryId,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -99,7 +95,6 @@ public class EntryController {
     /**
      * Creates a new entry for a specific subcategory.
      *
-     * @param categoryId   The ID of the category.
      * @param subcategoryId The ID of the subcategory.
      * @param newApiEntry   The new entry to be added.
      * @param userDetails  The UserDetails object representing the logged-in user.
@@ -109,8 +104,7 @@ public class EntryController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "create a new entry")
-    public ResponseEntity<Object> addEntry(@PathVariable int categoryId,
-                                           @PathVariable int subcategoryId,
+    public ResponseEntity<Object> addEntry(@PathVariable int subcategoryId,
                                            @RequestBody ApiEntry newApiEntry,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -130,7 +124,6 @@ public class EntryController {
     /**
      * Updates an existing entry for a specific subcategory.
      *
-     * @param categoryId   The ID of the category.
      * @param subcategoryId The ID of the subcategory in which the entry is.
      * @param entryId      The ID of the entry.
      * @param updatedApiEntry The updated entry data.
@@ -141,8 +134,7 @@ public class EntryController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "change an existing entry")
-    public ResponseEntity<Object> updateEntry(@PathVariable int categoryId,
-                                              @PathVariable int subcategoryId,
+    public ResponseEntity<Object> updateEntry(@PathVariable int subcategoryId,
                                               @PathVariable int entryId,
                                               @RequestBody ApiEntry updatedApiEntry,
                                               @AuthenticationPrincipal UserDetails userDetails) {
@@ -156,7 +148,6 @@ public class EntryController {
     /**
      * Deletes an entry from a specific subcategory.
      *
-     * @param categoryId   The ID of the category.
      * @param subcategoryId The ID of the subcategory.
      * @param entryId      The ID of the entry to be deleted.
      * @param userDetails  The UserDetails object representing the logged-in user.
@@ -165,8 +156,7 @@ public class EntryController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "delete an entry")
-    public ResponseEntity<Object> deleteEntry(@PathVariable int categoryId,
-                                              @PathVariable int subcategoryId,
+    public ResponseEntity<Object> deleteEntry(@PathVariable int subcategoryId,
                                               @PathVariable int entryId,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
