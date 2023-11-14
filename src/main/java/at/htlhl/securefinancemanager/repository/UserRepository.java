@@ -14,6 +14,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
+
 /**
  * The {@code UserRepository} class handles the persistence operations for user data.
  * It provides methods to access and manipulate the 'users' table in the 'secure_finance_manager' PostgreSQL database.
@@ -28,8 +30,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 12.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 14.11.2023 (version 2.4)
  */
 @Repository
 public class UserRepository {
@@ -43,13 +45,6 @@ public class UserRepository {
      * SQL query to retrieve a user based on the username.
      */
     private static final String SELECT_USER = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
-            "FROM users " +
-            "WHERE username = ?;";
-
-    /**
-     * SQL query to retrieve a userId based on the username.
-     */
-    private static final String SELECT_USER_ID = "SELECT pk_user_id " +
             "FROM users " +
             "WHERE username = ?;";
 
@@ -87,35 +82,6 @@ public class UserRepository {
     @Autowired
     public UserRepository(DataSource dataSource) {
         UserRepository.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-
-    /**
-     * Retrieves the ID of a user based on the provided username.
-     *
-     * @param activeUsername The username of the user for which the ID is to be retrieved.
-     * @return The ID of the user with the given username.
-     * @throws ValidationException if the user is not found.
-     */
-    public static int getUserId(String activeUsername) throws ValidationException {
-        int databaseUserId = -1;
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_USER_ID);
-            ps.setString(1, activeUsername);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                databaseUserId = rs.getInt("pk_user_id");
-                conn.close();
-            }
-            conn.close();
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
-        }
-        if (databaseUserId == -1) {
-            throw new ValidationException("User not found");
-        }
-        return databaseUserId;
     }
 
     /**
@@ -205,6 +171,7 @@ public class UserRepository {
                 return ps;
             }, keyHolder);
 
+            userSingleton.addUser(newApiUser.getUsername(), Objects.requireNonNull(keyHolder.getKey()).intValue());
             return new DatabaseUser(Objects.requireNonNull(keyHolder.getKey()).intValue(), newApiUser.getUsername(), newApiUser.getPassword(), newApiUser.getEMailAddress(), newApiUser.getFirstName(), newApiUser.getLastName());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -271,7 +238,7 @@ public class UserRepository {
             ps.setInt(6, oldDatabaseUser.getUserId());
             ps.executeUpdate();
             conn.close();
-            return actualUser;
+            return getUserObject(actualUser.getUsername());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -284,13 +251,11 @@ public class UserRepository {
      * @throws ValidationException if the user is not found.
      */
     public void deleteUser(String username) throws ValidationException {
-        int activeUserId = getUserId(username);
-
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_USER);
-            ps.setInt(1, activeUserId);
+            ps.setInt(1, userSingleton.getUserId(username));
             ps.executeUpdate();
             conn.close();
         } catch (SQLException exception) {

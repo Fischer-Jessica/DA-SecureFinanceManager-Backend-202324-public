@@ -1,7 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -11,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
+
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
  * The {@code SubcategoryRepository} class handles the persistence operations for subcategory data.
@@ -29,8 +30,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 12.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 14.11.2023 (version 2.1)
  */
 @Repository
 public class SubcategoryRepository {
@@ -76,7 +77,7 @@ public class SubcategoryRepository {
      * @return A list of subcategories for the specified category.
      */
     public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORIES);
@@ -113,7 +114,7 @@ public class SubcategoryRepository {
      * @return The requested subcategory.
      */
     public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORY);
@@ -222,13 +223,12 @@ public class SubcategoryRepository {
      * @param username      The username of the logged-in user.
      */
     public void deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_SUBCATEGORY);
             ps.setInt(1, subcategoryId);
-            ps.setInt(2, activeUserId);
+            ps.setInt(2, userSingleton.getUserId(username));
             ps.setInt(3, categoryId);
             ps.executeUpdate();
             conn.close();

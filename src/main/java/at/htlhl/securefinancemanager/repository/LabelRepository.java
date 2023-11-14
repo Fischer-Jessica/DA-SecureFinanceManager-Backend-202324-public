@@ -11,6 +11,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
+
 /**
  * The {@code LabelRepository} class handles the persistence operations for label data.
  * It serves as a Spring Data JPA repository for the Label entity.
@@ -28,8 +30,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 10.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 14.11.2023 (version 2.1)
  */
 @Repository
 public class LabelRepository {
@@ -75,7 +77,7 @@ public class LabelRepository {
      * @throws ValidationException if there's a validation issue.
      */
     public List<DatabaseLabel> getLabels(String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_LABELS);
@@ -111,7 +113,7 @@ public class LabelRepository {
      * @throws ValidationException if there's a validation issue.
      */
     public DatabaseLabel getLabel(int labelId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_LABEL);
@@ -219,13 +221,12 @@ public class LabelRepository {
      * @throws ValidationException if there's a validation issue.
      */
     public void deleteLabel(int labelId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_LABEL);
             ps.setInt(1, labelId);
-            ps.setInt(2, activeUserId);
+            ps.setInt(2, userSingleton.getUserId(username));
             ps.executeUpdate();
             conn.close();
         } catch (SQLException exception) {

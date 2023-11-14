@@ -2,7 +2,6 @@ package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
-import at.htlhl.securefinancemanager.model.api.ApiLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -15,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
+
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
  * The {@code EntryLabelRepository} class handles the persistence operations for EntryLabel data.
@@ -33,8 +34,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 10.11.2023 (version 1.6)
+ * @version 1.7
+ * @since 14.11.2023 (version 1.7)
  */
 @Repository
 public class EntryLabelRepository {
@@ -68,7 +69,7 @@ public class EntryLabelRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_LABELS_FOR_ENTRY);
@@ -102,7 +103,7 @@ public class EntryLabelRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -131,14 +132,13 @@ public class EntryLabelRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public void removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY);
             ps.setInt(1, entryId);
             ps.setInt(2, labelId);
-            ps.setInt(3, activeUserId);
+            ps.setInt(3, userSingleton.getUserId(username));
             ps.executeUpdate();
             conn.close();
         } catch (SQLException exception) {

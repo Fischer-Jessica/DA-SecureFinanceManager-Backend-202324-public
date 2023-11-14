@@ -5,7 +5,6 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiCategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import at.htlhl.securefinancemanager.repository.CategoryRepository;
-import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
  * The CategoryController class handles HTTP requests related to category management.
@@ -38,8 +39,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 12.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 14.11.2023 (version 2.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -107,7 +108,7 @@ public class CategoryController {
                 throw new MissingRequiredParameter("Category colour ID cannot be less than or equal to 0");
             }
             return ResponseEntity.ok(
-                    categoryRepository.addCategory(new DatabaseCategory(newApiCategory, UserRepository.getUserId(userDetails.getUsername()))));
+                    categoryRepository.addCategory(new DatabaseCategory(newApiCategory, userSingleton.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
@@ -136,7 +137,7 @@ public class CategoryController {
             }
 
             return ResponseEntity.ok(
-                    categoryRepository.updateCategory (new DatabaseCategory(categoryId, updatedApiCategory, UserRepository.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+                    categoryRepository.updateCategory (new DatabaseCategory(categoryId, updatedApiCategory, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {

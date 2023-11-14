@@ -5,7 +5,6 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import at.htlhl.securefinancemanager.repository.SubcategoryRepository;
-import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
  * The SubcategoryController class handles HTTP requests related to subcategories.
@@ -37,8 +38,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 12.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 14.11.2023 (version 2.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -112,7 +113,7 @@ public class SubcategoryController {
                 throw new MissingRequiredParameter("Subcategory colour ID cannot be less than or equal to 0");
             }
 
-            return ResponseEntity.ok(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryId, newApiSubcategory, UserRepository.getUserId(userDetails.getUsername()))));
+            return ResponseEntity.ok(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryId, newApiSubcategory, userSingleton.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
@@ -140,7 +141,7 @@ public class SubcategoryController {
             if (updatedApiSubcategory.getSubcategoryColourId() < 0) {
                 throw new MissingRequiredParameter("Subcategory colour ID cannot be less than 0");
             }
-            return ResponseEntity.ok(subcategoryRepository.updateSubcategory(new DatabaseSubcategory(subcategoryId, categoryId, updatedApiSubcategory, UserRepository.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            return ResponseEntity.ok(subcategoryRepository.updateSubcategory(new DatabaseSubcategory(subcategoryId, categoryId, updatedApiSubcategory, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {

@@ -11,6 +11,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
+
 /**
  * The {@code CategoryRepository} class handles the persistence operations for category data.
  * It provides methods to access and manipulate the 'categories' table in the 'secure_finance_manager' PostgreSQL database.
@@ -33,8 +35,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 12.11.2023 (version 2.1)
+ * @version 2.2
+ * @since 14.11.2023 (version 2.2)
  */
 @Repository
 public class CategoryRepository {
@@ -80,7 +82,7 @@ public class CategoryRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public List<DatabaseCategory> getCategories(String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORIES);
@@ -116,7 +118,7 @@ public class CategoryRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public DatabaseCategory getCategory(int categoryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORY);
@@ -223,13 +225,12 @@ public class CategoryRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public void deleteCategory(int categoryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_CATEGORY);
             ps.setInt(1, categoryId);
-            ps.setInt(2, activeUserId);
+            ps.setInt(2, userSingleton.getUserId(username));
             ps.executeUpdate();
             conn.close();
         } catch (SQLException exception) {

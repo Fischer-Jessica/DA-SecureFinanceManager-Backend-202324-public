@@ -1,17 +1,17 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.api.ApiEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
+
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
  * The {@code EntryRepository} class handles the persistence operations for entry data.
@@ -26,8 +26,8 @@ import java.util.Objects;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 12.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 14.11.2023 (version 2.4)
  */
 @Repository
 public class EntryRepository {
@@ -74,7 +74,7 @@ public class EntryRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public List<DatabaseEntry> getEntries(int subcategoryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES);
@@ -127,7 +127,7 @@ public class EntryRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public DatabaseEntry getEntry(int subcategoryId, int entryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
+        int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY);
@@ -282,13 +282,12 @@ public class EntryRepository {
      * @throws ValidationException If there is an issue with data validation.
      */
     public void deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
-        int activeUserId = UserRepository.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_ENTRY);
             ps.setInt(1, entryId);
-            ps.setInt(2, activeUserId);
+            ps.setInt(2, userSingleton.getUserId(username));
             ps.setInt(3, subcategoryId);
             ps.executeUpdate();
             conn.close();

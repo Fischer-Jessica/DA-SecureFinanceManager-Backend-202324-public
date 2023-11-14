@@ -5,7 +5,6 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import at.htlhl.securefinancemanager.repository.EntryRepository;
-import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
  * The EntryController class handles HTTP requests related to entries.
@@ -38,8 +39,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 12.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 14.11.2023 (version 2.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -118,7 +119,7 @@ public class EntryController {
                 throw new MissingRequiredParameter("Amount and TimeOfTransaction are required");
             }
 
-            return ResponseEntity.ok(entryRepository.addEntry(new DatabaseEntry(subcategoryId, newApiEntry, UserRepository.getUserId(userDetails.getUsername()))));
+            return ResponseEntity.ok(entryRepository.addEntry(new DatabaseEntry(subcategoryId, newApiEntry, userSingleton.getUserId(userDetails.getUsername()))));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
@@ -146,7 +147,7 @@ public class EntryController {
                                               @RequestBody ApiEntry updatedApiEntry,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            return ResponseEntity.ok(entryRepository.updateEntry(new DatabaseEntry(entryId, subcategoryId, updatedApiEntry, UserRepository.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            return ResponseEntity.ok(entryRepository.updateEntry(new DatabaseEntry(entryId, subcategoryId, updatedApiEntry, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
