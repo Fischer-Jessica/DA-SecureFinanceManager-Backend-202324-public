@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 14.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 14.11.2023 (version 2.5)
  */
 @Repository
 public class UserRepository {
@@ -189,56 +189,45 @@ public class UserRepository {
     public DatabaseUser updateUser(ApiUser updatedUser, String username) throws ValidationException {
         DatabaseUser oldDatabaseUser = getUserObject(username);
         try {
-            DatabaseUser actualUser = new DatabaseUser();
-            actualUser.setUserId(oldDatabaseUser.getUserId());
-
             Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_USER);
 
             if (updatedUser.getUsername() != null) {
                 ps.setString(1, updatedUser.getUsername());
-                actualUser.setUsername(updatedUser.getUsername());
+                username = updatedUser.getUsername();
             } else {
                 ps.setString(1, oldDatabaseUser.getUsername());
-                actualUser.setUsername(oldDatabaseUser.getUsername());
+                username = oldDatabaseUser.getUsername();
             }
 
             if (updatedUser.getPassword() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedUser.getPassword()));
-                actualUser.setPassword(updatedUser.getPassword());
             } else {
                 ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseUser.getPassword()));
-                actualUser.setPassword(oldDatabaseUser.getPassword());
             }
 
             if (updatedUser.getEMailAddress() != null) {
                 ps.setString(3, updatedUser.getEMailAddress());
-                actualUser.setEMailAddress(updatedUser.getEMailAddress());
             } else {
                 ps.setString(3, oldDatabaseUser.getEMailAddress());
-                actualUser.setEMailAddress(oldDatabaseUser.getEMailAddress());
             }
 
             if (updatedUser.getFirstName() != null) {
                 ps.setString(4, updatedUser.getFirstName());
-                actualUser.setFirstName(updatedUser.getFirstName());
             } else {
                 ps.setString(4, oldDatabaseUser.getFirstName());
-                actualUser.setFirstName(oldDatabaseUser.getFirstName());
             }
 
             if (updatedUser.getLastName() != null) {
                 ps.setString(5, updatedUser.getLastName());
-                actualUser.setLastName(updatedUser.getLastName());
             } else {
                 ps.setString(5, oldDatabaseUser.getLastName());
-                actualUser.setLastName(oldDatabaseUser.getLastName());
             }
 
             ps.setInt(6, oldDatabaseUser.getUserId());
             ps.executeUpdate();
             conn.close();
-            return getUserObject(actualUser.getUsername());
+            return getUserObject(username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
