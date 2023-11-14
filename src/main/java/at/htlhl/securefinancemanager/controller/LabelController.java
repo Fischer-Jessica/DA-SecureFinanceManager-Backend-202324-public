@@ -37,13 +37,13 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 14.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 14.11.2023 (version 2.7)
  */
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("secure-finance-manager/labels")
+@RequestMapping("secure-finance-manager")
 public class LabelController {
     /** The LabelRepository instance for accessing label data. */
     @Autowired
