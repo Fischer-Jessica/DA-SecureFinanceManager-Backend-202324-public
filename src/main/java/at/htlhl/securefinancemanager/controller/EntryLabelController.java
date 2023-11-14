@@ -35,8 +35,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 14.11.2023 (version 1.8)
+ * @version 1.9
+ * @since 14.11.2023 (version 1.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -113,8 +113,7 @@ public class EntryLabelController {
             } else if (labelId <= 0) {
                 throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
             }
-            entryLabelRepository.removeLabelFromEntry(entryId, labelId, userDetails.getUsername());
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.status(HttpStatus.OK).body(entryLabelRepository.removeLabelFromEntry(entryId, labelId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {

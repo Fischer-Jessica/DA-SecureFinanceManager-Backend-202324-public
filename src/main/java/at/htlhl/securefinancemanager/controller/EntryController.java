@@ -39,8 +39,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.0
- * @since 14.11.2023 (version 3.0)
+ * @version 3.1
+ * @since 14.11.2023 (version 3.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -182,8 +182,7 @@ public class EntryController {
             } else if (entryId <= 0) {
                 throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
             }
-            entryRepository.deleteEntry(subcategoryId, entryId, userDetails.getUsername());
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.status(HttpStatus.OK).body(entryRepository.deleteEntry(subcategoryId, entryId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

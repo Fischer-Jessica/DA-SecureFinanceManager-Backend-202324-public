@@ -45,8 +45,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 14.11.2023 (version 2.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -149,8 +149,7 @@ public class UserController {
     @Operation(summary = "deletes an user")
     public ResponseEntity<Object> deleteUser(@AuthenticationPrincipal UserDetails activeUser) {
         try {
-            userRepository.deleteUser(activeUser.getUsername());
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.status(HttpStatus.OK).body(userRepository.deleteUser(activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }

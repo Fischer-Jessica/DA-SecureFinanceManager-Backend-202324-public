@@ -26,8 +26,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 14.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 14.11.2023 (version 2.7)
  */
 @Repository
 public class EntryRepository {
@@ -288,7 +288,7 @@ public class EntryRepository {
      *                              This exception may indicate that the entryId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the entry.
      */
-    public void deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
+    public int deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -302,6 +302,7 @@ public class EntryRepository {
             if (rowsAffected == 0) {
                 throw new ValidationException("Entry with ID " + entryId + " not found.");
             }
+            return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

@@ -34,8 +34,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 14.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 14.11.2023 (version 2.0)
  */
 @Repository
 public class EntryLabelRepository {
@@ -137,7 +137,7 @@ public class EntryLabelRepository {
      *                              This exception may indicate that the entryId or the labelId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the entry and the label.
      */
-    public void removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
+    public int removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -147,9 +147,11 @@ public class EntryLabelRepository {
             ps.setInt(3, userSingleton.getUserId(username));
             int rowsAffected = ps.executeUpdate();
             conn.close();
+
             if (rowsAffected == 0) {
                 throw new ValidationException("No entryLabel found for an entry with ID " + entryId + " and a label with ID " + labelId);
             }
+            return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

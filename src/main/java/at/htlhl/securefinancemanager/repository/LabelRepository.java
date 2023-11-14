@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 14.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 14.11.2023 (version 2.4)
  */
 @Repository
 public class LabelRepository {
@@ -223,7 +223,7 @@ public class LabelRepository {
      *                              This exception may indicate that the labelId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the label.
      */
-    public void deleteLabel(int labelId, String username) throws ValidationException {
+    public int deleteLabel(int labelId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -232,9 +232,11 @@ public class LabelRepository {
             ps.setInt(2, userSingleton.getUserId(username));
             int rowsAffected = ps.executeUpdate();
             conn.close();
+
             if (rowsAffected == 0) {
                 throw new ValidationException("Label with ID " + labelId + " not found.");
             }
+            return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

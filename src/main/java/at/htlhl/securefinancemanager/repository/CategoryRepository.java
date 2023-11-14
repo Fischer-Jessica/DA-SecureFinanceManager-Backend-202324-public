@@ -35,8 +35,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 14.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 14.11.2023 (version 2.5)
  */
 @Repository
 public class CategoryRepository {
@@ -228,7 +228,7 @@ public class CategoryRepository {
      *                              This exception indicates that the categoryId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the category.
      */
-    public void deleteCategory(int categoryId, String username) throws ValidationException {
+    public int deleteCategory(int categoryId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -241,6 +241,7 @@ public class CategoryRepository {
             if (rowsAffected == 0) {
                 throw new ValidationException("Category with ID " + categoryId + " not found.");
             }
+            return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

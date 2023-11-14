@@ -38,8 +38,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.7
- * @since 14.11.2023 (version 2.7)
+ * @version 2.8
+ * @since 14.11.2023 (version 2.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -182,8 +182,7 @@ public class SubcategoryController {
             } else if (subcategoryId <= 0) {
                 throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
             }
-            subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, userDetails.getUsername());
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.status(HttpStatus.OK).body(subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

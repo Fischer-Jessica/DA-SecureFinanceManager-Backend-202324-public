@@ -38,8 +38,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 14.11.2023 (version 2.8)
+ * @version 2.9
+ * @since 14.11.2023 (version 2.9)
  */
 
 @RestController
@@ -160,8 +160,7 @@ public class LabelController {
             if (labelId <= 0) {
                 throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
             }
-            labelRepository.deleteLabel(labelId, userDetails.getUsername());
-            return ResponseEntity.status(HttpStatus.OK).build();
+            return ResponseEntity.status(HttpStatus.OK).body(labelRepository.deleteLabel(labelId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

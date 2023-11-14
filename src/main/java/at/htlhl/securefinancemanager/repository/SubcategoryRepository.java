@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 14.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 14.11.2023 (version 2.4)
  */
 @Repository
 public class SubcategoryRepository {
@@ -231,7 +231,7 @@ public class SubcategoryRepository {
      *                              This exception may indicate that the subcategoryId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the subcategory.
      */
-    public void deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
+    public int deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -241,9 +241,11 @@ public class SubcategoryRepository {
             ps.setInt(3, categoryId);
             int rowsAffected = ps.executeUpdate();
             conn.close();
+
             if (rowsAffected == 0) {
                 throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
             }
+            return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

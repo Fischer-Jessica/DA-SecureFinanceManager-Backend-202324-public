@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.7
- * @since 14.11.2023 (version 2.7)
+ * @version 2.8
+ * @since 14.11.2023 (version 2.8)
  */
 @Repository
 public class UserRepository {
@@ -245,7 +245,7 @@ public class UserRepository {
      *                              This exception may indicate that the userId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the user.
      */
-    public void deleteUser(String username) throws ValidationException {
+    public int deleteUser(String username) throws ValidationException {
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
@@ -253,9 +253,11 @@ public class UserRepository {
             ps.setInt(1, userSingleton.getUserId(username));
             int rowsAffected = ps.executeUpdate();
             conn.close();
+
             if (rowsAffected == 0) {
                 throw new ValidationException("User with username " + username + " not found.");
             }
+            return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
