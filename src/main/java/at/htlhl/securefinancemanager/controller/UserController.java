@@ -45,14 +45,16 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 12.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 14.11.2023 (version 2.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("secure-finance-manager")
 public class UserController {
-    /** The UserRepository instance for accessing user data. */
+    /**
+     * The UserRepository instance for accessing user data.
+     */
     @Autowired
     UserRepository userRepository;
 
@@ -71,16 +73,13 @@ public class UserController {
 
     /**
      * Retrieves information about the currently authenticated user upon successful login.
-     *
+     * <p>
      * This endpoint allows a user to authenticate on a device and retrieve their associated data.
      * The user must be authenticated with the API version set to 0, and have the 'ROLE_USER' authority.
      *
      * @param activeUser The UserDetails object representing the currently authenticated user.
      * @return ResponseEntity containing the user's information if authentication is successful.
-     *         Returns UNAUTHORIZED status with an error message if authentication fails.
-     *
-     * @throws ValidationException If there is an issue validating the user's authentication.
-     *
+     * Returns UNAUTHORIZED status with an error message if authentication fails.
      * @see UserDetails
      * @see UserRepository#getUserObject(String)
      */
@@ -107,9 +106,10 @@ public class UserController {
     @Operation(summary = "add a new user")
     public ResponseEntity<Object> addUser(@RequestBody ApiUser newApiUser) {
         try {
-            if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()
-                    || newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
-                throw new MissingRequiredParameter("username and password are required");
+            if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
+                throw new MissingRequiredParameter("username is required");
+            } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
+                throw new MissingRequiredParameter("password is required");
             }
             return ResponseEntity.ok(userRepository.addUser(newApiUser));
         } catch (MissingRequiredParameter exception) {
@@ -121,7 +121,7 @@ public class UserController {
      * Updates an existing user.
      *
      * @param updatedApiUser The user object containing the updated user information.
-     * @param activeUser The UserDetails object representing the currently authenticated user.
+     * @param activeUser     The UserDetails object representing the currently authenticated user.
      * @return ResponseEntity with the updated user if successful, or an error response if validation fails.
      */
     @PatchMapping(value = "/users", headers = "API-Version=0")
@@ -148,11 +148,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes an user")
     public ResponseEntity<Object> deleteUser(@AuthenticationPrincipal UserDetails activeUser) {
-        try {
-            userRepository.deleteUser(activeUser.getUsername());
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
-        }
+        userRepository.deleteUser(activeUser.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

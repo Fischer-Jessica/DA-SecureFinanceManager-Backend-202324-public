@@ -1,6 +1,5 @@
 package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -34,8 +33,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 14.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 14.11.2023 (version 1.8)
  */
 @Repository
 public class EntryLabelRepository {
@@ -66,9 +65,8 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to retrieve labels for.
      * @param username  The username of the logged-in user.
      * @return A list of Label objects representing the labels associated with the entry and user.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
+    public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -100,9 +98,8 @@ public class EntryLabelRepository {
      * @param labelId   The ID of the label to add.
      * @param username  The username of the logged-in user.
      * @return The ID of the newly created entry label.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) throws ValidationException {
+    public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -129,9 +126,8 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to remove the label from.
      * @param labelId   The ID of the label to remove.
      * @param username  The username of the logged-in user.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public void removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
+    public void removeLabelFromEntry(int entryId, int labelId, String username) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 

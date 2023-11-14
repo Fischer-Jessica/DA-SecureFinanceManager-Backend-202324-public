@@ -1,6 +1,5 @@
 package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -30,8 +29,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 14.11.2023 (version 2.1)
+ * @version 2.2
+ * @since 14.11.2023 (version 2.2)
  */
 @Repository
 public class LabelRepository {
@@ -74,9 +73,8 @@ public class LabelRepository {
      *
      * @param username The username of the logged-in user.
      * @return A list of Label objects representing the labels.
-     * @throws ValidationException if there's a validation issue.
      */
-    public List<DatabaseLabel> getLabels(String username) throws ValidationException {
+    public List<DatabaseLabel> getLabels(String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -110,9 +108,8 @@ public class LabelRepository {
      * @param labelId The ID of the label to retrieve.
      * @param username The username of the logged-in user.
      * @return The requested Label object.
-     * @throws ValidationException if there's a validation issue.
      */
-    public DatabaseLabel getLabel(int labelId, String username) throws ValidationException {
+    public DatabaseLabel getLabel(int labelId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -144,9 +141,8 @@ public class LabelRepository {
      *
      * @param newLabel The Label object representing the new label.
      * @return The ID of the newly created label.
-     * @throws ValidationException if there's a validation issue.
      */
-    public DatabaseLabel addLabel(DatabaseLabel newLabel) throws ValidationException {
+    public DatabaseLabel addLabel(DatabaseLabel newLabel) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -177,9 +173,8 @@ public class LabelRepository {
      * @param updatedLabel The updated Label object.
      * @param username The username of the logged-in user.
      * @return The updated Label object.
-     * @throws ValidationException if there's a validation issue.
      */
-    public DatabaseLabel updateLabel(DatabaseLabel updatedLabel, String username) throws ValidationException {
+    public DatabaseLabel updateLabel(DatabaseLabel updatedLabel, String username) {
         DatabaseLabel oldDatabaseLabel = getLabel(updatedLabel.getLabelId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -218,9 +213,8 @@ public class LabelRepository {
      *
      * @param labelId The ID of the label to delete.
      * @param username The username of the logged-in user.
-     * @throws ValidationException if there's a validation issue.
      */
-    public void deleteLabel(int labelId, String username) throws ValidationException {
+    public void deleteLabel(int labelId, String username) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 

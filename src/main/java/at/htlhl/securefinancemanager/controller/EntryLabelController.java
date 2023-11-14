@@ -1,6 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
-import at.htlhl.securefinancemanager.exception.ValidationException;
+import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.repository.EntryLabelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,8 +34,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 10.11.2023 (version 1.6)
+ * @version 1.7
+ * @since 14.11.2023 (version 1.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -58,9 +58,12 @@ public class EntryLabelController {
     public ResponseEntity<Object> getLabelsForEntry(@PathVariable int entryId,
                                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(entryLabelRepository.getLabelsForEntry(entryId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         }
     }
 
@@ -78,9 +81,14 @@ public class EntryLabelController {
                                                   @PathVariable int labelId,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            } else if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         }
     }
 
@@ -97,10 +105,15 @@ public class EntryLabelController {
                                                        @PathVariable int labelId,
                                                        @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            } else if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
             entryLabelRepository.removeLabelFromEntry(entryId, labelId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         }
     }
 }

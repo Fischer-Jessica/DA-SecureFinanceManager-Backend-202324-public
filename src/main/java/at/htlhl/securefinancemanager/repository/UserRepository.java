@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 14.11.2023 (version 2.6)
  */
 @Repository
 public class UserRepository {
@@ -237,9 +237,8 @@ public class UserRepository {
      * Deletes a user from the repository.
      *
      * @param username The username of the user performing the deletion on themselves.
-     * @throws ValidationException if the user is not found.
      */
-    public void deleteUser(String username) throws ValidationException {
+    public void deleteUser(String username) {
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 

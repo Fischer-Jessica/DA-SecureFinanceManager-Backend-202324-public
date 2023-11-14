@@ -1,7 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import at.htlhl.securefinancemanager.repository.EntryRepository;
@@ -39,8 +38,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 14.11.2023 (version 2.8)
+ * @version 2.9
+ * @since 14.11.2023 (version 2.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -64,9 +63,12 @@ public class EntryController {
     public ResponseEntity<Object> getEntries(@PathVariable int subcategoryId,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(entryRepository.getEntries(subcategoryId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -86,9 +88,14 @@ public class EntryController {
                                            @PathVariable int entryId,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            } else if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(entryRepository.getEntry(subcategoryId, entryId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -108,14 +115,14 @@ public class EntryController {
                                            @RequestBody ApiEntry newApiEntry,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (newApiEntry.getEntryAmount() == null || newApiEntry.getEntryAmount().isBlank()
-                || newApiEntry.getEntryTimeOfTransaction() == null || newApiEntry.getEntryTimeOfTransaction().isBlank()) {
-                throw new MissingRequiredParameter("Amount and TimeOfTransaction are required");
+            if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            } else if (newApiEntry.getEntryAmount() == null || newApiEntry.getEntryAmount().isBlank()) {
+                throw new MissingRequiredParameter("entryAmount is required");
+            } else if (newApiEntry.getEntryTimeOfTransaction() == null || newApiEntry.getEntryTimeOfTransaction().isBlank()) {
+                throw new MissingRequiredParameter("entryTimeOfTransaction is required");
             }
-
             return ResponseEntity.ok(entryRepository.addEntry(new DatabaseEntry(subcategoryId, newApiEntry, userSingleton.getUserId(userDetails.getUsername()))));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
@@ -139,9 +146,14 @@ public class EntryController {
                                               @RequestBody ApiEntry updatedApiEntry,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            } else if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(entryRepository.updateEntry(new DatabaseEntry(entryId, subcategoryId, updatedApiEntry, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -160,10 +172,15 @@ public class EntryController {
                                               @PathVariable int entryId,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            } else if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            }
             entryRepository.deleteEntry(subcategoryId, entryId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 }

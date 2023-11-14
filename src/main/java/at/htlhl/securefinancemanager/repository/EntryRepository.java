@@ -1,6 +1,5 @@
 package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -26,8 +25,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 14.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 14.11.2023 (version 2.5)
  */
 @Repository
 public class EntryRepository {
@@ -71,9 +70,8 @@ public class EntryRepository {
      * @param subcategoryId The ID of the subcategory.
      * @param username  The logged-in user.
      * @return A list of entries.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public List<DatabaseEntry> getEntries(int subcategoryId, String username) throws ValidationException {
+    public List<DatabaseEntry> getEntries(int subcategoryId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -124,9 +122,8 @@ public class EntryRepository {
      * @param entryId       The ID of the entry.
      * @param username      The username of the logged-in user.
      * @return The entry object.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public DatabaseEntry getEntry(int subcategoryId, int entryId, String username) throws ValidationException {
+    public DatabaseEntry getEntry(int subcategoryId, int entryId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -174,9 +171,8 @@ public class EntryRepository {
      *
      * @param newEntry  The new entry to be added.
      * @return The ID of the added entry.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public DatabaseEntry addEntry(DatabaseEntry newEntry) throws ValidationException {
+    public DatabaseEntry addEntry(DatabaseEntry newEntry) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -222,9 +218,8 @@ public class EntryRepository {
      * @param updatedEntry  The updated entry data.
      * @param username      The username of the logged-in user.
      * @return The updated entry.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public DatabaseEntry updateEntry(DatabaseEntry updatedEntry, String username) throws ValidationException {
+    public DatabaseEntry updateEntry(DatabaseEntry updatedEntry, String username) {
         DatabaseEntry oldDatabaseEntry = getEntry(updatedEntry.getEntrySubcategoryId(), updatedEntry.getEntryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -279,9 +274,8 @@ public class EntryRepository {
      * @param subcategoryId The ID of the subcategory.
      * @param entryId       The ID of the entry to be deleted.
      * @param username      The username of the logged-in user.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public void deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
+    public void deleteEntry(int subcategoryId, int entryId, String username) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 

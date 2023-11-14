@@ -1,6 +1,5 @@
 package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -30,8 +29,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 14.11.2023 (version 2.1)
+ * @version 2.2
+ * @since 14.11.2023 (version 2.2)
  */
 @Repository
 public class SubcategoryRepository {
@@ -76,7 +75,7 @@ public class SubcategoryRepository {
      * @param username     The username of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
-    public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) throws ValidationException {
+    public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -113,7 +112,7 @@ public class SubcategoryRepository {
      * @param username      The username of the logged-in user.
      * @return The requested subcategory.
      */
-    public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
+    public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -146,7 +145,7 @@ public class SubcategoryRepository {
      * @param newSubcategory The new subcategory to be added.
      * @return The ID of the newly created subcategory.
      */
-    public DatabaseSubcategory addSubcategory(DatabaseSubcategory newSubcategory) throws ValidationException {
+    public DatabaseSubcategory addSubcategory(DatabaseSubcategory newSubcategory) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -179,7 +178,7 @@ public class SubcategoryRepository {
      * @param username           The username of the logged-in user.
      * @return The updated subcategory.
      */
-    public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) throws ValidationException {
+    public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) {
         DatabaseSubcategory oldDatabaseSubcategory = getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -222,7 +221,7 @@ public class SubcategoryRepository {
      * @param subcategoryId The ID of the subcategory to delete.
      * @param username      The username of the logged-in user.
      */
-    public void deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
+    public void deleteSubcategory(int categoryId, int subcategoryId, String username) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 

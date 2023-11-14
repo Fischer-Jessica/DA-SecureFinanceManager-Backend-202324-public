@@ -1,7 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import at.htlhl.securefinancemanager.repository.SubcategoryRepository;
@@ -38,8 +37,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 14.11.2023 (version 2.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -63,9 +62,12 @@ public class SubcategoryController {
     public ResponseEntity<Object> getSubcategories(@PathVariable int categoryId,
                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(subcategoryRepository.getSubcategories(categoryId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -85,9 +87,14 @@ public class SubcategoryController {
                                                  @PathVariable int subcategoryId,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            } else if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(subcategoryRepository.getSubcategory(categoryId, subcategoryId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -107,15 +114,14 @@ public class SubcategoryController {
                                                  @RequestBody ApiSubcategory newApiSubcategory,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (newApiSubcategory.getSubcategoryName() == null || newApiSubcategory.getSubcategoryName().isBlank()) {
-                throw new MissingRequiredParameter("Subcategory name cannot be empty");
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
             } else if (newApiSubcategory.getSubcategoryColourId() <= 0) {
-                throw new MissingRequiredParameter("Subcategory colour ID cannot be less than or equal to 0");
+                throw new MissingRequiredParameter("subcategoryColourId cannot be less than or equal to 0");
+            } else if (newApiSubcategory.getSubcategoryName() == null || newApiSubcategory.getSubcategoryName().isBlank()) {
+                throw new MissingRequiredParameter("subcategoryName is required");
             }
-
             return ResponseEntity.ok(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryId, newApiSubcategory, userSingleton.getUserId(userDetails.getUsername()))));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
@@ -138,12 +144,14 @@ public class SubcategoryController {
                                                     @RequestBody ApiSubcategory updatedApiSubcategory,
                                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (updatedApiSubcategory.getSubcategoryColourId() < 0) {
-                throw new MissingRequiredParameter("Subcategory colour ID cannot be less than 0");
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            } else if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            } else if (updatedApiSubcategory.getSubcategoryColourId() < 0) {
+                throw new MissingRequiredParameter("subcategoryColourId cannot be less than 0, use 0 for no colour change");
             }
             return ResponseEntity.ok(subcategoryRepository.updateSubcategory(new DatabaseSubcategory(subcategoryId, categoryId, updatedApiSubcategory, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
@@ -164,10 +172,15 @@ public class SubcategoryController {
                                                     @PathVariable int subcategoryId,
                                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            } else if (subcategoryId <= 0) {
+                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            }
             subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 }

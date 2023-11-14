@@ -1,7 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiCategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import at.htlhl.securefinancemanager.repository.CategoryRepository;
@@ -39,8 +38,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 14.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 14.11.2023 (version 2.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -61,11 +60,7 @@ public class CategoryController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all categories")
     public ResponseEntity<Object> getCategories(@AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            return ResponseEntity.ok(categoryRepository.getCategories(userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
-        }
+        return ResponseEntity.ok(categoryRepository.getCategories(userDetails.getUsername()));
     }
 
     /**
@@ -82,9 +77,12 @@ public class CategoryController {
     public ResponseEntity<Object> getCategory(@PathVariable int categoryId,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(categoryRepository.getCategory(categoryId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -103,14 +101,12 @@ public class CategoryController {
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (newApiCategory.getCategoryName() == null || newApiCategory.getCategoryName().isBlank()) {
-                throw new MissingRequiredParameter("Category name cannot be empty");
+                throw new MissingRequiredParameter("categoryName cannot be empty");
             } else if (newApiCategory.getCategoryColourId() <= 0) {
-                throw new MissingRequiredParameter("Category colour ID cannot be less than or equal to 0");
+                throw new MissingRequiredParameter("categoryColourId cannot be less than or equal to 0");
             }
             return ResponseEntity.ok(
                     categoryRepository.addCategory(new DatabaseCategory(newApiCategory, userSingleton.getUserId(userDetails.getUsername()))));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
@@ -132,14 +128,12 @@ public class CategoryController {
                                                  @RequestBody ApiCategory updatedApiCategory,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (updatedApiCategory.getCategoryColourId() < 0) {
-                throw new MissingRequiredParameter("Category colour ID cannot be less than 0");
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            } else if (updatedApiCategory.getCategoryColourId() < 0) {
+                throw new MissingRequiredParameter("categoryColourId cannot be less than 0");
             }
-
-            return ResponseEntity.ok(
-                    categoryRepository.updateCategory (new DatabaseCategory(categoryId, updatedApiCategory, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+            return ResponseEntity.ok(categoryRepository.updateCategory(new DatabaseCategory(categoryId, updatedApiCategory, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
@@ -159,10 +153,13 @@ public class CategoryController {
     public ResponseEntity<Object> deleteCategory(@PathVariable int categoryId,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            }
             categoryRepository.deleteCategory(categoryId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 }

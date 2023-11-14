@@ -1,10 +1,12 @@
 package at.htlhl.securefinancemanager.controller;
 
+import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.model.database.DatabaseColour;
 import at.htlhl.securefinancemanager.repository.ColourRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,8 +34,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 10.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 14.11.2023 (version 1.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -64,7 +66,14 @@ public class ColourController {
     @GetMapping(value = "/colours/{colourId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns one colour")
-    public DatabaseColour getColour(@PathVariable int colourId) {
-        return colourRepository.getColour(colourId);
+    public ResponseEntity<Object> getColour(@PathVariable int colourId) {
+        try {
+            if (colourId <= 0) {
+                throw new MissingRequiredParameter("colourId cannot be less than or equal to 0");
+            }
+            return ResponseEntity.ok(colourRepository.getColour(colourId));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+        }
     }
 }

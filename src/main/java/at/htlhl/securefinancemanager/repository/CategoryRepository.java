@@ -1,6 +1,5 @@
 package at.htlhl.securefinancemanager.repository;
 
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -35,8 +34,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 14.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 14.11.2023 (version 2.3)
  */
 @Repository
 public class CategoryRepository {
@@ -79,9 +78,8 @@ public class CategoryRepository {
      *
      * @param username The username of the logged-in user.
      * @return A list of Category objects representing the categories.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public List<DatabaseCategory> getCategories(String username) throws ValidationException {
+    public List<DatabaseCategory> getCategories(String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -115,9 +113,8 @@ public class CategoryRepository {
      * @param categoryId The ID of the category to retrieve.
      * @param username   The username of the logged-in user.
      * @return The requested Category object.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public DatabaseCategory getCategory(int categoryId, String username) throws ValidationException {
+    public DatabaseCategory getCategory(int categoryId, String username) {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -148,9 +145,8 @@ public class CategoryRepository {
      *
      * @param newCategory The Category object representing the new category.
      * @return The ID of the newly created category.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public DatabaseCategory addCategory(DatabaseCategory newCategory) throws ValidationException {
+    public DatabaseCategory addCategory(DatabaseCategory newCategory) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -181,9 +177,8 @@ public class CategoryRepository {
      * @param updatedCategory The updated Category object.
      * @param username        The username of the logged-in user.
      * @return The updated Category object.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public DatabaseCategory updateCategory(DatabaseCategory updatedCategory, String username) throws ValidationException {
+    public DatabaseCategory updateCategory(DatabaseCategory updatedCategory, String username) {
         DatabaseCategory oldDatabaseCategory = getCategory(updatedCategory.getCategoryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -222,9 +217,8 @@ public class CategoryRepository {
      *
      * @param categoryId The ID of the category to delete.
      * @param username   The username of the logged-in user.
-     * @throws ValidationException If there is an issue with data validation.
      */
-    public void deleteCategory(int categoryId, String username) throws ValidationException {
+    public void deleteCategory(int categoryId, String username) {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 

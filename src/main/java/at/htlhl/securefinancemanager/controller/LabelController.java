@@ -1,7 +1,6 @@
 package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
-import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import at.htlhl.securefinancemanager.repository.LabelRepository;
@@ -38,8 +37,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 14.11.2023 (version 2.6)
  */
 
 @RestController
@@ -61,11 +60,7 @@ public class LabelController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all labels")
     public ResponseEntity<Object> getLabels(@AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            return ResponseEntity.ok(labelRepository.getLabels(userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
-        }
+        return ResponseEntity.ok(labelRepository.getLabels(userDetails.getUsername()));
     }
 
     /**
@@ -82,9 +77,12 @@ public class LabelController {
     public ResponseEntity<Object> getLabel(@PathVariable int labelId,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
             return ResponseEntity.ok(labelRepository.getLabel(labelId, userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -103,13 +101,11 @@ public class LabelController {
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (newApiLabel.getLabelName() == null || newApiLabel.getLabelName().isBlank()) {
-                throw new MissingRequiredParameter("The label name is required.");
+                throw new MissingRequiredParameter("labelName is required");
             } else if (newApiLabel.getLabelColourId() <= 0) {
-                throw new MissingRequiredParameter("The label colour is required.");
+                throw new MissingRequiredParameter("labelColour cannot be less than or equal to 0");
             }
             return ResponseEntity.ok(labelRepository.addLabel(new DatabaseLabel(newApiLabel, userSingleton.getUserId(userDetails.getUsername()))));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
@@ -132,11 +128,11 @@ public class LabelController {
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (updatedApiLabel.getLabelColourId() < 0) {
-                throw new MissingRequiredParameter("The label colour can not be negative.");
+                throw new MissingRequiredParameter("labelColour can not be negative, use 0 for no colour change");
+            } else if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
             }
             return ResponseEntity.ok(labelRepository.updateLabel(new DatabaseLabel(labelId, updatedApiLabel, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
@@ -156,10 +152,13 @@ public class LabelController {
     public ResponseEntity<Object> deleteCategory(@PathVariable int labelId,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
+            if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
             labelRepository.deleteLabel(labelId, userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 }
