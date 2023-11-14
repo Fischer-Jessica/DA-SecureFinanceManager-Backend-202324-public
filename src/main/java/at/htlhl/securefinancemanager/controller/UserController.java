@@ -148,7 +148,11 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes an user")
     public ResponseEntity<Object> deleteUser(@AuthenticationPrincipal UserDetails activeUser) {
-        userRepository.deleteUser(activeUser.getUsername());
-        return ResponseEntity.status(HttpStatus.OK).build();
+        try {
+            userRepository.deleteUser(activeUser.getUsername());
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
     }
 }

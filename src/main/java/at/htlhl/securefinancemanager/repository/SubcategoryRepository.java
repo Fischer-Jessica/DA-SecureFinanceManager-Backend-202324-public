@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
+import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -29,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 14.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 14.11.2023 (version 2.3)
  */
 @Repository
 public class SubcategoryRepository {
@@ -111,8 +112,11 @@ public class SubcategoryRepository {
      * @param subcategoryId The ID of the subcategory.
      * @param username      The username of the logged-in user.
      * @return The requested subcategory.
+     * @throws ValidationException  If the specified subcategory does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the subcategoryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the subcategory.
      */
-    public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) {
+    public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -133,7 +137,7 @@ public class SubcategoryRepository {
                     return new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId);
                 }
             }
-            return null;
+            throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -177,8 +181,11 @@ public class SubcategoryRepository {
      * @param updatedSubcategory The updated subcategory data.
      * @param username           The username of the logged-in user.
      * @return The updated subcategory.
+     * @throws ValidationException  If the specified subcategory does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the subcategoryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the subcategory.
      */
-    public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) {
+    public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) throws ValidationException {
         DatabaseSubcategory oldDatabaseSubcategory = getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -220,8 +227,11 @@ public class SubcategoryRepository {
      * @param categoryId    The ID of the category.
      * @param subcategoryId The ID of the subcategory to delete.
      * @param username      The username of the logged-in user.
+     * @throws ValidationException  If the specified subcategory does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the subcategoryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the subcategory.
      */
-    public void deleteSubcategory(int categoryId, int subcategoryId, String username) {
+    public void deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -229,8 +239,11 @@ public class SubcategoryRepository {
             ps.setInt(1, subcategoryId);
             ps.setInt(2, userSingleton.getUserId(username));
             ps.setInt(3, categoryId);
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
             conn.close();
+            if (rowsAffected == 0) {
+                throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
+            }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

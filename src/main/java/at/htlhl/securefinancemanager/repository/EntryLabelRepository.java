@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
+import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -33,8 +34,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 14.11.2023 (version 1.8)
+ * @version 1.9
+ * @since 14.11.2023 (version 1.9)
  */
 @Repository
 public class EntryLabelRepository {
@@ -65,8 +66,11 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to retrieve labels for.
      * @param username  The username of the logged-in user.
      * @return A list of Label objects representing the labels associated with the entry and user.
+     * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the entryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the entry and the label.
      */
-    public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) {
+    public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -84,6 +88,9 @@ public class EntryLabelRepository {
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
                 databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
+            }
+            if (databaseLabels.isEmpty()) {
+                throw new ValidationException("No labels found for an entry with ID " + entryId);
             }
             return databaseLabels;
         } catch (SQLException e) {
@@ -126,8 +133,11 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to remove the label from.
      * @param labelId   The ID of the label to remove.
      * @param username  The username of the logged-in user.
+     * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the entryId or the labelId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the entry and the label.
      */
-    public void removeLabelFromEntry(int entryId, int labelId, String username) {
+    public void removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -135,8 +145,11 @@ public class EntryLabelRepository {
             ps.setInt(1, entryId);
             ps.setInt(2, labelId);
             ps.setInt(3, userSingleton.getUserId(username));
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
             conn.close();
+            if (rowsAffected == 0) {
+                throw new ValidationException("No entryLabel found for an entry with ID " + entryId + " and a label with ID " + labelId);
+            }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
+import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -25,8 +26,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 14.11.2023 (version 2.6)
  */
 @Repository
 public class EntryRepository {
@@ -122,8 +123,11 @@ public class EntryRepository {
      * @param entryId       The ID of the entry.
      * @param username      The username of the logged-in user.
      * @return The entry object.
+     * @throws ValidationException  If the specified entry does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the entryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the entry.
      */
-    public DatabaseEntry getEntry(int subcategoryId, int entryId, String username) {
+    public DatabaseEntry getEntry(int subcategoryId, int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -159,6 +163,9 @@ public class EntryRepository {
                 databaseEntry = new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
                         Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
                         Base64.getEncoder().encodeToString(entryTimeOfTransaction), stringEntryAttachment, activeUserId);
+            }
+            if (databaseEntry == null) {
+                throw new ValidationException("Entry with ID " + entryId + " not found.");
             }
             return databaseEntry;
         } catch (SQLException e) {
@@ -218,8 +225,11 @@ public class EntryRepository {
      * @param updatedEntry  The updated entry data.
      * @param username      The username of the logged-in user.
      * @return The updated entry.
+     * @throws ValidationException  If the specified entry does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the entryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the entry.
      */
-    public DatabaseEntry updateEntry(DatabaseEntry updatedEntry, String username) {
+    public DatabaseEntry updateEntry(DatabaseEntry updatedEntry, String username) throws ValidationException {
         DatabaseEntry oldDatabaseEntry = getEntry(updatedEntry.getEntrySubcategoryId(), updatedEntry.getEntryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -274,8 +284,11 @@ public class EntryRepository {
      * @param subcategoryId The ID of the subcategory.
      * @param entryId       The ID of the entry to be deleted.
      * @param username      The username of the logged-in user.
+     * @throws ValidationException  If the specified entry does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the entryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the entry.
      */
-    public void deleteEntry(int subcategoryId, int entryId, String username) {
+    public void deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
@@ -283,8 +296,12 @@ public class EntryRepository {
             ps.setInt(1, entryId);
             ps.setInt(2, userSingleton.getUserId(username));
             ps.setInt(3, subcategoryId);
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
             conn.close();
+
+            if (rowsAffected == 0) {
+                throw new ValidationException("Entry with ID " + entryId + " not found.");
+            }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

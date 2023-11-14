@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
+import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -34,8 +35,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 14.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 14.11.2023 (version 2.4)
  */
 @Repository
 public class CategoryRepository {
@@ -113,8 +114,11 @@ public class CategoryRepository {
      * @param categoryId The ID of the category to retrieve.
      * @param username   The username of the logged-in user.
      * @return The requested Category object.
+     * @throws ValidationException  If the specified category does not exist or if the provided username is invalid.
+     *                              This exception indicates that the categoryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the category.
      */
-    public DatabaseCategory getCategory(int categoryId, String username) {
+    public DatabaseCategory getCategory(int categoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -134,7 +138,7 @@ public class CategoryRepository {
                     return new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
                 }
             }
-            return null;
+            throw new ValidationException("Category with ID " + categoryId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -177,8 +181,11 @@ public class CategoryRepository {
      * @param updatedCategory The updated Category object.
      * @param username        The username of the logged-in user.
      * @return The updated Category object.
+     * @throws ValidationException  If the specified category does not exist or if the provided username is invalid.
+     *                              This exception indicates that the categoryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the category.
      */
-    public DatabaseCategory updateCategory(DatabaseCategory updatedCategory, String username) {
+    public DatabaseCategory updateCategory(DatabaseCategory updatedCategory, String username) throws ValidationException {
         DatabaseCategory oldDatabaseCategory = getCategory(updatedCategory.getCategoryId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -217,16 +224,23 @@ public class CategoryRepository {
      *
      * @param categoryId The ID of the category to delete.
      * @param username   The username of the logged-in user.
+     * @throws ValidationException  If the specified category does not exist or if the provided username is invalid.
+     *                              This exception indicates that the categoryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the category.
      */
-    public void deleteCategory(int categoryId, String username) {
+    public void deleteCategory(int categoryId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_CATEGORY);
             ps.setInt(1, categoryId);
             ps.setInt(2, userSingleton.getUserId(username));
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
             conn.close();
+
+            if (rowsAffected == 0) {
+                throw new ValidationException("Category with ID " + categoryId + " not found.");
+            }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

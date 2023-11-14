@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 14.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 14.11.2023 (version 2.7)
  */
 @Repository
 public class UserRepository {
@@ -89,7 +89,9 @@ public class UserRepository {
      *
      * @param activeUsername The username of the user to be retrieved.
      * @return The User object representing the user with the given username.
-     * @throws ValidationException if the user is not found.
+     * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the userId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the user.
      */
     public static DatabaseUser getUserObject(String activeUsername) throws ValidationException {
         DatabaseUser databaseUser = null;
@@ -115,7 +117,7 @@ public class UserRepository {
             throw new RuntimeException(exception);
         }
         if (databaseUser == null) {
-            throw new ValidationException("User not found");
+            throw new ValidationException("User with username" + activeUsername + "not found.");
         }
         return databaseUser;
     }
@@ -184,7 +186,9 @@ public class UserRepository {
      * @param updatedUser The updated User object.
      * @param username The username of the user performing the update.
      * @return The User object representing the updated user.
-     * @throws ValidationException if the user is not found.
+     * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the userId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the user.
      */
     public DatabaseUser updateUser(ApiUser updatedUser, String username) throws ValidationException {
         DatabaseUser oldDatabaseUser = getUserObject(username);
@@ -237,15 +241,21 @@ public class UserRepository {
      * Deletes a user from the repository.
      *
      * @param username The username of the user performing the deletion on themselves.
+     * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the userId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the user.
      */
-    public void deleteUser(String username) {
+    public void deleteUser(String username) throws ValidationException {
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_USER);
             ps.setInt(1, userSingleton.getUserId(username));
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
             conn.close();
+            if (rowsAffected == 0) {
+                throw new ValidationException("User with username " + username + " not found.");
+            }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

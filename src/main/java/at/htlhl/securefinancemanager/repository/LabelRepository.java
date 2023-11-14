@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
+import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
@@ -29,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 14.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 14.11.2023 (version 2.3)
  */
 @Repository
 public class LabelRepository {
@@ -108,8 +109,11 @@ public class LabelRepository {
      * @param labelId The ID of the label to retrieve.
      * @param username The username of the logged-in user.
      * @return The requested Label object.
+     * @throws ValidationException  If the specified label does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the labelId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the label.
      */
-    public DatabaseLabel getLabel(int labelId, String username) {
+    public DatabaseLabel getLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -118,7 +122,6 @@ public class LabelRepository {
             ps.setInt(2, labelId);
             ResultSet rs = ps.executeQuery();
 
-            DatabaseLabel databaseLabel = null;
             if (rs.next()) {
                 byte[] labelName = rs.getBytes("label_name");
                 byte[] labelDescription = rs.getBytes("label_description");
@@ -130,7 +133,7 @@ public class LabelRepository {
                     return new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId);
                 }
             }
-            return databaseLabel;
+            throw new ValidationException("Label with ID " + labelId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -173,8 +176,11 @@ public class LabelRepository {
      * @param updatedLabel The updated Label object.
      * @param username The username of the logged-in user.
      * @return The updated Label object.
+     * @throws ValidationException  If the specified label does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the labelId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the label.
      */
-    public DatabaseLabel updateLabel(DatabaseLabel updatedLabel, String username) {
+    public DatabaseLabel updateLabel(DatabaseLabel updatedLabel, String username) throws ValidationException {
         DatabaseLabel oldDatabaseLabel = getLabel(updatedLabel.getLabelId(), username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -213,16 +219,22 @@ public class LabelRepository {
      *
      * @param labelId The ID of the label to delete.
      * @param username The username of the logged-in user.
+     * @throws ValidationException  If the specified label does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the labelId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the label.
      */
-    public void deleteLabel(int labelId, String username) {
+    public void deleteLabel(int labelId, String username) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_LABEL);
             ps.setInt(1, labelId);
             ps.setInt(2, userSingleton.getUserId(username));
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
             conn.close();
+            if (rowsAffected == 0) {
+                throw new ValidationException("Label with ID " + labelId + " not found.");
+            }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

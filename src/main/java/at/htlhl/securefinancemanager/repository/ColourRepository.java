@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.repository;
 
+import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseColour;
 import org.springframework.stereotype.Repository;
 
@@ -27,8 +28,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 10.11.2023 (version 1.4)
+ * @version 1.5
+ * @since 14.11.2023 (version 1.5)
  */
 @Repository
 public class ColourRepository {
@@ -60,8 +61,9 @@ public class ColourRepository {
      *
      * @param colourId The ID of the colour to retrieve.
      * @return The requested Colour object.
+     * @throws ValidationException  If the specified colour does not exist.
      */
-    public DatabaseColour getColour(int colourId) {
+    public DatabaseColour getColour(int colourId) throws ValidationException {
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(ColourRepository.SELECT_COLOUR);
@@ -75,6 +77,9 @@ public class ColourRepository {
                         rs.getBytes("colour_code"));
             }
             conn.close();
+            if (databaseColour == null) {
+                throw new ValidationException("Colour with ID " + colourId + " does not exist");
+            }
             return databaseColour;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
