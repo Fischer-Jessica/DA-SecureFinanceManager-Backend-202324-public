@@ -21,13 +21,9 @@ package at.htlhl.securefinancemanager.model.api;
  * }</pre>
  * </p>
  *
- * <p>
- * This class can be used in conjunction with other entities in the secure finance manager system, such as {@link ApiCategory}, {@link ApiSubcategory}, and {@link ApiUser}.
- * </p>
- *
  * @author Fischer
- * @version 1.9
- * @since 10.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 14.11.2023 (version 2.0)
  */
 public class ApiLabel {
 

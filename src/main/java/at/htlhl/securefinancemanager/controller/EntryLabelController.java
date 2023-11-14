@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
  * from entries, as well as retrieving associated labels for a specific entry.
  *
  * <p>
- * This controller is responsible for handling CRUD operations (Create, Read, Update, Delete) on EntryLabel associations.
+ * This controller is responsible for handling most CRUD operations (Create, Read, Delete) on EntryLabel associations.
  * It interacts with the EntryLabelRepository to access and manipulate the EntryLabel entities
  * in the 'entry_labels' table of the 'secure_finance_manager' PostgreSQL database.
  * </p>
@@ -31,12 +31,12 @@ import org.springframework.web.bind.annotation.*;
  *
  * <p>
  * The EntryLabelController class works in conjunction with the EntryLabelRepository and other related classes
- * to enable efficient management of Entry-Label associations in the financial overview system.
+ * to enable efficient management of Entry-Label associations in the secure finance manager system.
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 14.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 14.11.2023 (version 2.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -76,7 +76,7 @@ public class EntryLabelController {
      * @param entryId      The ID of the entry.
      * @param labelId      The ID of the label to add.
      * @param userDetails  The UserDetails object representing the logged-in user.
-     * @return The ID of the newly created EntryLabel association.
+     * @return The newly created EntryLabel association.
      */
     @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
@@ -101,6 +101,7 @@ public class EntryLabelController {
      * @param entryId      The ID of the entry.
      * @param labelId      The ID of the label to remove.
      * @param userDetails  The UserDetails object representing the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      */
     @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)

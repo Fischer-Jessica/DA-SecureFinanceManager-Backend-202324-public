@@ -25,13 +25,9 @@ package at.htlhl.securefinancemanager.model.api;
  * This class can be used as a data transfer object (DTO) to facilitate communication between the frontend and backend.
  * </p>
  *
- * <p>
- * This class is part of the secure finance manager system and is designed to work in conjunction with other entities such as {@link ApiLabel}, {@link ApiSubcategory}, and {@link ApiUser}.
- * </p>
- *
  * @author Fischer
- * @version 1.8
- * @since 10.11.2023 (version 1.8)
+ * @version 1.9
+ * @since 14.11.2023 (version 1.9)
  */
 public class ApiEntry {
     /** The name of the entry. */
@@ -43,7 +39,7 @@ public class ApiEntry {
     /** The amount of the entry. */
     private String entryAmount;
 
-    /** The time of the transaction in the entry. */
+    /** The time of the transaction of the entry. */
     private String entryTimeOfTransaction;
 
     /** The attachment of the entry. */
@@ -94,9 +90,9 @@ public class ApiEntry {
     }
 
     /**
-     * Returns the time of the transaction for the entry.
+     * Returns the time of the transaction of the entry.
      *
-     * @return The time of transaction for the entry.
+     * @return The time of transaction of the entry.
      */
     public String getEntryTimeOfTransaction() {
         return entryTimeOfTransaction;

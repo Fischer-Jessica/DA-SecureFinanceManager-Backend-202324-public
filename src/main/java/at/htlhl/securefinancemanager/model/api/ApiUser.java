@@ -14,10 +14,6 @@ package at.htlhl.securefinancemanager.model.api;
  * </p>
  *
  * <p>
- * This class is part of the secure finance manager system and is designed to work in conjunction with other entities.
- * </p>
- *
- * <p>
  * Example Usage:
  * <pre>{@code
  * ApiUser user = new ApiUser("john_doe", "password123", "john.doe@example.com", "John", "Doe");
@@ -28,15 +24,12 @@ package at.htlhl.securefinancemanager.model.api;
  * This class is not annotated with JPA annotations since it is a DTO and does not directly map to a database entity.
  * </p>
  *
- * <p>
- * Note: It is important to handle password storage securely, and the use of hashed passwords is recommended.
- * </p>
- *
  * @author Fischer
- * @version 1.7
- * @since 10.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 14.11.2023 (version 1.8)
  */
 public class ApiUser {
+    /** The username of the user. */
     private String username;
 
     /** The password of the user. */

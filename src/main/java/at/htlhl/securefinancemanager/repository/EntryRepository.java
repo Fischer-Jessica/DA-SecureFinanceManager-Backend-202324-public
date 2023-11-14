@@ -21,47 +21,33 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * The {@code EntryRepository} serves as an abstraction layer between the EntryController and the underlying data storage, enabling seamless access and manipulation of Entry entities.
  * </p>
  *
- * <p>
- * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for Entry entities.
- * </p>
- *
  * @author Fischer
- * @version 2.7
- * @since 14.11.2023 (version 2.7)
+ * @version 2.8
+ * @since 14.11.2023 (version 2.8)
  */
 @Repository
 public class EntryRepository {
-    /**
-     * SQL query to retrieve entries from the 'entries' table in the database for a specific subcategory and user.
-     */
+    /** SQL query to retrieve entries from the 'entries' table in the database for a specific subcategory and user. */
     private static final String SELECT_ENTRIES = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment " +
             "FROM entries " +
             "WHERE fk_user_id = ? AND fk_subcategory_id = ?;";
 
-    /**
-     * SQL query to retrieve a specific entry from the 'entries' table in the database for a specific subcategory and user.
-     */
+    /** SQL query to retrieve a specific entry from the 'entries' table in the database for a specific subcategory and user. */
     private static final String SELECT_ENTRY = "SELECT entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment " +
             "FROM entries " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
-    /**
-     * SQL query to add a new entry to the 'entries' table in the database.
-     */
+    /** SQL query to add a new entry to the 'entries' table in the database. */
     private static final String INSERT_ENTRY = "INSERT INTO entries " +
             "(fk_subcategory_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_user_id) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
-    /**
-     * SQL query to update an existing entry in the 'entries' table in the database.
-     */
+    /** SQL query to update an existing entry in the 'entries' table in the database. */
     private static final String UPDATE_ENTRY = "UPDATE entries " +
             "SET fk_subcategory_id = ?, entry_name = ?, entry_description = ?, entry_amount = ?, entry_time_of_transaction = ?, entry_attachment = ? " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
-    /**
-     * SQL query to delete an entry from the 'entries' table in the database.
-     */
+    /** SQL query to delete an entry from the 'entries' table in the database. */
     private static final String DELETE_ENTRY = "DELETE FROM entries " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
@@ -122,7 +108,7 @@ public class EntryRepository {
      * @param subcategoryId The ID of the subcategory.
      * @param entryId       The ID of the entry.
      * @param username      The username of the logged-in user.
-     * @return The entry object.
+     * @return The requested Entry object.
      * @throws ValidationException  If the specified entry does not exist or if the provided username is invalid.
      *                              This exception may indicate that the entryId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the entry.
@@ -177,7 +163,7 @@ public class EntryRepository {
      * Adds a new entry to a specific subcategory for a given user.
      *
      * @param newEntry  The new entry to be added.
-     * @return The ID of the added entry.
+     * @return The newly created entry.
      */
     public DatabaseEntry addEntry(DatabaseEntry newEntry) {
         try {
@@ -284,6 +270,7 @@ public class EntryRepository {
      * @param subcategoryId The ID of the subcategory.
      * @param entryId       The ID of the entry to be deleted.
      * @param username      The username of the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      * @throws ValidationException  If the specified entry does not exist or if the provided username is invalid.
      *                              This exception may indicate that the entryId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the entry.

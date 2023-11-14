@@ -21,51 +21,33 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * The {@code LabelRepository} serves as an abstraction layer between the LabelController and the underlying data storage, enabling seamless access and manipulation of Label entities.
  * </p>
  *
- * <p>
- * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for Label entities.
- * </p>
- *
- * <p>
- * Note: This implementation directly uses JDBC for database operations. For a more modern approach, consider using Spring Data JPA's repository interfaces and entity managers.
- * </p>
- *
  * @author Fischer
- * @version 2.4
- * @since 14.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 14.11.2023 (version 2.5)
  */
 @Repository
 public class LabelRepository {
-    /**
-     * SQL query to select all labels for a given user.
-     */
+    /** SQL query to select all labels for a given user. */
     private static final String SELECT_LABELS = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
             "FROM labels " +
             "WHERE fk_user_id = ?;";
 
-    /**
-     * SQL query to select a specific label for a given user and label ID.
-     */
+    /** SQL query to select a specific label for a given user and label ID. */
     private static final String SELECT_LABEL = "SELECT label_name, label_description, fk_label_colour_id " +
             "FROM labels " +
             "WHERE fk_user_id = ? AND pk_label_id = ?;";
 
-    /**
-     * SQL query to insert a new label for the logged-in user.
-     */
+    /** SQL query to insert a new label for the logged-in user. */
     private static final String INSERT_LABEL = "INSERT INTO labels " +
             "(label_name, label_description, fk_label_colour_id, fk_user_id) " +
             "VALUES (?, ?, ?, ?);";
 
-    /**
-     * SQL query to update an existing label for the logged-in user.
-     */
+    /** SQL query to update an existing label for the logged-in user. */
     private static final String UPDATE_LABEL = "UPDATE labels " +
             "SET label_name = ?, label_description = ?, fk_label_colour_id = ? " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    /**
-     * SQL query to delete a label for the logged-in user.
-     */
+    /** SQL query to delete a label for the logged-in user. */
     private static final String DELETE_LABEL = "DELETE FROM labels " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
@@ -143,7 +125,7 @@ public class LabelRepository {
      * Adds a new label for the logged-in user.
      *
      * @param newLabel The Label object representing the new label.
-     * @return The ID of the newly created label.
+     * @return The newly created label.
      */
     public DatabaseLabel addLabel(DatabaseLabel newLabel) {
         try {
@@ -219,6 +201,7 @@ public class LabelRepository {
      *
      * @param labelId The ID of the label to delete.
      * @param username The username of the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      * @throws ValidationException  If the specified label does not exist or if the provided username is invalid.
      *                              This exception may indicate that the labelId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the label.

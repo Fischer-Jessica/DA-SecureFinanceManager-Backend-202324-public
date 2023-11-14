@@ -22,20 +22,12 @@ package at.htlhl.securefinancemanager.model.api;
  * </p>
  *
  * <p>
- * This class can be used in conjunction with other entities in the secure finance manager system, such as {@link ApiCategory}, {@link ApiLabel}, and {@link ApiUser}.
- * </p>
- *
- * <p>
- * This class is part of the secure finance manager system and is designed to work in conjunction with other entities such as {@link ApiCategory}, {@link ApiLabel}, and {@link ApiUser}.
- * </p>
- *
- * <p>
  * This class can be used as a data transfer object (DTO) to facilitate communication between the frontend and backend.
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 10.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 14.11.2023 (version 1.8)
  */
 public class ApiSubcategory {
     /** The name of the subcategory. */

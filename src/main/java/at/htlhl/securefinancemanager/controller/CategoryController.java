@@ -35,12 +35,12 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * <p>
  * The CategoryController class works in conjunction with the CategoryRepository and other related
- * classes to enable efficient management of categories in the financial overview system.
+ * classes to enable efficient management of categories in the secure finance manager system.
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 14.11.2023 (version 2.9)
+ * @version 3.0
+ * @since 14.11.2023 (version 3.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -94,7 +94,7 @@ public class CategoryController {
      *
      * @param newApiCategory The Category object representing the new category.
      * @param userDetails    The UserDetails object containing information about the logged-in user.
-     * @return The ID of the newly created category.
+     * @return The newly created category.
      */
     @PostMapping(value =  "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
@@ -118,10 +118,10 @@ public class CategoryController {
     /**
      * Updates an existing category for the logged-in user.
      *
-     * @param categoryId      The ID of the category to update.
-     * @param updatedApiCategory The Category object representing the updated category.
-     * @param userDetails     The UserDetails object containing information about the logged-in user.
-     * @return The updated Category object.
+     * @param categoryId            The ID of the category to update.
+     * @param updatedApiCategory    The Category object representing the updated category.
+     * @param userDetails           The UserDetails object containing information about the logged-in user.
+     * @return The updated category object.
      */
     @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
@@ -149,7 +149,7 @@ public class CategoryController {
      *
      * @param categoryId  The ID of the category to delete.
      * @param userDetails The UserDetails object containing information about the logged-in user.
-     * @return An HTTP response indicating the result of the deletion.
+     * @return An Integer representing the number of deleted rows.
      */
     @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)

@@ -30,47 +30,35 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 14.11.2023 (version 2.8)
+ * @version 2.9
+ * @since 14.11.2023 (version 2.9)
  */
 @Repository
 public class UserRepository {
-    /**
-     * JdbcTemplate which is used for executing SQL statements, in the other repositories too, but implementing the template at each usage would be unnecessary
-     */
+    /** JdbcTemplate which is used for executing SQL statements, in the other repositories too, but implementing the template at each usage would be unnecessary. */
     @Autowired
     protected static JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
-    /**
-     * SQL query to retrieve a user based on the username.
-     */
+    /** SQL query to retrieve a user based on the username. */
     private static final String SELECT_USER = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
             "FROM users " +
             "WHERE username = ?;";
 
-    /**
-     * SQL query to retrieve all users.
-     */
+    /** SQL query to retrieve all users. */
     private static final String SELECT_USERS = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
             "FROM users;";
 
-    /**
-     * SQL query to insert a new user into the database.
-     */
+    /** SQL query to insert a new user into the database. */
     private static final String INSERT_USER = "INSERT INTO users " +
             "(username, password, email_address, first_name, last_name) " +
             "VALUES (?, ?, ?, ?, ?);";
 
-    /**
-     * SQL query to update an existing user.
-     */
+    /** SQL query to update an existing user. */
     private static final String UPDATE_USER = "UPDATE users " +
             "SET username = ?, password = ?, email_address = ?, first_name = ?, last_name = ? " +
             "WHERE pk_user_id = ?;";
 
-    /**
-     * SQL query to delete a user from the repository.
-     */
+    /** SQL query to delete a user from the repository. */
     private static final String DELETE_USER = "DELETE FROM users " +
             "WHERE pk_user_id = ?;";
 
@@ -85,7 +73,7 @@ public class UserRepository {
     }
 
     /**
-     * Retrieves a user object based on the provided username.
+     * Retrieves a User object based on the provided username.
      *
      * @param activeUsername The username of the user to be retrieved.
      * @return The User object representing the user with the given username.
@@ -143,7 +131,7 @@ public class UserRepository {
      * Adds a new user to the database.
      *
      * @param newApiUser The User object representing the new user to be added.
-     * @return The User object representing the newly created user.
+     * @return The newly created user.
      */
     public DatabaseUser addUser(ApiUser newApiUser) {
         try {
@@ -185,7 +173,7 @@ public class UserRepository {
      *
      * @param updatedUser The updated User object.
      * @param username The username of the user performing the update.
-     * @return The User object representing the updated user.
+     * @return The updated user.
      * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
      *                              This exception may indicate that the userId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the user.
@@ -241,6 +229,7 @@ public class UserRepository {
      * Deletes a user from the repository.
      *
      * @param username The username of the user performing the deletion on themselves.
+     * @return An Integer representing the number of deleted rows.
      * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
      *                              This exception may indicate that the userId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the user.

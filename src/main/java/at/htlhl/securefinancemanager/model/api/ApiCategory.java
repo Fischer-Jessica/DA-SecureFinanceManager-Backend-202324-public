@@ -20,13 +20,9 @@ package at.htlhl.securefinancemanager.model.api;
  * }</pre>
  * </p>
  *
- * <p>
- * This class can be used in conjunction with other entities in the secure finance manager system, such as {@link ApiLabel}, {@link ApiSubcategory}, and {@link ApiUser}.
- * </p>
- *
  * @author Fischer
- * @version 1.9
- * @since 10.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 14.11.2023 (version 2.0)
  */
 public class ApiCategory {
     /** The name of the category. */
@@ -41,9 +37,9 @@ public class ApiCategory {
     /**
      * Parameterized constructor.
      *
-     * @param categoryName       The name of the category.
-     * @param categoryDescription The description of the category.
-     * @param categoryColourId   The ID of the associated color.
+     * @param categoryName          The name of the category.
+     * @param categoryDescription   The description of the category.
+     * @param categoryColourId      The ID of the associated color.
      */
     public ApiCategory(String categoryName, String categoryDescription, int categoryColourId) {
         this.categoryName = categoryName;

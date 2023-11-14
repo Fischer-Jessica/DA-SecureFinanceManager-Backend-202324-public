@@ -21,51 +21,33 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * The {@code SubcategoryRepository} serves as an abstraction layer between the SubcategoryController and the underlying data storage, enabling seamless access and manipulation of Subcategory entities.
  * </p>
  *
- * <p>
- * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for Subcategory entities.
- * </p>
- *
- * <p>
- * Note: This implementation directly uses JDBC for database operations. For a more modern approach, consider using Spring Data JPA's repository interfaces and entity managers.
- * </p>
- *
  * @author Fischer
- * @version 2.4
- * @since 14.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 14.11.2023 (version 2.5)
  */
 @Repository
 public class SubcategoryRepository {
-    /**
-     * SQL query to select all subcategories for a specific category and user.
-     */
+    /** SQL query to select all subcategories for a specific category and user. */
     private static final String SELECT_SUBCATEGORIES = "SELECT pk_subcategory_id, subcategory_name, subcategory_description, fk_subcategory_colour_id " +
             "FROM subcategories " +
             "WHERE fk_user_id = ? AND fk_category_id = ?;";
 
-    /**
-     * SQL query to select a specific subcategory for a specific category and user.
-     */
+    /** SQL query to select a specific subcategory for a specific category and user. */
     private static final String SELECT_SUBCATEGORY = "SELECT subcategory_name, subcategory_description, fk_subcategory_colour_id " +
             "FROM subcategories " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
-    /**
-     * SQL query to insert a new subcategory for a specific category and user.
-     */
+    /** SQL query to insert a new subcategory for a specific category and user. */
     private static final String INSERT_SUBCATEGORY = "INSERT INTO subcategories " +
             "(fk_category_id, subcategory_name, subcategory_description, fk_subcategory_colour_id, fk_user_id) " +
             "VALUES (?, ?, ?, ?, ?);";
 
-    /**
-     * SQL query to update an existing subcategory for a specific category and user.
-     */
+    /** SQL query to update an existing subcategory for a specific category and user. */
     private static final String UPDATE_SUBCATEGORY = "UPDATE subcategories " +
             "SET fk_category_id = ?, subcategory_name = ?, subcategory_description = ?, fk_subcategory_colour_id = ? " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ?";
 
-    /**
-     * SQL query to delete a subcategory for a specific category and user.
-     */
+    /** SQL query to delete a subcategory for a specific category and user. */
     private static final String DELETE_SUBCATEGORY = "DELETE FROM subcategories " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
@@ -147,7 +129,7 @@ public class SubcategoryRepository {
      * Adds a new subcategory to a specific category and user.
      *
      * @param newSubcategory The new subcategory to be added.
-     * @return The ID of the newly created subcategory.
+     * @return The newly created subcategory.
      */
     public DatabaseSubcategory addSubcategory(DatabaseSubcategory newSubcategory) {
         try {
@@ -227,6 +209,7 @@ public class SubcategoryRepository {
      * @param categoryId    The ID of the category.
      * @param subcategoryId The ID of the subcategory to delete.
      * @param username      The username of the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      * @throws ValidationException  If the specified subcategory does not exist or if the provided username is invalid.
      *                              This exception may indicate that the subcategoryId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the subcategory.

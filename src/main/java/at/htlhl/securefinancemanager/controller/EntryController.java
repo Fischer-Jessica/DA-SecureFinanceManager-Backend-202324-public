@@ -35,12 +35,12 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * <p>
  * The EntryController class works in conjunction with the EntryRepository and other related classes to enable
- * efficient management of entries in the financial overview system.
+ * efficient management of entries in the secure finance manager system.
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 14.11.2023 (version 3.1)
+ * @version 3.2
+ * @since 14.12.2023 (version 3.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -51,7 +51,7 @@ public class EntryController {
     EntryRepository entryRepository;
 
     /**
-     * Retrieves a list of all entries for a specific subcategory.
+     * Retrieves a list of all entries from a specific subcategory.
      *
      * @param subcategoryId The ID of the subcategory.
      * @param userDetails  The UserDetails object representing the logged-in user.
@@ -74,11 +74,11 @@ public class EntryController {
     }
 
     /**
-     * Retrieves a specific entry for a specific subcategory.
+     * Retrieves a specific entry from a specific subcategory.
      *
-     * @param subcategoryId The ID of the subcategory.
-     * @param entryId      The ID of the entry.
-     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @param subcategoryId     The ID of the subcategory.
+     * @param entryId           The ID of the entry.
+     * @param userDetails       The UserDetails object representing the logged-in user.
      * @return The requested entry.
      */
     @GetMapping(value = "/entries/{entryId}", headers = "API-Version=0")
@@ -103,12 +103,12 @@ public class EntryController {
     }
 
     /**
-     * Creates a new entry for a specific subcategory.
+     * Creates a new entry in a specific subcategory.
      *
-     * @param subcategoryId The ID of the subcategory.
-     * @param newApiEntry   The new entry to be added.
-     * @param userDetails  The UserDetails object representing the logged-in user.
-     * @return The ID of the newly created entry.
+     * @param subcategoryId     The ID of the subcategory.
+     * @param newApiEntry       The new entry to be added.
+     * @param userDetails       The UserDetails object representing the logged-in user.
+     * @return The newly created entry.
      */
     @PostMapping(value = "/entries", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
@@ -132,12 +132,12 @@ public class EntryController {
     }
 
     /**
-     * Updates an existing entry for a specific subcategory.
+     * Updates an existing entry in a specific subcategory.
      *
-     * @param subcategoryId The ID of the subcategory in which the entry is.
-     * @param entryId      The ID of the entry.
-     * @param updatedApiEntry The updated entry data.
-     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @param subcategoryId     The ID of the subcategory in which the entry is.
+     * @param entryId           The ID of the entry.
+     * @param updatedApiEntry   The updated entry data.
+     * @param userDetails       The UserDetails object representing the logged-in user.
      * @return The updated entry.
      */
     @PatchMapping(value = "/entries/{entryId}", headers = "API-Version=0")
@@ -154,6 +154,7 @@ public class EntryController {
             } else if (entryId <= 0) {
                 throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
             }
+            // TODO: Kann ich die zugehörige Subcategory ändern?
             return ResponseEntity.ok(entryRepository.updateEntry(new DatabaseEntry(entryId, subcategoryId, updatedApiEntry, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
@@ -165,9 +166,10 @@ public class EntryController {
     /**
      * Deletes an entry from a specific subcategory.
      *
-     * @param subcategoryId The ID of the subcategory.
-     * @param entryId      The ID of the entry to be deleted.
-     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @param subcategoryId     The ID of the subcategory.
+     * @param entryId           The ID of the entry to be deleted.
+     * @param userDetails       The UserDetails object representing the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      */
     @DeleteMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)

@@ -28,7 +28,7 @@ import java.util.List;
  * <p>
  * This controller provides endpoints for managing users, including adding a new user, updating an existing user,
  * changing user information (username, password, email address, first name, last name), and deleting a user.
- * It also provides an endpoint for retrieving a list of all users, although this functionality might be restricted or removed
+ * It also provides an endpoint for retrieving a list of all users, although this functionality will be removed
  * in the final product for security and privacy reasons.
  * </p>
  *
@@ -41,20 +41,18 @@ import java.util.List;
  *
  * <p>
  * This class works in conjunction with the UserRepository and other related classes to enable efficient management
- * of User entities in the financial overview system.
+ * of User entities in the secure finance manager system.
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 14.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 14.11.2023 (version 2.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("secure-finance-manager")
 public class UserController {
-    /**
-     * The UserRepository instance for accessing user data.
-     */
+    /** The UserRepository instance for accessing user data. */
     @Autowired
     UserRepository userRepository;
 
@@ -98,8 +96,8 @@ public class UserController {
     /**
      * Adds a new user.
      *
-     * @param newApiUser The user object representing the new user to be added.
-     * @return The ID of the newly created user.
+     * @param newApiUser    The User object representing the new user to be added.
+     * @return The newly created user.
      */
     @PostMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
@@ -120,9 +118,9 @@ public class UserController {
     /**
      * Updates an existing user.
      *
-     * @param updatedApiUser The user object containing the updated user information.
-     * @param activeUser     The UserDetails object representing the currently authenticated user.
-     * @return ResponseEntity with the updated user if successful, or an error response if validation fails.
+     * @param updatedApiUser    The User object containing the updated user information.
+     * @param activeUser        The UserDetails object representing the currently authenticated user.
+     * @return The updated User object.
      */
     @PatchMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
@@ -141,7 +139,7 @@ public class UserController {
      * Deletes a user.
      *
      * @param activeUser The UserDetails object representing the currently authenticated user.
-     * @return ResponseEntity indicating the success of the deletion operation or an error response if validation fails.
+     * @return An Integer representing the number of deleted rows.
      */
     @DeleteMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)

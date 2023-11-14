@@ -4,14 +4,50 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Singleton class for managing user information, storing a mapping of usernames to user IDs.
+ * The {@code UserSingleton} class is a singleton implementation for managing user information,
+ * storing a mapping of usernames to user IDs.
+ *
+ * <p>
+ * This class follows the Singleton design pattern, ensuring that only one instance is created
+ * and providing a global point of access to that instance.
+ * </p>
+ *
+ * <p>
+ * Usage:
+ * </p>
+ *
+ * <pre>{@code
+ * // Retrieve the singleton instance
+ * UserSingleton userSingleton = UserSingleton.getInstance();
+ *
+ * // Add a new user to the user map
+ * userSingleton.addUser("exampleUser", 123);
+ *
+ * // Retrieve the user ID associated with a username
+ * int userId = userSingleton.getUserId("exampleUser");
+ * }</pre>
+ *
+ * <p>
+ * The class provides methods to add a new user to the user map and retrieve the user ID associated
+ * with a given username. If the username is not found in the map, a default value of -1 is returned.
+ * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 14.11.2023 (version 1.0)
+ * @version 1.1
+ * @since 14.11.2023 (version 1.1)
  */
 public class UserSingleton {
+    /**
+     * Represents the single instance of the UserSingleton class.
+     * It is marked as static to ensure only one instance exists across the entire application.
+     */
     private static UserSingleton instance;
+
+    /**
+     * A map that associates usernames (as String) with user IDs (as Integer).
+     * It is used to store user information, allowing quick retrieval of user IDs based on usernames.
+     * Marked as private to encapsulate the internal state of the class.
+     */
     private Map<String, Integer> userMap;
 
     /**

@@ -23,13 +23,9 @@ import java.util.List;
  * The {@code ColourRepository} serves as an abstraction layer between the ColourController and the underlying data storage, enabling seamless access and manipulation of Colour entities.
  * </p>
  *
- * <p>
- * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for Colour entities.
- * </p>
- *
  * @author Fischer
- * @version 1.5
- * @since 14.11.2023 (version 1.5)
+ * @version 1.6
+ * @since 14.11.2023 (version 1.6)
  */
 @Repository
 public class ColourRepository {

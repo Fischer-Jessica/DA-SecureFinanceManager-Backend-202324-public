@@ -18,7 +18,7 @@ import java.util.List;
  *
  * <p>
  * This controller is responsible for handling colour-related operations, including fetching a list of all colours
- * and retrieving a specific colour by its ID. It interacts with the ColourRepository to access and manipulate
+ * and retrieving a specific colour by its ID. It interacts with the ColourRepository to access
  * the Colour entities in the 'colours' table of the 'secure_finance_manager' PostgreSQL database.
  * </p>
  *
@@ -31,12 +31,12 @@ import java.util.List;
  *
  * <p>
  * The ColourController class works in conjunction with the ColourRepository and other related classes to enable
- * efficient management of colours in the financial overview system.
+ * efficient retrieving of colours in the secure finance manager system.
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 14.11.2023 (version 1.8)
+ * @version 1.9
+ * @since 14.11.2023 (version 1.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -49,7 +49,7 @@ public class ColourController {
     /**
      * Returns a list of all colours.
      *
-     * @return A list of colours.
+     * @return A list of all colours.
      */
     @GetMapping(value = "/colours", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)

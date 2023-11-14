@@ -13,11 +13,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 14.11.2023 (version 1.1)
+ * @version 1.2
+ * @since 14.11.2023 (version 1.2)
  */
 @SpringBootApplication
 public class SecureFinanceManagerApplication {
+	/** Creating a shared instance of the UserSingleton for easy access to user information throughout the application. */
 	public static UserSingleton userSingleton = UserSingleton.getInstance();
 
 	/**

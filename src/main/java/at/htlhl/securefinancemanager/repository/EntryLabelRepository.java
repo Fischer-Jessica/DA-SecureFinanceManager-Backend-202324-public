@@ -29,34 +29,24 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * The {@code EntryLabelRepository} serves as an abstraction layer between the EntryLabelController and the underlying data storage, enabling seamless access and manipulation of EntryLabel entities.
  * </p>
  *
- * <p>
- * This interface should be implemented by a concrete repository class that provides the necessary data access and database operations for EntryLabel entities.
- * </p>
- *
  * @author Fischer
- * @version 2.0
- * @since 14.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 14.11.2023 (version 2.1)
  */
 @Repository
 public class EntryLabelRepository {
-    /**
-     * SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database.
-     */
+    /** SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database. */
     private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
             "FROM labels " +
             "JOIN entry_labels ON labels.pk_label_id = entry_labels.fk_label_id " +
             "WHERE entry_labels.fk_entry_id = ? AND entry_labels.fk_user_id = ? AND entry_labels.fk_user_id = ?;";
 
-    /**
-     * SQL query to add a label to an entry in the 'entry_labels' table in the database.
-     */
+    /** SQL query to add a label to an entry in the 'entry_labels' table in the database. */
     private static final String ADD_LABEL_TO_ENTRY = "INSERT INTO entry_labels " +
             "(fk_entry_id, fk_label_id, fk_user_id) " +
             "VALUES (?, ?, ?);";
 
-    /**
-     * SQL query to remove a label from an entry in the 'entry_labels' table in the database.
-     */
+    /** SQL query to remove a label from an entry in the 'entry_labels' table in the database. */
     private static final String REMOVE_LABEL_FROM_ENTRY = "DELETE FROM entry_labels " +
             "WHERE fk_entry_id = ? AND fk_label_id = ? AND fk_user_id = ?;";
 
@@ -104,7 +94,7 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to add the label to.
      * @param labelId   The ID of the label to add.
      * @param username  The username of the logged-in user.
-     * @return The ID of the newly created entry label.
+     * @return The newly created entryLabel.
      */
     public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) {
         int activeUserId = userSingleton.getUserId(username);
@@ -133,6 +123,7 @@ public class EntryLabelRepository {
      * @param entryId   The ID of the entry to remove the label from.
      * @param labelId   The ID of the label to remove.
      * @param username  The username of the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
      *                              This exception may indicate that the entryId or the labelId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the entry and the label.

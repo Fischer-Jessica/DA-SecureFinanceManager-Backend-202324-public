@@ -27,57 +27,47 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * <p>
- * This class should be annotated with the {@code @Repository} annotation to indicate that it is a Spring-managed repository component.
+ * This class is annotated with the {@code @Repository} annotation to indicate that it is a Spring-managed repository component.
  * </p>
  *
  * <p>
- * The methods in this class should be implemented to provide the necessary data access and database operations for Category entities.
+ * The methods in this class are implemented to provide the necessary data access and database operations for Category entities.
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 14.11.2023 (version 2.6)
  */
 @Repository
 public class CategoryRepository {
-    /**
-     * SQL query to retrieve a list of categories for the logged-in user from the 'categories' table in the database.
-     */
+    /** SQL query to retrieve a list of categories for the logged-in user from the 'categories' table in the database. */
     private static final String SELECT_CATEGORIES = "SELECT pk_category_id, category_name, category_description, fk_category_colour_id " +
             "FROM categories " +
             "WHERE fk_user_id = ?;";
 
-    /**
-     * SQL query to retrieve a specific category for the logged-in user from the 'categories' table in the database.
-     */
+    /** SQL query to retrieve a specific category for the logged-in user from the 'categories' table in the database. */
     private static final String SELECT_CATEGORY = "SELECT category_name, category_description, fk_category_colour_id " +
             "FROM categories " +
             "WHERE fk_user_id = ? AND pk_category_id = ?;";
 
-    /**
-     * SQL query to insert a new category for the logged-in user into the 'categories' table in the database.
-     */
+    /** SQL query to insert a new category for the logged-in user into the 'categories' table in the database. */
     private static final String INSERT_CATEGORY = "INSERT INTO categories " +
             "(category_name, category_description, fk_category_colour_id, fk_user_id) " +
             "VALUES (?, ?, ?, ?);";
 
-    /**
-     * SQL query to update an existing category for the logged-in user in the 'categories' table in the database.
-     */
+    /** SQL query to update an existing category for the logged-in user in the 'categories' table in the database. */
     private static final String UPDATE_CATEGORY = "UPDATE categories " +
             "SET category_name = ?, category_description = ?, fk_category_colour_id = ? " +
             "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
-    /**
-     * SQL query to delete a category for the logged-in user from the 'categories' table in the database.
-     */
+    /** SQL query to delete a category for the logged-in user from the 'categories' table in the database. */
     private static final String DELETE_CATEGORY = "DELETE FROM categories " +
             "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
     /**
      * Retrieves a list of categories for the logged-in user.
      *
-     * @param username The username of the logged-in user.
+     * @param username  The username of the logged-in user.
      * @return A list of Category objects representing the categories.
      */
     public List<DatabaseCategory> getCategories(String username) {
@@ -147,8 +137,8 @@ public class CategoryRepository {
     /**
      * Adds a new category for the logged-in user.
      *
-     * @param newCategory The Category object representing the new category.
-     * @return The ID of the newly created category.
+     * @param newCategory   The Category object representing the new category.
+     * @return The newly created Category object.
      */
     public DatabaseCategory addCategory(DatabaseCategory newCategory) {
         try {
@@ -222,8 +212,9 @@ public class CategoryRepository {
     /**
      * Deletes a category for the logged-in user.
      *
-     * @param categoryId The ID of the category to delete.
-     * @param username   The username of the logged-in user.
+     * @param categoryId    The ID of the category to delete.
+     * @param username      The username of the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      * @throws ValidationException  If the specified category does not exist or if the provided username is invalid.
      *                              This exception indicates that the categoryId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the category.

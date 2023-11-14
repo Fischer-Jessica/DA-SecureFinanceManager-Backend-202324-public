@@ -34,12 +34,12 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * <p>
  * The LabelController class works in conjunction with the LabelRepository and other related classes
- * to enable efficient management of labels in the financial overview system.
+ * to enable efficient management of labels in the secure finance manager system.
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 14.11.2023 (version 2.9)
+ * @version 3.0
+ * @since 14.11.2023 (version 3.0)
  */
 
 @RestController
@@ -53,8 +53,8 @@ public class LabelController {
     /**
      * Returns a list of all labels for the logged-in user.
      *
-     * @param userDetails The UserDetails object representing the logged-in user.
-     * @return A list of labels.
+     * @param userDetails   The UserDetails object representing the logged-in user.
+     * @return A list of all labels.
      */
     @GetMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
@@ -94,7 +94,7 @@ public class LabelController {
      *
      * @param newApiLabel The Label object representing the new label.
      * @param userDetails The UserDetails object representing the logged-in user.
-     * @return The ID of the newly created label.
+     * @return The newly created label.
      */
     @PostMapping(value = "/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
@@ -117,9 +117,9 @@ public class LabelController {
     /**
      * Updates an existing label for the logged-in user.
      *
-     * @param labelId The ID of the label that will be changed.
-     * @param updatedApiLabel The Label object with updated information.
-     * @param userDetails The UserDetails object representing the logged-in user.
+     * @param labelId           The ID of the label that will be changed.
+     * @param updatedApiLabel   The Label object with updated information.
+     * @param userDetails       The UserDetails object representing the logged-in user.
      * @return The updated Label object.
      */
     @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=0")
@@ -148,7 +148,7 @@ public class LabelController {
      *
      * @param labelId      The ID of the label to delete.
      * @param userDetails  The UserDetails object representing the logged-in user.
-     * @return A response indicating the success of the operation.
+     * @return An Integer representing the number of deleted rows.
      */
     @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)

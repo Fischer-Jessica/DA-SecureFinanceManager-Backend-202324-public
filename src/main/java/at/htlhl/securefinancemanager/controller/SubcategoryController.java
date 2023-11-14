@@ -34,12 +34,12 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * <p>
  * The SubcategoryController class works in conjunction with the SubcategoryRepository and other related classes
- * to enable efficient management of subcategories in the financial overview system.
+ * to enable efficient management of subcategories in the secure finance manager system.
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 14.11.2023 (version 2.8)
+ * @version 2.9
+ * @since 14.11.2023 (version 2.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -50,7 +50,7 @@ public class SubcategoryController {
     SubcategoryRepository subcategoryRepository;
 
     /**
-     * Returns a list of all subcategories for a specific category.
+     * Returns a list of all subcategories from a specific category.
      *
      * @param categoryId    The ID of the category.
      * @param userDetails   The details of the logged-in user.
@@ -73,7 +73,7 @@ public class SubcategoryController {
     }
 
     /**
-     * Returns a specific subcategory for a specific category.
+     * Returns a specific subcategory from a specific category.
      *
      * @param categoryId    The ID of the category.
      * @param subcategoryId The ID of the subcategory.
@@ -104,10 +104,10 @@ public class SubcategoryController {
     /**
      * Adds a new subcategory to a specific category.
      *
-     * @param categoryId             The ID of the category, in which the subcategory will be created.
-     * @param newApiSubcategory         The new subcategory to be added.
-     * @param userDetails            The details of the logged-in user.
-     * @return The ID of the newly created subcategory.
+     * @param categoryId            The ID of the category, in which the subcategory will be created.
+     * @param newApiSubcategory     The new subcategory to be added.
+     * @param userDetails           The details of the logged-in user.
+     * @return The newly created subcategory.
      */
     @PostMapping(value = "/subcategories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
@@ -131,12 +131,13 @@ public class SubcategoryController {
     }
 
     /**
-     * Updates an existing subcategory for a specific category.
+     * Updates an existing subcategory from a specific category.
      *
-     * @param categoryId            The ID of the category.
-     * @param subcategoryId         The ID of the subcategory to update.
-     * @param updatedApiSubcategory    The updated subcategory data.
-     * @param userDetails           The details of the logged-in user.
+     * @param categoryId                The ID of the category.
+     * @param subcategoryId             The ID of the subcategory to update.
+     * @param updatedApiSubcategory     The updated subcategory data.
+     * @param userDetails               The details of the logged-in user.
+     * @return The updated subcategory.
      */
     @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
@@ -163,11 +164,12 @@ public class SubcategoryController {
     }
 
     /**
-     * Deletes a subcategory for a specific category.
+     * Deletes a subcategory from a specific category.
      *
      * @param categoryId       The ID of the category.
      * @param subcategoryId    The ID of the subcategory to delete.
      * @param userDetails      The details of the logged-in user.
+     * @return An Integer representing the number of deleted rows.
      */
     @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
