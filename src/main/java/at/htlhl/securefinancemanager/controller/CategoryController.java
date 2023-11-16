@@ -43,8 +43,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 16.11.2023 (version 3.1)
+ * @version 3.2
+ * @since 16.11.2023 (version 3.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -60,7 +60,7 @@ public class CategoryController {
      * @param userDetails The UserDetails object containing information about the logged-in user.
      * @return A list of categories.
      */
-    @GetMapping(value = "/categories", headers = "API-Version=0")
+    @GetMapping(value = "/categories", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns a list of all categories of the authenticated user")
@@ -86,7 +86,7 @@ public class CategoryController {
      * @param userDetails  The UserDetails object containing information about the logged-in user.
      * @return The requested category.
      */
-    @GetMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
+    @GetMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns the requested category")
@@ -120,7 +120,7 @@ public class CategoryController {
      * @param userDetails    The UserDetails object containing information about the logged-in user.
      * @return The newly created category.
      */
-    @PostMapping(value =  "/categories", headers = "API-Version=0")
+    @PostMapping(value =  "/categories", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "creates a new category for the authenticated user")
@@ -154,7 +154,7 @@ public class CategoryController {
      * @param userDetails           The UserDetails object containing information about the logged-in user.
      * @return The updated category object.
      */
-    @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
+    @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "updates an existing category")
@@ -191,7 +191,7 @@ public class CategoryController {
      * @param userDetails The UserDetails object containing information about the logged-in user.
      * @return An Integer representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
+    @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes a category")

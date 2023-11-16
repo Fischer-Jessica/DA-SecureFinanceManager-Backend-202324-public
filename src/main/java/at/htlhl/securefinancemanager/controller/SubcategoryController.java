@@ -42,8 +42,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.0
- * @since 16.11.2023 (version 3.0)
+ * @version 3.1
+ * @since 16.11.2023 (version 3.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -60,7 +60,7 @@ public class SubcategoryController {
      * @param userDetails   The details of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
-    @GetMapping(value = "/subcategories", headers = "API-Version=0")
+    @GetMapping(value = "/subcategories", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all subcategories of one category")
@@ -95,7 +95,7 @@ public class SubcategoryController {
      * @param userDetails   The details of the logged-in user.
      * @return The requested subcategory.
      */
-    @GetMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
+    @GetMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one subcategory of one category")
@@ -133,7 +133,7 @@ public class SubcategoryController {
      * @param userDetails           The details of the logged-in user.
      * @return The newly created subcategory.
      */
-    @PostMapping(value = "/subcategories", headers = "API-Version=0")
+    @PostMapping(value = "/subcategories", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "creating a new subcategory inside a given category")
@@ -170,7 +170,7 @@ public class SubcategoryController {
      * @param userDetails               The details of the logged-in user.
      * @return The updated subcategory.
      */
-    @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
+    @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "updates an existing subcategory from a given category")
@@ -211,7 +211,7 @@ public class SubcategoryController {
      * @param userDetails      The details of the logged-in user.
      * @return An Integer representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
+    @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes a subcategory from a given category")

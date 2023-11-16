@@ -42,8 +42,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 16.11.2023 (version 2.1)
+ * @version 2.2
+ * @since 16.11.2023 (version 2.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -60,7 +60,7 @@ public class EntryLabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return A list of labels associated with the entry.
      */
-    @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=0")
+    @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "retrieves a list of labels associated with a specific entry")
@@ -95,7 +95,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The newly created EntryLabel association.
      */
-    @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
+    @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "adds a label to a specific entry")
     @ApiResponses(value = {
@@ -132,7 +132,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return An Integer representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
+    @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "removes a label from a specific entry")
     @ApiResponses(value = {

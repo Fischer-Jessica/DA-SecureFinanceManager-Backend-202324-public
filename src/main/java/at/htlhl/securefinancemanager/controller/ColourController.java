@@ -37,8 +37,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 16.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 16.11.2023 (version 2.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -53,7 +53,7 @@ public class ColourController {
      *
      * @return A list of all colours.
      */
-    @GetMapping(value = "/colours", headers = "API-Version=0")
+    @GetMapping(value = "/colours", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns a list of all colours")
     @ApiResponses(value = {
@@ -77,7 +77,7 @@ public class ColourController {
      * @param colourId The ID of the colour to retrieve.
      * @return The requested colour.
      */
-    @GetMapping(value = "/colours/{colourId}", headers = "API-Version=0")
+    @GetMapping(value = "/colours/{colourId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns the requested category")
     @ApiResponses(value = {

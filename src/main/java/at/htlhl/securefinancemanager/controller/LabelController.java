@@ -42,8 +42,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 16.11.2023 (version 3.1)
+ * @version 3.2
+ * @since 16.11.2023 (version 3.2)
  */
 
 @RestController
@@ -60,7 +60,7 @@ public class LabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return A list of all labels.
      */
-    @GetMapping(value = "/labels", headers = "API-Version=0")
+    @GetMapping(value = "/labels", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all labels of the authenticated user")
@@ -86,7 +86,7 @@ public class LabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The requested label.
      */
-    @GetMapping(value = "/labels/{labelId}", headers = "API-Version=0")
+    @GetMapping(value = "/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one label")
@@ -120,7 +120,7 @@ public class LabelController {
      * @param userDetails The UserDetails object representing the logged-in user.
      * @return The newly created label.
      */
-    @PostMapping(value = "/labels", headers = "API-Version=0")
+    @PostMapping(value = "/labels", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "adds a new label for the authenticated user")
@@ -153,7 +153,7 @@ public class LabelController {
      * @param userDetails       The UserDetails object representing the logged-in user.
      * @return The updated Label object.
      */
-    @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=0")
+    @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "updates an existing label")
@@ -190,7 +190,7 @@ public class LabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return An Integer representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=0")
+    @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes a label")

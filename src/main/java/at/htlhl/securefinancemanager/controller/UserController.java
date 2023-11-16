@@ -48,8 +48,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 16.11.2023 (version 2.8)
+ * @version 2.9
+ * @since 16.11.2023 (version 2.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -65,7 +65,7 @@ public class UserController {
      * @return A list of all users.
      */
     // TODO: This will be restricted or removed in the final product.
-    @GetMapping(value = "/users", headers = "API-Version=0")
+    @GetMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all users")
     @ApiResponses(value = {
@@ -95,7 +95,7 @@ public class UserController {
      * @see UserDetails
      * @see UserRepository#getUserObject(String)
      */
-    @GetMapping(value = "/user", headers = "API-Version=0")
+    @GetMapping(value = "/user", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns the currently authenticated user")
@@ -120,7 +120,7 @@ public class UserController {
      * @param newApiUser    The User object representing the new user to be added.
      * @return The newly created user.
      */
-    @PostMapping(value = "/users", headers = "API-Version=0")
+    @PostMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "creates a new user")
     @ApiResponses(value = {
@@ -150,7 +150,7 @@ public class UserController {
      * @param activeUser        The UserDetails object representing the currently authenticated user.
      * @return The updated User object.
      */
-    @PatchMapping(value = "/users", headers = "API-Version=0")
+    @PatchMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "updates an existing user which is authenticated at the moment")
@@ -176,7 +176,7 @@ public class UserController {
      * @param activeUser The UserDetails object representing the currently authenticated user.
      * @return An Integer representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/users", headers = "API-Version=0")
+    @DeleteMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes an user which is authenticated at the moment")
