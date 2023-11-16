@@ -6,6 +6,10 @@ import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
 import at.htlhl.securefinancemanager.repository.SubcategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +42,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 14.11.2023 (version 2.9)
+ * @version 3.0
+ * @since 16.11.2023 (version 3.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -60,6 +64,15 @@ public class SubcategoryController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all subcategories of one category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all subcategories of the given category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user or there are no subcategories in this category",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getSubcategories(@PathVariable int categoryId,
                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -69,6 +82,8 @@ public class SubcategoryController {
             return ResponseEntity.ok(subcategoryRepository.getSubcategories(categoryId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
 
@@ -83,7 +98,16 @@ public class SubcategoryController {
     @GetMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns one subcategory")
+    @Operation(summary = "returns one subcategory of one category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the requested subcategory from the given category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested subcategory of the given category does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getSubcategory(@PathVariable int categoryId,
                                                  @PathVariable int subcategoryId,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
@@ -112,7 +136,14 @@ public class SubcategoryController {
     @PostMapping(value = "/subcategories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "add a new subcategory")
+    @Operation(summary = "creating a new subcategory inside a given category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully created the given subcategory within the given category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+            @ApiResponse(responseCode = "400", description = "the given categoryId or the subcategoryColourId is less than or equal to 0 or the categoryName is empty",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> addSubcategory(@PathVariable int categoryId,
                                                  @RequestBody ApiSubcategory newApiSubcategory,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
@@ -142,7 +173,16 @@ public class SubcategoryController {
     @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "change an existing subcategory")
+    @Operation(summary = "updates an existing subcategory from a given category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully updated the given subcategory from the given category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0 or the categoryColourId is less than 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> updateSubcategory(@PathVariable int categoryId,
                                                     @PathVariable int subcategoryId,
                                                     @RequestBody ApiSubcategory updatedApiSubcategory,
@@ -174,7 +214,16 @@ public class SubcategoryController {
     @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "delete a subcategory")
+    @Operation(summary = "deletes a subcategory from a given category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully deleted the given subcategory from the given category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> deleteSubcategory(@PathVariable int categoryId,
                                                     @PathVariable int subcategoryId,
                                                     @AuthenticationPrincipal UserDetails userDetails) {

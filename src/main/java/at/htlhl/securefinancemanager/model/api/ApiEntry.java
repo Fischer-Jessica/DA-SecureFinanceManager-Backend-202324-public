@@ -1,5 +1,7 @@
 package at.htlhl.securefinancemanager.model.api;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * The {@code ApiEntry} class represents an entry entity in the 'entries' table of the 'secure_finance_manager' PostgreSQL database.
  * It is a POJO (Plain Old Java Object) or entity class that maps to the database table.
@@ -26,8 +28,8 @@ package at.htlhl.securefinancemanager.model.api;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 14.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 16.11.2023 (version 2.0)
  */
 public class ApiEntry {
     /** The name of the entry. */
@@ -37,9 +39,11 @@ public class ApiEntry {
     private String entryDescription;
 
     /** The amount of the entry. */
+    @NotBlank
     private String entryAmount;
 
     /** The time of the transaction of the entry. */
+    @NotBlank
     private String entryTimeOfTransaction;
 
     /** The attachment of the entry. */

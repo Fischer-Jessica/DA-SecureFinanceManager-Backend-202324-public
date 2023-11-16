@@ -22,8 +22,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 14.11.2023 (version 2.8)
+ * @version 2.9
+ * @since 16.11.2023 (version 2.9)
  */
 @Repository
 public class EntryRepository {
@@ -36,6 +36,11 @@ public class EntryRepository {
     private static final String SELECT_ENTRY = "SELECT entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment " +
             "FROM entries " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
+
+    /** SQL query to retrieve a specific entry from the 'entries' table int the database for a specific user. */
+    private static final String SELECT_ENTRY_WITHOUT_SUBCATEGORY = "SELECT entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_subcategory_id " +
+            "FROM entries " +
+            "WHERE pk_entry_id = ? AND fk_user_id = ?;";
 
     /** SQL query to add a new entry to the 'entries' table in the database. */
     private static final String INSERT_ENTRY = "INSERT INTO entries " +
@@ -58,7 +63,7 @@ public class EntryRepository {
      * @param username  The logged-in user.
      * @return A list of entries.
      */
-    public List<DatabaseEntry> getEntries(int subcategoryId, String username) {
+    public List<DatabaseEntry> getEntries(int subcategoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -96,6 +101,9 @@ public class EntryRepository {
                         Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
                         Base64.getEncoder().encodeToString(entryTimeOfTransaction),stringEntryAttachment, activeUserId));
             }
+            if (databaseEntries.isEmpty()) {
+                throw new ValidationException("No entries found for the subcategoryId " + subcategoryId + " for the authenticated user.");
+            }
             return databaseEntries;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -131,6 +139,62 @@ public class EntryRepository {
                 byte[] entryCreationTime = rs.getBytes("entry_creation_time");
                 byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
                 byte[] entryAttachment = rs.getBytes("entry_attachment");
+
+                String stringEntryName = null;
+                String stringEntryDescription = null;
+                String stringEntryAttachment = null;
+
+                if (entryName != null) {
+                    stringEntryName = Base64.getEncoder().encodeToString(entryName);
+                }
+                if (entryDescription != null) {
+                    stringEntryDescription = Base64.getEncoder().encodeToString(entryDescription);
+                }
+                if (entryAttachment != null) {
+                    stringEntryAttachment = Base64.getEncoder().encodeToString(entryAttachment);
+                }
+
+                databaseEntry = new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
+                        Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
+                        Base64.getEncoder().encodeToString(entryTimeOfTransaction), stringEntryAttachment, activeUserId);
+            }
+            if (databaseEntry == null) {
+                throw new ValidationException("Entry with ID " + entryId + " and subcategoryId " + subcategoryId + " not found.");
+            }
+            return databaseEntry;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Retrieves a specific entry for a given user.
+     *
+     * @param entryId       The ID of the entry.
+     * @param username      The username of the logged-in user.
+     * @return The requested Entry object.
+     * @throws ValidationException  If the specified entry does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the entryId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the entry.
+     */
+    public DatabaseEntry getEntryWithoutSubcategoryId(int entryId, String username) throws ValidationException {
+        int activeUserId = userSingleton.getUserId(username);
+        try {
+            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY_WITHOUT_SUBCATEGORY);
+            ps.setInt(1, entryId);
+            ps.setInt(2, activeUserId);
+            ResultSet rs = ps.executeQuery();
+
+            DatabaseEntry databaseEntry = null;
+            if (rs.next()) {
+                byte[] entryName = rs.getBytes("entry_name");
+                byte[] entryDescription = rs.getBytes("entry_description");
+                byte[] entryAmount = rs.getBytes("entry_amount");
+                byte[] entryCreationTime = rs.getBytes("entry_creation_time");
+                byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
+                byte[] entryAttachment = rs.getBytes("entry_attachment");
+                int subcategoryId = rs.getInt("fk_subcategory_id");
 
                 String stringEntryName = null;
                 String stringEntryDescription = null;

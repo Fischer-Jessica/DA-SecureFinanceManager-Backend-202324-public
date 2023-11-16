@@ -2,7 +2,14 @@ package at.htlhl.securefinancemanager.controller;
 
 import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
+import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
+import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import at.htlhl.securefinancemanager.repository.EntryLabelRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +42,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 14.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 16.11.2023 (version 2.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -56,6 +63,16 @@ public class EntryLabelController {
     @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "retrieves a list of labels associated with a specific entry")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all labels for the given entryId",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseLabel.class)) }),
+            @ApiResponse(responseCode = "400", description = "the entryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getLabelsForEntry(@PathVariable int entryId,
                                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -79,7 +96,17 @@ public class EntryLabelController {
      * @return The newly created EntryLabel association.
      */
     @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "adds a label to a specific entry")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully added the given label to the given entry",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseEntryLabel.class)) }),
+            @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given entry or label does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> addLabelToEntry(@PathVariable int entryId,
                                                   @PathVariable int labelId,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
@@ -92,6 +119,8 @@ public class EntryLabelController {
             return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
 
@@ -105,6 +134,16 @@ public class EntryLabelController {
      */
     @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "removes a label from a specific entry")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully removed the given label from the given entry",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class)) }),
+            @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given entry, label or association does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> removeLabelFromEntry(@PathVariable int entryId,
                                                        @PathVariable int labelId,
                                                        @AuthenticationPrincipal UserDetails userDetails) {

@@ -1,6 +1,7 @@
 package at.htlhl.securefinancemanager.model.database;
 
 import at.htlhl.securefinancemanager.model.api.ApiLabel;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * The {@code DatabaseLabel} class represents a label entity in the 'labels' table of the 'secure_finance_manager' PostgreSQL database.
@@ -27,16 +28,18 @@ import at.htlhl.securefinancemanager.model.api.ApiLabel;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 10.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 16.11.2023 (version 2.0)
  *
- * @see ApiLabel this class (Label) for the explanations of the annotations
+ * @see ApiLabel
  */
 public class DatabaseLabel extends ApiLabel {
     /** The unique identifier for this Label. It is generated automatically by the database. */
+    @NotBlank
     private int labelId;
 
     /** The ID of the user associated with the Label. */
+    @NotBlank
     private int labelUserId;
 
     /**

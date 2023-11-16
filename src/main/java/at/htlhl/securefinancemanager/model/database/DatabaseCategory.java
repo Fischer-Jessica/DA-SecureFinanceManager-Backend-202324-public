@@ -1,6 +1,7 @@
 package at.htlhl.securefinancemanager.model.database;
 
 import at.htlhl.securefinancemanager.model.api.ApiCategory;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * The {@code DatabaseCategory} class represents a category entity in the 'categories' table of the 'secure_finance_manager' PostgreSQL database.
@@ -36,16 +37,18 @@ import at.htlhl.securefinancemanager.model.api.ApiCategory;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 10.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 16.11.2023 (version 2.0)
  *
  * @see ApiCategory
  */
 public class DatabaseCategory extends ApiCategory {
     /** The ID of the category. */
+    @NotBlank
     private int categoryId;
 
     /** The ID of the user associated with the category. */
+    @NotBlank
     private int categoryUserId;
 
     /**

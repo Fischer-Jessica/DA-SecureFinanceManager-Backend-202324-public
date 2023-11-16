@@ -5,12 +5,14 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseColour;
 import at.htlhl.securefinancemanager.repository.ColourRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * The ColourController class handles HTTP requests related to colour management.
@@ -35,8 +37,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 14.11.2023 (version 1.9)
+ * @version 2.0
+ * @since 16.11.2023 (version 2.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -53,9 +55,20 @@ public class ColourController {
      */
     @GetMapping(value = "/colours", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "returns all colours")
-    public List<DatabaseColour> getColours() {
-        return colourRepository.getColours();
+    @Operation(summary = "returns a list of all colours")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all colours",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseColour.class)) }),
+            @ApiResponse(responseCode = "404", description = "no colours found",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> getColours() {
+        try {
+            return ResponseEntity.ok(colourRepository.getColours());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
     }
 
     /**
@@ -66,7 +79,16 @@ public class ColourController {
      */
     @GetMapping(value = "/colours/{colourId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "returns one colour")
+    @Operation(summary = "returns the requested category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the requested colour",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseColour.class)) }),
+            @ApiResponse(responseCode = "400", description = "the colourId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested colour does not exist",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getColour(@PathVariable int colourId) {
         try {
             if (colourId <= 0) {

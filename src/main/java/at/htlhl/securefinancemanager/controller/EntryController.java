@@ -6,6 +6,10 @@ import at.htlhl.securefinancemanager.model.api.ApiEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import at.htlhl.securefinancemanager.repository.EntryRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +43,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.2
- * @since 14.12.2023 (version 3.2)
+ * @version 3.3
+ * @since 16.12.2023 (version 3.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -61,6 +65,15 @@ public class EntryController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all entries of one subcategory")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all entries of the given subcategory",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseEntry.class)) }),
+            @ApiResponse(responseCode = "400", description = "the subcategoryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "no entries found with the given subcategoryId for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getEntries(@PathVariable int subcategoryId,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -70,6 +83,8 @@ public class EntryController {
             return ResponseEntity.ok(entryRepository.getEntries(subcategoryId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
 
@@ -84,7 +99,16 @@ public class EntryController {
     @GetMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns one entry")
+    @Operation(summary = "returns one entry of a subcategory")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the requested entry of the given subcategory",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseEntry.class)) }),
+            @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested entry with the given subcategoryId does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getEntry(@PathVariable int subcategoryId,
                                            @PathVariable int entryId,
                                            @AuthenticationPrincipal UserDetails userDetails) {
@@ -113,7 +137,14 @@ public class EntryController {
     @PostMapping(value = "/entries", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "create a new entry")
+    @Operation(summary = "creates a new entry in a subcategory")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully created the given entry within the given subcategory",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseEntry.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryColourId is less than or equal to 0 or the entryAmount or the entryTimeOfTransaction is empty",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> addEntry(@PathVariable int subcategoryId,
                                            @RequestBody ApiEntry newApiEntry,
                                            @AuthenticationPrincipal UserDetails userDetails) {
@@ -143,7 +174,16 @@ public class EntryController {
     @PatchMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "change an existing entry")
+    @Operation(summary = "updates an existing entry in a subcategory")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully updated the given entry of the given subcategory",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseEntry.class)) }),
+            @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> updateEntry(@PathVariable int subcategoryId,
                                               @PathVariable int entryId,
                                               @RequestBody ApiEntry updatedApiEntry,
@@ -154,7 +194,6 @@ public class EntryController {
             } else if (entryId <= 0) {
                 throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
             }
-            // TODO: Kann ich die zugehörige Subcategory ändern?
             return ResponseEntity.ok(entryRepository.updateEntry(new DatabaseEntry(entryId, subcategoryId, updatedApiEntry, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
@@ -174,7 +213,16 @@ public class EntryController {
     @DeleteMapping(value = "/entries/{entryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "delete an entry")
+    @Operation(summary = "deletes an entry from a subcategory")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully deleted the given entry of the given subcategory",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class)) }),
+            @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> deleteEntry(@PathVariable int subcategoryId,
                                               @PathVariable int entryId,
                                               @AuthenticationPrincipal UserDetails userDetails) {

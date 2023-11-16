@@ -1,6 +1,7 @@
 package at.htlhl.securefinancemanager.model.database;
 
 import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * The {@code DatabaseSubcategory} class represents a subcategory entity in the 'subcategories' table of the 'secure_finance_manager' PostgreSQL database.
@@ -27,19 +28,22 @@ import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 10.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 16.11.2023 (version 1.8)
  *
- * @see ApiSubcategory this class (Subcategory) for the explanations of the annotations
+ * @see ApiSubcategory
  */
 public class DatabaseSubcategory extends ApiSubcategory {
     /** The unique identifier for this Subcategory. It is generated automatically by the database. */
+    @NotBlank
     private int subcategoryId;
 
     /** The ID of the category associated with the Subcategory. */
+    @NotBlank
     private int subcategoryCategoryId;
 
     /** The ID of the user associated with the Subcategory. */
+    @NotBlank
     private int subcategoryUserId;
 
     /**

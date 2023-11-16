@@ -24,8 +24,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 14.11.2023 (version 1.6)
+ * @version 1.7
+ * @since 16.11.2023 (version 1.7)
  */
 @Repository
 public class ColourRepository {
@@ -42,14 +42,19 @@ public class ColourRepository {
      * Retrieves a list of all colours.
      *
      * @return A list of Colour objects representing the colours.
+     * @throws ValidationException  If no colours are found.
      */
-    public List<DatabaseColour> getColours() {
-        return UserRepository.jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
+    public List<DatabaseColour> getColours() throws ValidationException {
+        List<DatabaseColour> databaseColours = UserRepository.jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
             int colourId = rs.getInt("pk_colour_id");
             String colourName = rs.getString("colour_name");
             byte[] colourCode = rs.getBytes("colour_code");
             return new DatabaseColour(colourId, colourName, colourCode);
         });
+        if (databaseColours.isEmpty()) {
+            throw new ValidationException("No colours found.");
+        }
+        return databaseColours;
     }
 
     /**

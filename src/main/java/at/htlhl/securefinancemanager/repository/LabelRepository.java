@@ -22,8 +22,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 16.11.2023 (version 2.6)
  */
 @Repository
 public class LabelRepository {
@@ -57,7 +57,7 @@ public class LabelRepository {
      * @param username The username of the logged-in user.
      * @return A list of Label objects representing the labels.
      */
-    public List<DatabaseLabel> getLabels(String username) {
+    public List<DatabaseLabel> getLabels(String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -78,7 +78,9 @@ public class LabelRepository {
                     databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
                 }
             }
-
+            if (databaseLabels.isEmpty()) {
+                throw new ValidationException("No labels found for the authenticated user.");
+            }
             return databaseLabels;
         } catch (SQLException e) {
             throw new RuntimeException(e);

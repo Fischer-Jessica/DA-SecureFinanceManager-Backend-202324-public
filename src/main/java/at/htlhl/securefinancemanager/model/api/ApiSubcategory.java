@@ -1,5 +1,7 @@
 package at.htlhl.securefinancemanager.model.api;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * The {@code ApiSubcategory} class represents a subcategory entity in the 'subcategories' table of the 'secure_finance_manager' PostgreSQL database.
  * It is a POJO (Plain Old Java Object) or entity class that maps to the database table.
@@ -26,17 +28,19 @@ package at.htlhl.securefinancemanager.model.api;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 14.11.2023 (version 1.8)
+ * @version 1.9
+ * @since 16.11.2023 (version 1.9)
  */
 public class ApiSubcategory {
     /** The name of the subcategory. */
+    @NotBlank
     private String subcategoryName;
 
     /** The description of the subcategory. */
     private String subcategoryDescription;
 
     /** The ID of the associated colour. */
+    @NotBlank
     private int subcategoryColourId;
 
     /**

@@ -3,9 +3,14 @@ package at.htlhl.securefinancemanager.controller;
 import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiUser;
+import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +18,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * The UserController class handles HTTP requests related to user management.
@@ -45,8 +48,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.7
- * @since 14.11.2023 (version 2.7)
+ * @version 2.8
+ * @since 16.11.2023 (version 2.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -65,8 +68,19 @@ public class UserController {
     @GetMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "returns all users")
-    public List<DatabaseUser> getUsers() {
-        return userRepository.getUsers();
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all users",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class)) }),
+            @ApiResponse(responseCode = "404", description = "no users found",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> getUsers() {
+        try {
+            return ResponseEntity.ok(userRepository.getUsers());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
     }
 
     /**
@@ -85,11 +99,18 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns the currently authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the authenticated user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class)) }),
+            @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getUser(@AuthenticationPrincipal UserDetails activeUser) {
         try {
             return ResponseEntity.ok(UserRepository.getUserObject(activeUser.getUsername()));
         } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
 
@@ -101,7 +122,14 @@ public class UserController {
      */
     @PostMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "add a new user")
+    @Operation(summary = "creates a new user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "created a new user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class)) }),
+            @ApiResponse(responseCode = "400", description = "the username or the password is missing",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> addUser(@RequestBody ApiUser newApiUser) {
         try {
             if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
@@ -125,7 +153,14 @@ public class UserController {
     @PatchMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "change an existing user")
+    @Operation(summary = "updates an existing user which is authenticated at the moment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully updated the authenticated user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseCategory.class)) }),
+            @ApiResponse(responseCode = "404", description = "the authenticated user is not found",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> updateUser(@RequestBody ApiUser updatedApiUser,
                                              @AuthenticationPrincipal UserDetails activeUser) {
         try {
@@ -144,7 +179,14 @@ public class UserController {
     @DeleteMapping(value = "/users", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes an user")
+    @Operation(summary = "deletes an user which is authenticated at the moment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully deleted the authenticated user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class)) }),
+            @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> deleteUser(@AuthenticationPrincipal UserDetails activeUser) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userRepository.deleteUser(activeUser.getUsername()));

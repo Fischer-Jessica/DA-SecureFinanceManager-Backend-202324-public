@@ -1,5 +1,6 @@
 package at.htlhl.securefinancemanager.config;
 
+import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -46,8 +47,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.2
- * @since 14.11.2023 (version 1.2)
+ * @version 1.3
+ * @since 16.11.2023 (version 1.3)
  */
 @Configuration
 @EnableWebSecurity
@@ -61,7 +62,7 @@ public class SecurityConfig {
      * @return A user service that loads user details from the repository.
      */
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder, UserRepository userRepository) {
+    public UserDetailsService userDetailsService(PasswordEncoder encoder, UserRepository userRepository) throws ValidationException {
         List<DatabaseUser> users = userRepository.getUsers();
         List<UserDetails> userDetailsList = new ArrayList<>();
 

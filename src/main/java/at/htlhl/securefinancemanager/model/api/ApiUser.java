@@ -1,5 +1,7 @@
 package at.htlhl.securefinancemanager.model.api;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * The {@code ApiUser} class represents a user entity in the secure finance manager system.
  *
@@ -25,14 +27,16 @@ package at.htlhl.securefinancemanager.model.api;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 14.11.2023 (version 1.8)
+ * @version 1.9
+ * @since 16.11.2023 (version 1.9)
  */
 public class ApiUser {
     /** The username of the user. */
+    @NotBlank
     private String username;
 
     /** The password of the user. */
+    @NotBlank
     private String password;
 
     /** The email address of the user. */

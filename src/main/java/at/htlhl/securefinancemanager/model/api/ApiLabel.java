@@ -1,5 +1,7 @@
 package at.htlhl.securefinancemanager.model.api;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * The {@code ApiLabel} class represents a label entity in the 'labels' table of the 'secure_finance_manager' PostgreSQL database.
  * It is a POJO (Plain Old Java Object) or entity class that maps to the database table.
@@ -22,18 +24,20 @@ package at.htlhl.securefinancemanager.model.api;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 14.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 16.11.2023 (version 2.1)
  */
 public class ApiLabel {
 
     /** The name of the label. */
+    @NotBlank
     private String labelName;
 
     /** The description of the label. */
     private String labelDescription;
 
     /** The ID of the associated colour. */
+    @NotBlank
     private int labelColourId;
 
     /**

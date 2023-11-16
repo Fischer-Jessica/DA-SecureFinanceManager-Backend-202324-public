@@ -1,5 +1,7 @@
 package at.htlhl.securefinancemanager.model.api;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * The `ApiCategory` class represents the data structure for category information in the secure finance manager system.
  *
@@ -21,17 +23,19 @@ package at.htlhl.securefinancemanager.model.api;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 14.11.2023 (version 2.0)
+ * @version 2.1
+ * @since 16.11.2023 (version 2.1)
  */
 public class ApiCategory {
     /** The name of the category. */
+    @NotBlank
     private String categoryName;
 
     /** The description of the category. */
     private String categoryDescription;
 
     /** The ID of the associated color. */
+    @NotBlank
     private int categoryColourId;
 
     /**

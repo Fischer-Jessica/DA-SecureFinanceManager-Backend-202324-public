@@ -22,8 +22,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 14.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 16.11.2023 (version 2.6)
  */
 @Repository
 public class SubcategoryRepository {
@@ -58,7 +58,7 @@ public class SubcategoryRepository {
      * @param username     The username of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
-    public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) {
+    public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -80,7 +80,9 @@ public class SubcategoryRepository {
                     databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, Base64.getEncoder().encodeToString(subcategoryName), Base64.getEncoder().encodeToString(subcategoryDescription), subcategoryColourId, activeUserId));
                 }
             }
-
+            if (databaseSubcategories.isEmpty()) {
+                throw new ValidationException("No subcategories found for category with ID " + categoryId + ".");
+            }
             return databaseSubcategories;
         } catch (SQLException e) {
             throw new RuntimeException(e);

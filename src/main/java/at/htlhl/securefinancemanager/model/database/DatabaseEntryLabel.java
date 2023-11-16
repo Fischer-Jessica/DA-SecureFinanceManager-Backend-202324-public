@@ -17,6 +17,9 @@ package at.htlhl.securefinancemanager.model.database;
  * Since: 10.11.2023 (version 1.4)
  * </p>
  */
+
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * The {@code DatabaseEntryLabel} class represents the association between an entry and a label in the 'entry_labels' table of the 'financial_overview' PostgreSQL database.
  *
@@ -28,32 +31,37 @@ package at.htlhl.securefinancemanager.model.database;
  * The {@code DatabaseEntryLabel} class is designed to be instantiated with a parameterized constructor that sets the entry label ID, entry ID, label ID, and user ID.
  * </p>
  *
- * <p>
- * Author: Fischer
- * Version: 1.4
- * Since: 10.11.2023 (version 1.4)
- * </p>
+ * @author Fischer
+ * @version 1.5
+ * @since 16.11.2023 (version 1.5)
  */
 public class DatabaseEntryLabel {
     /**
      * The unique identifier for this EntryLabel.
      * It is generated automatically by the database.
      */
+    @NotBlank
     private int entryLabelId;
+
     /**
      * The unique identifier for the entry.
      * It represents the association between an entry and a label.
      */
+    @NotBlank
     private int entryId;
+
     /**
      * The unique identifier for the label.
      * It represents the association between an entry and a label.
      */
+    @NotBlank
     private int labelId;
+
     /**
      * The unique identifier for the user.
      * It represents the association between an EntryLabel and a user.
      */
+    @NotBlank
     private int userId;
 
     /**

@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 14.11.2023 (version 2.1)
+ * @version 2.2
+ * @since 16.11.2023 (version 2.2)
  */
 @Repository
 public class EntryLabelRepository {
@@ -58,7 +58,7 @@ public class EntryLabelRepository {
      * @return A list of Label objects representing the labels associated with the entry and user.
      * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
      *                              This exception may indicate that the entryId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the entry and the label.
+     *                              with the provided username does not match the expected owner of the entry.
      */
     public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
@@ -95,10 +95,17 @@ public class EntryLabelRepository {
      * @param labelId   The ID of the label to add.
      * @param username  The username of the logged-in user.
      * @return The newly created entryLabel.
+     * @throws ValidationException  If the specified entry or label does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the entryId or the labelId is not found or that the
+     *                              userId associated with the provided username does not match the expected owner of the
+     *                              entry or the label.
      */
-    public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) {
+    public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
+            new LabelRepository().getLabel(labelId, username);
+            new EntryRepository().getEntryWithoutSubcategoryId(entryId, username);
+
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
@@ -130,6 +137,9 @@ public class EntryLabelRepository {
      */
     public int removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
         try {
+            new LabelRepository().getLabel(labelId, username);
+            new EntryRepository().getEntryWithoutSubcategoryId(entryId, username);
+
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY);

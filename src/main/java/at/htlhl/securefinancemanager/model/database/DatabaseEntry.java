@@ -1,6 +1,7 @@
 package at.htlhl.securefinancemanager.model.database;
 
 import at.htlhl.securefinancemanager.model.api.ApiEntry;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * The {@code DatabaseEntry} class represents an entry entity in the 'entries' table of the 'secure_finance_manager' PostgreSQL database.
@@ -26,27 +27,34 @@ import at.htlhl.securefinancemanager.model.api.ApiEntry;
  * This class is part of the secure finance manager system and is designed to work with database interactions related to entries.
  * </p>
  *
- * <p>
- * Author: Fischer
- * Version: 1.8
- * Since: 10.11.2023 (version 1.8)
- * </p>
+ * @author Fischer
+ * @version 1.9
+ * @since 16.11.2023 (version 1.9)
+ *
+ * @see ApiEntry
  */
 public class DatabaseEntry extends ApiEntry {
     /**
      * The unique identifier for this Entry.
      * It is generated automatically by the database.
      */
+    @NotBlank
     private int entryId;
+
     /**
      * The timestamp representing the creation time of the entry.
      * It indicates when the entry was originally created.
      * This value is typically set at the time of entry creation and remains unchanged.
      */
+    @NotBlank
     private String entryCreationTime;
+
     /** The ID of the subcategory associated with the Entry. */
+    @NotBlank
     private int entrySubcategoryId;
+
     /** The ID of the user associated with the Entry. */
+    @NotBlank
     private int entryUserId;
 
     /**

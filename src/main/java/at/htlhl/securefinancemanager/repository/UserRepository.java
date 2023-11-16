@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 14.11.2023 (version 2.9)
+ * @version 3.0
+ * @since 16.11.2023 (version 3.0)
  */
 @Repository
 public class UserRepository {
@@ -115,8 +115,8 @@ public class UserRepository {
      *
      * @return A list of User objects representing all users.
      */
-    public List<DatabaseUser> getUsers() {
-        return jdbcTemplate.query(SELECT_USERS, (rs, rowNum) -> {
+    public List<DatabaseUser> getUsers() throws ValidationException {
+        List<DatabaseUser> users = jdbcTemplate.query(SELECT_USERS, (rs, rowNum) -> {
             int userId = rs.getInt("pk_user_id");
             String username = rs.getString("username");
             byte[] password = rs.getBytes("password");
@@ -125,6 +125,10 @@ public class UserRepository {
             String lastName = rs.getString("last_name");
             return new DatabaseUser(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
         });
+        if (users.isEmpty()) {
+            throw new ValidationException("No users found.");
+        }
+        return users;
     }
 
     /**

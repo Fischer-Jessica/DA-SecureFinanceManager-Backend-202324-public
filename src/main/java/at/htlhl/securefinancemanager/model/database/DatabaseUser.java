@@ -1,6 +1,7 @@
 package at.htlhl.securefinancemanager.model.database;
 
 import at.htlhl.securefinancemanager.model.api.ApiUser;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * The {@code DatabaseUser} class represents a user entity in the 'users' table of the 'secure_finance_manager' PostgreSQL database.
@@ -27,13 +28,14 @@ import at.htlhl.securefinancemanager.model.api.ApiUser;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 10.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 16.11.2023 (version 1.8)
  *
- * @see ApiUser this class (User) for the explanations of the annotations
+ * @see ApiUser
  */
 public class DatabaseUser extends ApiUser {
     /** The unique identifier for this User. It is generated automatically by the database. */
+    @NotBlank
     private int userId;
 
     /** Default constructor. */

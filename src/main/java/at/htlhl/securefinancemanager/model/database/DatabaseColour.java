@@ -1,5 +1,7 @@
 package at.htlhl.securefinancemanager.model.database;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * The {@code DatabaseColour} class represents a colour entity in the 'colours' table of the 'secure_finance_manager' PostgreSQL database.
  *
@@ -31,23 +33,24 @@ package at.htlhl.securefinancemanager.model.database;
  * It is important to mention that the colour ID is generated automatically by the database.
  * </p>
  *
- * <p>
- * Author: Fischer
- * Version: 1.6
- * Since: 10.11.2023 (version 1.6)
- * </p>
+ * @author Fischer
+ * @version 1.7
+ * @since 16.11.2023 (version 1.7)
  */
 public class DatabaseColour {
     /**
      * The unique identifier for this Colour.
      * It is generated automatically by the database.
      */
+    @NotBlank
     private int colourId;
 
     /** The name of the colour. */
+    @NotBlank
     private String colourName;
 
     /** The hex-value of the colour. */
+    @NotBlank
     private byte[] colourCode;
 
     /**

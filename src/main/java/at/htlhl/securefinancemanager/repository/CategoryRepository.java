@@ -35,8 +35,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 14.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 16.11.2023 (version 2.7)
  */
 @Repository
 public class CategoryRepository {
@@ -69,8 +69,9 @@ public class CategoryRepository {
      *
      * @param username  The username of the logged-in user.
      * @return A list of Category objects representing the categories.
+     * @throws ValidationException  If the authenticated user does not have any categories.
      */
-    public List<DatabaseCategory> getCategories(String username) {
+    public List<DatabaseCategory> getCategories(String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
@@ -91,7 +92,9 @@ public class CategoryRepository {
                     databaseCategories.add(new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId));
                 }
             }
-
+            if (databaseCategories.isEmpty()) {
+                throw new ValidationException("No categories found for the authenticated user.");
+            }
             return databaseCategories;
         } catch (SQLException e) {
             throw new RuntimeException(e);

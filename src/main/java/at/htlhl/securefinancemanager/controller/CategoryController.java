@@ -6,6 +6,10 @@ import at.htlhl.securefinancemanager.model.api.ApiCategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import at.htlhl.securefinancemanager.repository.CategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +43,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.0
- * @since 14.11.2023 (version 3.0)
+ * @version 3.1
+ * @since 16.11.2023 (version 3.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -51,7 +55,7 @@ public class CategoryController {
     CategoryRepository categoryRepository;
 
     /**
-     * Returns a list of all categories for the logged-in user.
+     * Returns a list of all categories of the logged-in user.
      *
      * @param userDetails The UserDetails object containing information about the logged-in user.
      * @return A list of categories.
@@ -59,9 +63,20 @@ public class CategoryController {
     @GetMapping(value = "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns all categories")
+    @Operation(summary = "returns a list of all categories of the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all categories of the authenticated user",
+                content = { @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = DatabaseCategory.class)) }),
+            @ApiResponse(responseCode = "404", description = "no categories found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getCategories(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(categoryRepository.getCategories(userDetails.getUsername()));
+        try {
+            return ResponseEntity.ok(categoryRepository.getCategories(userDetails.getUsername()));
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
     }
 
     /**
@@ -74,7 +89,16 @@ public class CategoryController {
     @GetMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns one category")
+    @Operation(summary = "returns the requested category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the requested category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseCategory.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> getCategory(@PathVariable int categoryId,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -90,7 +114,7 @@ public class CategoryController {
     }
 
     /**
-     * Adds a new category for the logged-in user.
+     * Creates a new category for the logged-in user.
      *
      * @param newApiCategory The Category object representing the new category.
      * @param userDetails    The UserDetails object containing information about the logged-in user.
@@ -99,7 +123,14 @@ public class CategoryController {
     @PostMapping(value =  "/categories", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "add a new category")
+    @Operation(summary = "creates a new category for the authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully created the given category for the authenticated user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseCategory.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryName is empty or the categoryColourId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> addCategory(@RequestBody ApiCategory newApiCategory,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -126,7 +157,16 @@ public class CategoryController {
     @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "change an existing category")
+    @Operation(summary = "updates an existing category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully updated the given category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseCategory.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0 or the categoryColourId is less than 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> updateCategory(@PathVariable int categoryId,
                                                  @RequestBody ApiCategory updatedApiCategory,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
@@ -154,7 +194,16 @@ public class CategoryController {
     @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=0")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "delete a category")
+    @Operation(summary = "deletes a category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully deleted the given category",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class)) }),
+            @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
     public ResponseEntity<Object> deleteCategory(@PathVariable int categoryId,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
