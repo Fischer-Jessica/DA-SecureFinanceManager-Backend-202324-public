@@ -46,12 +46,12 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.5
- * @since 17.12.2023 (version 3.5)
+ * @version 3.6
+ * @since 17.12.2023 (version 3.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("secure-finance-manager/categories/subcategories/{subcategoryId}")
+@RequestMapping("secure-finance-manager/categories/subcategories")
 public class EntryController {
     /** The EntryRepository instance for accessing entry data. */
     @Autowired
@@ -64,7 +64,7 @@ public class EntryController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return A list of entries for the specified subcategory.
      */
-    @GetMapping(value = "/entries", headers = "API-Version=1")
+    @GetMapping(value = "/{subcategoryId}/entries", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns all entries of one subcategory")
@@ -99,7 +99,7 @@ public class EntryController {
      * @param userDetails       The UserDetails object representing the logged-in user.
      * @return The requested entry.
      */
-    @GetMapping(value = "/entries/{entryId}", headers = "API-Version=1")
+    @GetMapping(value = "/{subcategoryId}/entries/{entryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "returns one entry of a subcategory")
@@ -137,7 +137,7 @@ public class EntryController {
      * @param userDetails       The UserDetails object representing the logged-in user.
      * @return A List of the newly created entries.
      */
-    @PostMapping(value = "/entries", headers = "API-Version=2")
+    @PostMapping(value = "/{subcategoryIds}/entries", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "creates new entries in subcategories")
@@ -181,7 +181,7 @@ public class EntryController {
      * @param userDetails           The UserDetails object representing the logged-in user.
      * @return A List of the updated entries.
      */
-    @PatchMapping(value = "/entries/{entryId}", headers = "API-Version=2")
+    @PatchMapping(value = "/{subcategoryIds}/entries/{entryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "updates existing entries in subcategories")
@@ -227,7 +227,7 @@ public class EntryController {
      * @param userDetails       The UserDetails object representing the logged-in user.
      * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/entries/{entryId}", headers = "API-Version=2")
+    @DeleteMapping(value = "/{subcategoryIds}/entries/{entryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes entries from subcategories")

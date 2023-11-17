@@ -45,12 +45,12 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 17.11.2023 (version 2.3)
+ * @version 2.4
+ * @since 17.11.2023 (version 2.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("secure-finance-manager/entry-labels")
+@RequestMapping("secure-finance-manager/entry-labels/entries/{entryIds}")
 public class EntryLabelController {
     /** The EntryLabelRepository instance for accessing entry-label data. */
     @Autowired
@@ -63,7 +63,7 @@ public class EntryLabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return Lists of labels associated with the entries.
      */
-    @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=2")
+    @GetMapping(value = "/labels", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "retrieves lists of labels associated with specific entries")
@@ -102,7 +102,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return A List of the newly created EntryLabel associations.
      */
-    @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=2")
+    @PostMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "adds labels to specific entries")
     @ApiResponses(value = {
@@ -146,7 +146,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=2")
+    @DeleteMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "removes labels from specific entries")
     @ApiResponses(value = {

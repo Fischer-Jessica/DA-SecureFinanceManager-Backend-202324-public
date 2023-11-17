@@ -45,8 +45,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.3
- * @since 17.11.2023 (version 3.3)
+ * @version 3.4
+ * @since 17.11.2023 (version 3.4)
  */
 
 @RestController
@@ -160,7 +160,7 @@ public class LabelController {
      * @param userDetails           The UserDetails object representing the logged-in user.
      * @return A List of the updated labels.
      */
-    @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=2")
+    @PatchMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "updates existing labels")
@@ -204,7 +204,7 @@ public class LabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=2")
+    @DeleteMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes labels")

@@ -46,8 +46,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.3
- * @since 17.11.2023 (version 3.3)
+ * @version 3.4
+ * @since 17.11.2023 (version 3.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -160,7 +160,7 @@ public class CategoryController {
      * @param userDetails               The UserDetails object containing information about the logged-in user.
      * @return A List of the updated categories.
      */
-    @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=2")
+    @PatchMapping(value = "/categories/{categoryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "updates existing categories")
@@ -204,7 +204,7 @@ public class CategoryController {
      * @param userDetails   The UserDetails object containing information about the logged-in user.
      * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=2")
+    @DeleteMapping(value = "/categories/{categoryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "deletes categories")
