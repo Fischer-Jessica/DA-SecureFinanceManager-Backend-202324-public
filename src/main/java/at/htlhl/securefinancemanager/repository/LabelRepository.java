@@ -22,8 +22,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 16.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 17.11.2023 (version 2.7)
  */
 @Repository
 public class LabelRepository {
@@ -179,7 +179,11 @@ public class LabelRepository {
             if (updatedLabel.getLabelDescription() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedLabel.getLabelDescription()));
             } else {
-                ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseLabel.getLabelDescription()));
+                if (oldDatabaseLabel.getLabelDescription() == null) {
+                    ps.setNull(2, Types.NULL);
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseLabel.getLabelDescription()));
+                }
             }
 
             if (updatedLabel.getLabelColourId() != 0) {

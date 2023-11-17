@@ -22,8 +22,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 16.11.2023 (version 2.9)
+ * @version 3.0
+ * @since 17.11.2023 (version 3.0)
  */
 @Repository
 public class EntryRepository {
@@ -290,13 +290,21 @@ public class EntryRepository {
             if (updatedEntry.getEntryName() != null) {
                 ps.setBytes(2, Base64.getDecoder().decode(updatedEntry.getEntryName()));
             } else {
-                ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseEntry.getEntryName()));
+                if (oldDatabaseEntry.getEntryName() == null) {
+                    ps.setNull(2, Types.NULL);
+                } else {
+                    ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseEntry.getEntryName()));
+                }
             }
 
             if (updatedEntry.getEntryDescription() != null) {
                 ps.setBytes(3, Base64.getDecoder().decode(updatedEntry.getEntryDescription()));
             } else {
-                ps.setBytes(3, Base64.getDecoder().decode(oldDatabaseEntry.getEntryDescription()));
+                if (oldDatabaseEntry.getEntryDescription() == null) {
+                    ps.setNull(3, Types.NULL);
+                } else {
+                    ps.setBytes(3, Base64.getDecoder().decode(oldDatabaseEntry.getEntryDescription()));
+                }
             }
 
             if (updatedEntry.getEntryAmount() != null) {
@@ -314,7 +322,11 @@ public class EntryRepository {
             if (updatedEntry.getEntryAttachment() != null) {
                 ps.setBytes(6, Base64.getDecoder().decode(updatedEntry.getEntryAttachment()));
             } else {
-                ps.setBytes(6, Base64.getDecoder().decode(oldDatabaseEntry.getEntryAttachment()));
+                if (oldDatabaseEntry.getEntryAttachment() == null) {
+                    ps.setNull(6, Types.NULL);
+                } else {
+                    ps.setBytes(6, Base64.getDecoder().decode(oldDatabaseEntry.getEntryAttachment()));
+                }
             }
 
             ps.setInt(7, updatedEntry.getEntryId());

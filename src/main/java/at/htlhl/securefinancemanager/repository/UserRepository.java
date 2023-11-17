@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.0
- * @since 16.11.2023 (version 3.0)
+ * @version 3.1
+ * @since 17.11.2023 (version 3.1)
  */
 @Repository
 public class UserRepository {
@@ -205,19 +205,31 @@ public class UserRepository {
             if (updatedUser.getEMailAddress() != null) {
                 ps.setString(3, updatedUser.getEMailAddress());
             } else {
-                ps.setString(3, oldDatabaseUser.getEMailAddress());
+                if (oldDatabaseUser.getEMailAddress() == null) {
+                    ps.setNull(3, Types.NULL);
+                } else {
+                    ps.setString(3, oldDatabaseUser.getEMailAddress());
+                }
             }
 
             if (updatedUser.getFirstName() != null) {
                 ps.setString(4, updatedUser.getFirstName());
             } else {
-                ps.setString(4, oldDatabaseUser.getFirstName());
+                if(oldDatabaseUser.getFirstName() == null) {
+                    ps.setNull(4, Types.NULL);
+                } else {
+                    ps.setString(4, oldDatabaseUser.getFirstName());
+                }
             }
 
             if (updatedUser.getLastName() != null) {
                 ps.setString(5, updatedUser.getLastName());
             } else {
-                ps.setString(5, oldDatabaseUser.getLastName());
+                if (oldDatabaseUser.getLastName() == null) {
+                    ps.setNull(5, Types.NULL);
+                } else {
+                    ps.setString(5, oldDatabaseUser.getLastName());
+                }
             }
 
             ps.setInt(6, oldDatabaseUser.getUserId());

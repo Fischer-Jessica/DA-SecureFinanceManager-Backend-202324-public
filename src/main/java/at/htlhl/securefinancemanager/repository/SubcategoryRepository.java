@@ -22,8 +22,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 16.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 17.11.2023 (version 2.7)
  */
 @Repository
 public class SubcategoryRepository {
@@ -186,7 +186,11 @@ public class SubcategoryRepository {
             if (updatedSubcategory.getSubcategoryDescription() != null) {
                 ps.setBytes(3, Base64.getDecoder().decode(updatedSubcategory.getSubcategoryDescription()));
             } else {
-                ps.setBytes(3, Base64.getDecoder().decode(oldDatabaseSubcategory.getSubcategoryDescription()));
+                if (oldDatabaseSubcategory.getSubcategoryDescription() == null) {
+                    ps.setNull(3, Types.NULL);
+                } else {
+                    ps.setBytes(3, Base64.getDecoder().decode(oldDatabaseSubcategory.getSubcategoryDescription()));
+                }
             }
 
             if (updatedSubcategory.getSubcategoryColourId() != 0) {
