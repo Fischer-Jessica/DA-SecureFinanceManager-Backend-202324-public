@@ -4,6 +4,7 @@ import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
+import at.htlhl.securefinancemanager.model.response.ResponseLabel;
 import at.htlhl.securefinancemanager.repository.LabelRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -45,8 +46,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.4
- * @since 17.11.2023 (version 3.4)
+ * @version 3.5
+ * @since 17.11.2023 (version 3.5)
  */
 
 @RestController
@@ -119,11 +120,12 @@ public class LabelController {
     /**
      * Adds new labels for the logged-in user.
      *
+     * @param mobileLabelIds    The IDs of the labels in the mobile application.
      * @param newApiLabels      The Labels representing the new labels.
      * @param userDetails       The UserDetails object representing the logged-in user.
      * @return A List of the newly created labels.
      */
-    @PostMapping(value = "/labels", headers = "API-Version=2")
+    @PostMapping(value = "/labels", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "adds new labels for the authenticated user")
@@ -131,20 +133,24 @@ public class LabelController {
             @ApiResponse(responseCode = "201", description = "successfully created the given labels for the authenticated user",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class)) }),
-            @ApiResponse(responseCode = "400", description = "a labelName is empty or a labelColourId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of mobileLabelIds and newApiLabels are not equal or a labelName is empty or a mobileLabelId or a labelColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabels(@RequestBody List<ApiLabel> newApiLabels,
+    public ResponseEntity<Object> addLabels(@RequestParam List<Integer> mobileLabelIds,
+                                            @RequestBody List<ApiLabel> newApiLabels,
                                             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<DatabaseLabel> createdLabels = new ArrayList<>();
-            for (ApiLabel newApiLabel : newApiLabels) {
-                if (newApiLabel.getLabelName() == null || newApiLabel.getLabelName().isBlank()) {
+            List<ResponseLabel> createdLabels = new ArrayList<>();
+            if (mobileLabelIds.size() != newApiLabels.size()) {
+                throw new MissingRequiredParameter("the number of mobileLabelIds and newApiLabels must be equal");
+            }
+            for (int i = 0; i < newApiLabels.size(); i++) {
+                if (newApiLabels.get(i).getLabelName() == null || newApiLabels.get(i).getLabelName().isBlank()) {
                     throw new MissingRequiredParameter("labelName is required");
-                } else if (newApiLabel.getLabelColourId() <= 0) {
+                } else if (newApiLabels.get(i).getLabelColourId() <= 0) {
                     throw new MissingRequiredParameter("labelColour cannot be less than or equal to 0");
                 }
-                createdLabels.add(labelRepository.addLabel(new DatabaseLabel(newApiLabel, userSingleton.getUserId(userDetails.getUsername()))));
+                createdLabels.add(new ResponseLabel(labelRepository.addLabel(new DatabaseLabel(newApiLabels.get(i), userSingleton.getUserId(userDetails.getUsername()))), mobileLabelIds.get(i)));
             }
             return ResponseEntity.ok(createdLabels);
         } catch (MissingRequiredParameter exception) {

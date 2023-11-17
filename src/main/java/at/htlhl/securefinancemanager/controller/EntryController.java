@@ -4,6 +4,7 @@ import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
+import at.htlhl.securefinancemanager.model.response.ResponseEntry;
 import at.htlhl.securefinancemanager.repository.EntryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,8 +47,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.6
- * @since 17.12.2023 (version 3.6)
+ * @version 3.7
+ * @since 17.12.2023 (version 3.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -133,11 +134,12 @@ public class EntryController {
      * Creates new entries in specific subcategories.
      *
      * @param subcategoryIds    The IDs of the subcategories.
+     * @param mobileEntryIds    The IDs of the entries in the mobile applications.
      * @param newApiEntries     The new entries to be added.
      * @param userDetails       The UserDetails object representing the logged-in user.
      * @return A List of the newly created entries.
      */
-    @PostMapping(value = "/{subcategoryIds}/entries", headers = "API-Version=2")
+    @PostMapping(value = "/{subcategoryIds}/entries", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "creates new entries in subcategories")
@@ -145,17 +147,18 @@ public class EntryController {
             @ApiResponse(responseCode = "201", description = "successfully created the given entries within the given subcategories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntry.class)) }),
-            @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds and newApiEntries are not equal or a categoryColourId is less than or equal to 0 or a entryAmount or a entryTimeOfTransaction is empty",
+            @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds, mobileEntryIds and newApiEntries are not equal or a categoryColourId or a mobileEntryId is less than or equal to 0 or a entryAmount or a entryTimeOfTransaction is empty",
                     content = { @Content(mediaType = "text/plain") })
     })
     public ResponseEntity<Object> addEntries(@PathVariable List<Integer> subcategoryIds,
+                                             @RequestParam List<Integer> mobileEntryIds,
                                              @RequestBody List<ApiEntry> newApiEntries,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (subcategoryIds.size() != newApiEntries.size()) {
-                throw new MissingRequiredParameter("the number of subcategoryIds and newApiEntries must be equal");
+            if (subcategoryIds.size() != newApiEntries.size() || subcategoryIds.size() != mobileEntryIds.size()) {
+                throw new MissingRequiredParameter("the number of subcategoryIds, mobileEntryIds and newApiEntries must be equal");
             }
-            List<DatabaseEntry> createdEntries = new ArrayList<>();
+            List<ResponseEntry> createdEntries = new ArrayList<>();
             for (int i = 0; i < newApiEntries.size(); i++) {
                 if (subcategoryIds.get(i) <= 0) {
                     throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
@@ -163,8 +166,10 @@ public class EntryController {
                     throw new MissingRequiredParameter("entryAmount is required");
                 } else if (newApiEntries.get(i).getEntryTimeOfTransaction() == null || newApiEntries.get(i).getEntryTimeOfTransaction().isBlank()) {
                     throw new MissingRequiredParameter("entryTimeOfTransaction is required");
+                } else if (mobileEntryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("mobileEntryId cannot be less than or equal to 0");
                 }
-                createdEntries.add(entryRepository.addEntry(new DatabaseEntry(subcategoryIds.get(i), newApiEntries.get(i), userSingleton.getUserId(userDetails.getUsername()))));
+                createdEntries.add(new ResponseEntry(entryRepository.addEntry(new DatabaseEntry(subcategoryIds.get(i), newApiEntries.get(i), userSingleton.getUserId(userDetails.getUsername()))), mobileEntryIds.get(i)));
             }
             return ResponseEntity.ok(createdEntries);
         } catch (MissingRequiredParameter exception) {

@@ -4,6 +4,7 @@ import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiCategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
+import at.htlhl.securefinancemanager.model.response.ResponseCategory;
 import at.htlhl.securefinancemanager.repository.CategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,8 +47,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.4
- * @since 17.11.2023 (version 3.4)
+ * @version 3.5
+ * @since 17.11.2023 (version 3.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -119,11 +120,12 @@ public class CategoryController {
     /**
      * Creates new categories for the logged-in user.
      *
-     * @param newApiCategories  The Categories representing the new categories.
-     * @param userDetails       The UserDetails object containing information about the logged-in user.
+     * @param mobileCategoryIds     The IDs of the new categories in the mobile applications.
+     * @param newApiCategories      The Categories representing the new categories.
+     * @param userDetails           The UserDetails object containing information about the logged-in user.
      * @return A List of the newly created categories.
      */
-    @PostMapping(value =  "/categories", headers = "API-Version=2")
+    @PostMapping(value =  "/categories", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "creates new categories for the authenticated user")
@@ -131,20 +133,26 @@ public class CategoryController {
             @ApiResponse(responseCode = "201", description = "successfully created the given categories for the authenticated user",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class)) }),
-            @ApiResponse(responseCode = "400", description = "A categoryName is empty or a categoryColourId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of newCategories and mobileCategoryIds are not equal or categoryName is empty or a categoryColourId or a mobileCategoryId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addCategories(@RequestBody List<ApiCategory> newApiCategories,
-                                                @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> addCategoriesV3(@RequestParam List<Integer> mobileCategoryIds,
+                                                  @RequestBody List<ApiCategory> newApiCategories,
+                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<DatabaseCategory> createdCategories = new ArrayList<>();
-            for (ApiCategory newApiCategory : newApiCategories) {
-                if (newApiCategory.getCategoryName() == null || newApiCategory.getCategoryName().isBlank()) {
+            if (newApiCategories.size() != mobileCategoryIds.size()) {
+                throw new MissingRequiredParameter("the number of newApiCategories and mobileCategoryIds must be equal");
+            }
+            List<ResponseCategory> createdCategories = new ArrayList<>();
+            for (int i = 0; i < newApiCategories.size(); i++) {
+                if (newApiCategories.get(i).getCategoryName() == null || newApiCategories.get(i).getCategoryName().isBlank()) {
                     throw new MissingRequiredParameter("categoryName cannot be empty");
-                } else if (newApiCategory.getCategoryColourId() <= 0) {
+                } else if (newApiCategories.get(i).getCategoryColourId() <= 0) {
                     throw new MissingRequiredParameter("categoryColourId cannot be less than or equal to 0");
+                } else if (mobileCategoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("mobileCategoryId cannot be less than or equal to 0");
                 }
-                createdCategories.add(categoryRepository.addCategory(new DatabaseCategory(newApiCategory, userSingleton.getUserId(userDetails.getUsername()))));
+                createdCategories.add(new ResponseCategory(categoryRepository.addCategory(new DatabaseCategory(newApiCategories.get(i), userSingleton.getUserId(userDetails.getUsername()))), mobileCategoryIds.get(i)));
             }
             return ResponseEntity.ok(createdCategories);
         } catch (MissingRequiredParameter exception) {

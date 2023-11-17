@@ -5,6 +5,7 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiUser;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseUser;
+import at.htlhl.securefinancemanager.model.response.ResponseUser;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -51,8 +52,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 3.0
- * @since 17.11.2023 (version 3.0)
+ * @version 3.1
+ * @since 17.11.2023 (version 3.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -120,29 +121,36 @@ public class UserController {
     /**
      * Adds new users.
      *
+     * @param mobileUserId  The ID of the user in the mobile application.
      * @param newApiUsers   The users representing the new users to be added.
      * @return A List of the newly created users.
      */
-    @PostMapping(value = "/users", headers = "API-Version=2")
+    @PostMapping(value = "/users", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "creates new users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "created the new users",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseUser.class)) }),
-            @ApiResponse(responseCode = "400", description = "a username or a password is missing",
+            @ApiResponse(responseCode = "400", description = "a mobileUserId is less than or equal to 0 or a username or a password is missing",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addUsers(@RequestBody List<ApiUser> newApiUsers) {
+    public ResponseEntity<Object> addUsers(@RequestParam List<Integer> mobileUserId,
+                                           @RequestBody List<ApiUser> newApiUsers) {
         try {
-            List<DatabaseUser> createdUsers = new ArrayList<>();
-            for (ApiUser newApiUser : newApiUsers) {
-                if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
+            List<ResponseUser> createdUsers = new ArrayList<>();
+            if (mobileUserId.size() != newApiUsers.size()) {
+                throw new MissingRequiredParameter("the number of mobile user IDs must match the number of new users");
+            }
+            for (int i = 0; i < mobileUserId.size(); i++) {
+                if (newApiUsers.get(i).getUsername() == null || newApiUsers.get(i).getUsername().isBlank()) {
                     throw new MissingRequiredParameter("username is required");
-                } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
+                } else if (newApiUsers.get(i).getPassword() == null || newApiUsers.get(i).getPassword().isBlank()) {
                     throw new MissingRequiredParameter("password is required");
+                } else if (mobileUserId.get(i) <= 0) {
+                    throw new MissingRequiredParameter("mobileUserId cannot be less than or equal to 0");
                 }
-                createdUsers.add(userRepository.addUser(newApiUser));
+                createdUsers.add(new ResponseUser(userRepository.addUser(newApiUsers.get(i)), mobileUserId.get(i)));
             }
             return ResponseEntity.ok(createdUsers);
         } catch (MissingRequiredParameter exception) {

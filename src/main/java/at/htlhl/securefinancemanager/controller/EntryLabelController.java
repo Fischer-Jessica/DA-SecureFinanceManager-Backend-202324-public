@@ -4,6 +4,7 @@ import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
+import at.htlhl.securefinancemanager.model.response.ResponseEntryLabel;
 import at.htlhl.securefinancemanager.repository.EntryLabelRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -45,8 +46,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 17.11.2023 (version 2.4)
+ * @version 2.5
+ * @since 17.11.2023 (version 2.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -97,29 +98,31 @@ public class EntryLabelController {
     /**
      * Adds a labels to a specific entries.
      *
-     * @param entryIds     The IDs of the entries.
-     * @param labelIds     The IDs of the labels to add the entries to.
-     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @param entryIds              The IDs of the entries.
+     * @param labelIds              The IDs of the labels to add the entries to.
+     * @param mobileEntryLabelIds   The IDs of the mobile entry-label associations in the mobile applications.
+     * @param userDetails           The UserDetails object representing the logged-in user.
      * @return A List of the newly created EntryLabel associations.
      */
-    @PostMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
+    @PostMapping(value = "/labels/{labelIds}", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "adds labels to specific entries")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully added the given labels to the given entries",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntryLabel.class)) }),
-            @ApiResponse(responseCode = "400", description = "the number of given entryIds and labelIds are not equal or a entryId or a labelId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of given entryIds, labelIds and mobileEntryLabelIds are not equal or a entryId or a labelId or a mobileEntryLabelId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
             @ApiResponse(responseCode = "404", description = "a given entry or label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
     public ResponseEntity<Object> addLabelsToEntries(@PathVariable List<Integer> entryIds,
                                                      @PathVariable List<Integer> labelIds,
+                                                     @RequestParam List<Integer> mobileEntryLabelIds,
                                                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (entryIds.size() != labelIds.size()) {
-                throw new MissingRequiredParameter("the number of entryIds and labelIds must be equal");
+            if (entryIds.size() != labelIds.size() || entryIds.size() != mobileEntryLabelIds.size()) {
+                throw new MissingRequiredParameter("the number of entryIds, labelIds and mobileEntryLabelIds must be equal");
             }
             List<DatabaseEntryLabel> entryLabels = new ArrayList<>();
             for (int i = 0; i < entryIds.size(); i++) {
@@ -127,8 +130,10 @@ public class EntryLabelController {
                     throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
                 } else if (labelIds.get(i) <= 0) {
                     throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+                } else if (mobileEntryLabelIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("mobileEntryLabelId cannot be less than or equal to 0");
                 }
-                entryLabels.add(entryLabelRepository.addLabelToEntry(entryIds.get(i), labelIds.get(i), userDetails.getUsername()));
+                entryLabels.add(new ResponseEntryLabel(entryLabelRepository.addLabelToEntry(entryIds.get(i), labelIds.get(i), userDetails.getUsername()), mobileEntryLabelIds.get(i)));
             }
             return ResponseEntity.ok(entryLabels);
         } catch (MissingRequiredParameter exception) {

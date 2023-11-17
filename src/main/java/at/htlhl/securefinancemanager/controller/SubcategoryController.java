@@ -4,6 +4,7 @@ import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.api.ApiSubcategory;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
+import at.htlhl.securefinancemanager.model.response.ResponseSubcategory;
 import at.htlhl.securefinancemanager.repository.SubcategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -45,8 +46,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.3
- * @since 17.11.2023 (version 3.3)
+ * @version 3.4
+ * @since 17.11.2023 (version 3.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -136,7 +137,7 @@ public class SubcategoryController {
      * @param userDetails           The details of the logged-in user.
      * @return A List of the newly created subcategories.
      */
-    @PostMapping(value = "/{categoryIds}/subcategories", headers = "API-Version=2")
+    @PostMapping(value = "/{categoryIds}/subcategories", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "creating new subcategories inside given categories")
@@ -144,17 +145,18 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "201", description = "successfully created the given subcategories within the given categories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseSubcategory.class)) }),
-            @ApiResponse(responseCode = "400", description = "the number of given categoryIds and newApiSubcategories are not equal or a given categoryId or a subcategoryColourId is less than or equal to 0 or a categoryName is empty",
+            @ApiResponse(responseCode = "400", description = "the number of given categoryIds, mobileSubcategoryIds and newApiSubcategories are not equal or a given categoryId or a mobileSubcategoryId or a subcategoryColourId is less than or equal to 0 or a categoryName is empty",
                     content = { @Content(mediaType = "text/plain") })
     })
     public ResponseEntity<Object> addSubcategories(@PathVariable List<Integer> categoryIds,
+                                                   @RequestParam List<Integer> mobileSubcategoryIds,
                                                    @RequestBody List<ApiSubcategory> newApiSubcategories,
                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (categoryIds.size() != newApiSubcategories.size()) {
-                throw new MissingRequiredParameter("the number of categoryIds and newApiSubcategories must be equal");
+            if (categoryIds.size() != newApiSubcategories.size() || categoryIds.size() != mobileSubcategoryIds.size()) {
+                throw new MissingRequiredParameter("the number of categoryIds, mobileSubcategoryIds and newApiSubcategories must be equal");
             }
-            List<DatabaseSubcategory> createdSubcategories = new ArrayList<>();
+            List<ResponseSubcategory> createdSubcategories = new ArrayList<>();
             for (int i = 0; i < categoryIds.size(); i++) {
                 if (categoryIds.get(i) <= 0) {
                     throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
@@ -162,8 +164,10 @@ public class SubcategoryController {
                     throw new MissingRequiredParameter("subcategoryColourId cannot be less than or equal to 0");
                 } else if (newApiSubcategories.get(i).getSubcategoryName() == null || newApiSubcategories.get(i).getSubcategoryName().isBlank()) {
                     throw new MissingRequiredParameter("subcategoryName is required");
+                } else if (mobileSubcategoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("mobileSubcategoryId cannot be less than or equal to 0");
                 }
-                createdSubcategories.add(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryIds.get(i), newApiSubcategories.get(i), userSingleton.getUserId(userDetails.getUsername()))));
+                createdSubcategories.add(new ResponseSubcategory(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryIds.get(i), newApiSubcategories.get(i), userSingleton.getUserId(userDetails.getUsername()))), mobileSubcategoryIds.get(i)));
             }
             return ResponseEntity.ok(createdSubcategories);
         } catch (MissingRequiredParameter exception) {

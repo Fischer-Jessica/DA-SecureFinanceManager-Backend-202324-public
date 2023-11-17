@@ -11,11 +11,9 @@ package at.htlhl.securefinancemanager.model.database;
  * The {@code DatabaseEntryLabel} class is designed to be instantiated with a parameterized constructor that sets the entry label ID, entry ID, label ID, and user ID.
  * </p>
  *
- * <p>
- * Author: Fischer
- * Version: 1.4
- * Since: 10.11.2023 (version 1.4)
- * </p>
+ * @author Fischer
+ * @version 1.5
+ * @since 17.11.2023 (version 1.5)
  */
 
 import jakarta.validation.constraints.NotBlank;
@@ -32,8 +30,8 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 16.11.2023 (version 1.5)
+ * @version 1.6
+ * @since 16.11.2023 (version 1.6)
  */
 public class DatabaseEntryLabel {
     /**
@@ -77,5 +75,41 @@ public class DatabaseEntryLabel {
         this.entryId = entryId;
         this.labelId = labelId;
         this.userId = userId;
+    }
+
+    /**
+     * Returns the ID of the entryLabel.
+     *
+     * @return The ID of the entryLabel.
+     */
+    public int getEntryLabelId() {
+        return entryLabelId;
+    }
+
+    /**
+     * Returns the ID of the entry.
+     *
+     * @return The ID of the entry.
+     */
+    public int getEntryId() {
+        return entryId;
+    }
+
+    /**
+     * Returns the ID of the label.
+     *
+     * @return The ID of the label.
+     */
+    public int getLabelId() {
+        return labelId;
+    }
+
+    /**
+     * Returns the ID of the user.
+     *
+     * @return The ID of the user.
+     */
+    public int getUserId() {
+        return userId;
     }
 }
