@@ -18,6 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -43,8 +46,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.2
- * @since 16.11.2023 (version 3.2)
+ * @version 3.3
+ * @since 17.11.2023 (version 3.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -114,69 +117,79 @@ public class CategoryController {
     }
 
     /**
-     * Creates a new category for the logged-in user.
+     * Creates new categories for the logged-in user.
      *
-     * @param newApiCategory The Category object representing the new category.
-     * @param userDetails    The UserDetails object containing information about the logged-in user.
-     * @return The newly created category.
+     * @param newApiCategories  The Categories representing the new categories.
+     * @param userDetails       The UserDetails object containing information about the logged-in user.
+     * @return A List of the newly created categories.
      */
-    @PostMapping(value =  "/categories", headers = "API-Version=1")
+    @PostMapping(value =  "/categories", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates a new category for the authenticated user")
+    @Operation(summary = "creates new categories for the authenticated user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully created the given category for the authenticated user",
+            @ApiResponse(responseCode = "201", description = "successfully created the given categories for the authenticated user",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class)) }),
-            @ApiResponse(responseCode = "400", description = "the categoryName is empty or the categoryColourId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "A categoryName is empty or a categoryColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addCategory(@RequestBody ApiCategory newApiCategory,
-                                              @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> addCategories(@RequestBody List<ApiCategory> newApiCategories,
+                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (newApiCategory.getCategoryName() == null || newApiCategory.getCategoryName().isBlank()) {
-                throw new MissingRequiredParameter("categoryName cannot be empty");
-            } else if (newApiCategory.getCategoryColourId() <= 0) {
-                throw new MissingRequiredParameter("categoryColourId cannot be less than or equal to 0");
+            List<DatabaseCategory> createdCategories = new ArrayList<>();
+            for (ApiCategory newApiCategory : newApiCategories) {
+                if (newApiCategory.getCategoryName() == null || newApiCategory.getCategoryName().isBlank()) {
+                    throw new MissingRequiredParameter("categoryName cannot be empty");
+                } else if (newApiCategory.getCategoryColourId() <= 0) {
+                    throw new MissingRequiredParameter("categoryColourId cannot be less than or equal to 0");
+                }
+                createdCategories.add(categoryRepository.addCategory(new DatabaseCategory(newApiCategory, userSingleton.getUserId(userDetails.getUsername()))));
             }
-            return ResponseEntity.ok(
-                    categoryRepository.addCategory(new DatabaseCategory(newApiCategory, userSingleton.getUserId(userDetails.getUsername()))));
+            return ResponseEntity.ok(createdCategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
     /**
-     * Updates an existing category for the logged-in user.
+     * Updates existing categories for the logged-in user.
      *
-     * @param categoryId            The ID of the category to update.
-     * @param updatedApiCategory    The Category object representing the updated category.
-     * @param userDetails           The UserDetails object containing information about the logged-in user.
-     * @return The updated category object.
+     * @param categoryIds               The IDs of the categories to update.
+     * @param updatedApiCategories      The Categories representing the updated categories.
+     * @param userDetails               The UserDetails object containing information about the logged-in user.
+     * @return A List of the updated categories.
      */
-    @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
+    @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing category")
+    @Operation(summary = "updates existing categories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully updated the given category",
+            @ApiResponse(responseCode = "200", description = "successfully updated the given categories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class)) }),
-            @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0 or the categoryColourId is less than 0",
+            @ApiResponse(responseCode = "400", description = "the number of given categoryIds and updatedApiCategories are not equal or a categoryId is less than or equal to 0 or a categoryColourId is less than 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given category does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateCategory(@PathVariable int categoryId,
-                                                 @RequestBody ApiCategory updatedApiCategory,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> updateCategories(@PathVariable List<Integer> categoryIds,
+                                                   @RequestBody List<ApiCategory> updatedApiCategories,
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (categoryId <= 0) {
-                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
-            } else if (updatedApiCategory.getCategoryColourId() < 0) {
-                throw new MissingRequiredParameter("categoryColourId cannot be less than 0");
+            if (categoryIds.size() != updatedApiCategories.size()) {
+                throw new MissingRequiredParameter("the number of categoryIds and updatedApiCategories must be equal");
             }
-            return ResponseEntity.ok(categoryRepository.updateCategory(new DatabaseCategory(categoryId, updatedApiCategory, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            List<DatabaseCategory> updatedCategories = new ArrayList<>();
+            for(int i = 0; i < categoryIds.size(); i++) {
+                if (categoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+                } else if (updatedApiCategories.get(i).getCategoryColourId() < 0) {
+                    throw new MissingRequiredParameter("categoryColourId cannot be less than 0");
+                }
+                updatedCategories.add(categoryRepository.updateCategory(new DatabaseCategory(categoryIds.get(i), updatedApiCategories.get(i), userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            }
+            return ResponseEntity.ok(updatedCategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
@@ -185,32 +198,36 @@ public class CategoryController {
     }
 
     /**
-     * Deletes a category for the logged-in user.
+     * Deletes categories for the logged-in user.
      *
-     * @param categoryId  The ID of the category to delete.
-     * @param userDetails The UserDetails object containing information about the logged-in user.
-     * @return An Integer representing the number of deleted rows.
+     * @param categoryIds   The IDs of the categories to delete.
+     * @param userDetails   The UserDetails object containing information about the logged-in user.
+     * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
+    @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes a category")
+    @Operation(summary = "deletes categories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully deleted the given category",
+            @ApiResponse(responseCode = "200", description = "successfully deleted the given categories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Integer.class)) }),
-            @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "a categoryId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given category does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteCategory(@PathVariable int categoryId,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> deleteCategories(@PathVariable List<Integer> categoryIds,
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (categoryId <= 0) {
-                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            List<Integer> deletedRows = new ArrayList<>();
+            for (int categoryId : categoryIds) {
+                if (categoryId <= 0) {
+                    throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+                }
+                deletedRows.add(categoryRepository.deleteCategory(categoryId, userDetails.getUsername()));
             }
-            return ResponseEntity.status(HttpStatus.OK).body(categoryRepository.deleteCategory(categoryId, userDetails.getUsername()));
+            return ResponseEntity.status(HttpStatus.OK).body(deletedRows);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

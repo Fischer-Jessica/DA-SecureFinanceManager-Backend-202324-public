@@ -18,6 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The EntryLabelController class handles HTTP requests related to the management of associations
  * between Entry and Label entities (EntryLabel). It provides endpoints for adding and removing labels
@@ -42,8 +45,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 16.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 17.11.2023 (version 2.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -54,32 +57,36 @@ public class EntryLabelController {
     EntryLabelRepository entryLabelRepository;
 
     /**
-     * Retrieves a list of labels associated with a specific entry.
+     * Retrieves lists of labels associated with a specific entries.
      *
-     * @param entryId       The ID of the entry.
+     * @param entryIds      The IDs of the entries.
      * @param userDetails   The UserDetails object representing the logged-in user.
-     * @return A list of labels associated with the entry.
+     * @return Lists of labels associated with the entries.
      */
-    @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=1")
+    @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "retrieves a list of labels associated with a specific entry")
+    @Operation(summary = "retrieves lists of labels associated with specific entries")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully returned all labels for the given entryId",
+            @ApiResponse(responseCode = "200", description = "successfully returned all labels for the given entryIds",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class)) }),
-            @ApiResponse(responseCode = "400", description = "the entryId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "a entryId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
+            @ApiResponse(responseCode = "404", description = "a requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getLabelsForEntry(@PathVariable int entryId,
-                                                    @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> getLabelsForEntries(@PathVariable List<Integer> entryIds,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (entryId <= 0) {
-                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            List<List<DatabaseLabel>> labels = new ArrayList<>();
+            for (int entryId : entryIds) {
+                if (entryId <= 0) {
+                    throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+                }
+                labels.add(entryLabelRepository.getLabelsForEntry(entryId, userDetails.getUsername()));
             }
-            return ResponseEntity.ok(entryLabelRepository.getLabelsForEntry(entryId, userDetails.getUsername()));
+            return ResponseEntity.ok(labels);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
@@ -88,35 +95,42 @@ public class EntryLabelController {
     }
 
     /**
-     * Adds a label to a specific entry.
+     * Adds a labels to a specific entries.
      *
-     * @param entryId      The ID of the entry.
-     * @param labelId      The ID of the label to add.
+     * @param entryIds     The IDs of the entries.
+     * @param labelIds     The IDs of the labels to add the entries to.
      * @param userDetails  The UserDetails object representing the logged-in user.
-     * @return The newly created EntryLabel association.
+     * @return A List of the newly created EntryLabel associations.
      */
-    @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=1")
+    @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "adds a label to a specific entry")
+    @Operation(summary = "adds labels to specific entries")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully added the given label to the given entry",
+            @ApiResponse(responseCode = "201", description = "successfully added the given labels to the given entries",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntryLabel.class)) }),
-            @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of given entryIds and labelIds are not equal or a entryId or a labelId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given entry or label does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given entry or label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabelToEntry(@PathVariable int entryId,
-                                                  @PathVariable int labelId,
-                                                  @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> addLabelsToEntries(@PathVariable List<Integer> entryIds,
+                                                     @PathVariable List<Integer> labelIds,
+                                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (entryId <= 0) {
-                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
-            } else if (labelId <= 0) {
-                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            if (entryIds.size() != labelIds.size()) {
+                throw new MissingRequiredParameter("the number of entryIds and labelIds must be equal");
             }
-            return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, userDetails.getUsername()));
+            List<DatabaseEntryLabel> entryLabels = new ArrayList<>();
+            for (int i = 0; i < entryIds.size(); i++) {
+                if (entryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+                } else if (labelIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+                }
+                entryLabels.add(entryLabelRepository.addLabelToEntry(entryIds.get(i), labelIds.get(i), userDetails.getUsername()));
+            }
+            return ResponseEntity.ok(entryLabels);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
@@ -125,35 +139,42 @@ public class EntryLabelController {
     }
 
     /**
-     * Removes a label from a specific entry.
+     * Removes labels from specific entries.
      *
-     * @param entryId      The ID of the entry.
-     * @param labelId      The ID of the label to remove.
+     * @param entryIds     The IDs of the entries.
+     * @param labelIds     The IDs of the labels to remove.
      * @param userDetails  The UserDetails object representing the logged-in user.
-     * @return An Integer representing the number of deleted rows.
+     * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=1")
+    @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "removes a label from a specific entry")
+    @Operation(summary = "removes labels from specific entries")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully removed the given label from the given entry",
+            @ApiResponse(responseCode = "200", description = "successfully removed the given labels from the given entries",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Integer.class)) }),
-            @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of entryIds and labelIds are not equal or a entryId or a labelId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given entry, label or association does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given entry, label or association does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> removeLabelFromEntry(@PathVariable int entryId,
-                                                       @PathVariable int labelId,
-                                                       @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> removeLabelsFromEntries(@PathVariable List<Integer> entryIds,
+                                                          @PathVariable List<Integer> labelIds,
+                                                          @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (entryId <= 0) {
-                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
-            } else if (labelId <= 0) {
-                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            if (entryIds.size() != labelIds.size()) {
+                throw new MissingRequiredParameter("the number of entryIds and labelIds must be equal");
             }
-            return ResponseEntity.status(HttpStatus.OK).body(entryLabelRepository.removeLabelFromEntry(entryId, labelId, userDetails.getUsername()));
+            List<Integer> deletedRows = new ArrayList<>();
+            for (int i = 0; i < entryIds.size(); i++) {
+                if (entryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+                } else if (labelIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+                }
+                deletedRows.add(entryLabelRepository.removeLabelFromEntry(entryIds.get(i), labelIds.get(i), userDetails.getUsername()));
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(deletedRows);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {

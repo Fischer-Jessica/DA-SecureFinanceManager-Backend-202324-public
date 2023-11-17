@@ -19,6 +19,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The UserController class handles HTTP requests related to user management.
  *
@@ -48,8 +51,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 16.11.2023 (version 2.9)
+ * @version 3.0
+ * @since 17.11.2023 (version 3.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -115,29 +118,33 @@ public class UserController {
     }
 
     /**
-     * Adds a new user.
+     * Adds new users.
      *
-     * @param newApiUser    The User object representing the new user to be added.
-     * @return The newly created user.
+     * @param newApiUsers   The users representing the new users to be added.
+     * @return A List of the newly created users.
      */
-    @PostMapping(value = "/users", headers = "API-Version=1")
+    @PostMapping(value = "/users", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "creates a new user")
+    @Operation(summary = "creates new users")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "created a new user",
+            @ApiResponse(responseCode = "200", description = "created the new users",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseUser.class)) }),
-            @ApiResponse(responseCode = "400", description = "the username or the password is missing",
+            @ApiResponse(responseCode = "400", description = "a username or a password is missing",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addUser(@RequestBody ApiUser newApiUser) {
+    public ResponseEntity<Object> addUsers(@RequestBody List<ApiUser> newApiUsers) {
         try {
-            if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
-                throw new MissingRequiredParameter("username is required");
-            } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
-                throw new MissingRequiredParameter("password is required");
+            List<DatabaseUser> createdUsers = new ArrayList<>();
+            for (ApiUser newApiUser : newApiUsers) {
+                if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
+                    throw new MissingRequiredParameter("username is required");
+                } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
+                    throw new MissingRequiredParameter("password is required");
+                }
+                createdUsers.add(userRepository.addUser(newApiUser));
             }
-            return ResponseEntity.ok(userRepository.addUser(newApiUser));
+            return ResponseEntity.ok(createdUsers);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }

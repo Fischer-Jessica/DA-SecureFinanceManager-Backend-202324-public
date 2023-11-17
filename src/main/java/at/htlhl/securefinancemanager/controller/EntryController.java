@@ -18,6 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -43,8 +46,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.4
- * @since 16.12.2023 (version 3.4)
+ * @version 3.5
+ * @since 17.12.2023 (version 3.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -127,74 +130,88 @@ public class EntryController {
     }
 
     /**
-     * Creates a new entry in a specific subcategory.
+     * Creates new entries in specific subcategories.
      *
-     * @param subcategoryId     The ID of the subcategory.
-     * @param newApiEntry       The new entry to be added.
+     * @param subcategoryIds    The IDs of the subcategories.
+     * @param newApiEntries     The new entries to be added.
      * @param userDetails       The UserDetails object representing the logged-in user.
-     * @return The newly created entry.
+     * @return A List of the newly created entries.
      */
-    @PostMapping(value = "/entries", headers = "API-Version=1")
+    @PostMapping(value = "/entries", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates a new entry in a subcategory")
+    @Operation(summary = "creates new entries in subcategories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully created the given entry within the given subcategory",
+            @ApiResponse(responseCode = "201", description = "successfully created the given entries within the given subcategories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntry.class)) }),
-            @ApiResponse(responseCode = "400", description = "the categoryColourId is less than or equal to 0 or the entryAmount or the entryTimeOfTransaction is empty",
+            @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds and newApiEntries are not equal or a categoryColourId is less than or equal to 0 or a entryAmount or a entryTimeOfTransaction is empty",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addEntry(@PathVariable int subcategoryId,
-                                           @RequestBody ApiEntry newApiEntry,
-                                           @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> addEntries(@PathVariable List<Integer> subcategoryIds,
+                                             @RequestBody List<ApiEntry> newApiEntries,
+                                             @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (subcategoryId <= 0) {
-                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
-            } else if (newApiEntry.getEntryAmount() == null || newApiEntry.getEntryAmount().isBlank()) {
-                throw new MissingRequiredParameter("entryAmount is required");
-            } else if (newApiEntry.getEntryTimeOfTransaction() == null || newApiEntry.getEntryTimeOfTransaction().isBlank()) {
-                throw new MissingRequiredParameter("entryTimeOfTransaction is required");
+            if (subcategoryIds.size() != newApiEntries.size()) {
+                throw new MissingRequiredParameter("the number of subcategoryIds and newApiEntries must be equal");
             }
-            return ResponseEntity.ok(entryRepository.addEntry(new DatabaseEntry(subcategoryId, newApiEntry, userSingleton.getUserId(userDetails.getUsername()))));
+            List<DatabaseEntry> createdEntries = new ArrayList<>();
+            for (int i = 0; i < newApiEntries.size(); i++) {
+                if (subcategoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+                } else if (newApiEntries.get(i).getEntryAmount() == null || newApiEntries.get(i).getEntryAmount().isBlank()) {
+                    throw new MissingRequiredParameter("entryAmount is required");
+                } else if (newApiEntries.get(i).getEntryTimeOfTransaction() == null || newApiEntries.get(i).getEntryTimeOfTransaction().isBlank()) {
+                    throw new MissingRequiredParameter("entryTimeOfTransaction is required");
+                }
+                createdEntries.add(entryRepository.addEntry(new DatabaseEntry(subcategoryIds.get(i), newApiEntries.get(i), userSingleton.getUserId(userDetails.getUsername()))));
+            }
+            return ResponseEntity.ok(createdEntries);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
     /**
-     * Updates an existing entry in a specific subcategory.
+     * Updates existing entries in specific subcategories.
      *
-     * @param subcategoryId     The ID of the subcategory in which the entry is.
-     * @param entryId           The ID of the entry.
-     * @param updatedApiEntry   The updated entry data.
-     * @param userDetails       The UserDetails object representing the logged-in user.
-     * @return The updated entry.
+     * @param subcategoryIds        The IDs of the subcategories in which the entries are.
+     * @param entryIds              The IDs of the entries.
+     * @param updatedApiEntries     The entries to be updated.
+     * @param userDetails           The UserDetails object representing the logged-in user.
+     * @return A List of the updated entries.
      */
-    @PatchMapping(value = "/entries/{entryId}", headers = "API-Version=1")
+    @PatchMapping(value = "/entries/{entryId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing entry in a subcategory")
+    @Operation(summary = "updates existing entries in subcategories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully updated the given entry of the given subcategory",
+            @ApiResponse(responseCode = "200", description = "successfully updated the given entries of the given subcategories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntry.class)) }),
-            @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds, entryIds and updatedApiEntries are not equal or a subcategoryId or a entryId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given entry does not exist inside the given subcategory or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateEntry(@PathVariable int subcategoryId,
-                                              @PathVariable int entryId,
-                                              @RequestBody ApiEntry updatedApiEntry,
-                                              @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> updateEntries(@PathVariable List<Integer> subcategoryIds,
+                                                @PathVariable List<Integer> entryIds,
+                                                @RequestBody List<ApiEntry> updatedApiEntries,
+                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (subcategoryId <= 0) {
-                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
-            } else if (entryId <= 0) {
-                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            if (subcategoryIds.size() != entryIds.size() || subcategoryIds.size() != updatedApiEntries.size()) {
+                throw new MissingRequiredParameter("the number of subcategoryIds, entryIds and updatedApiEntries must be equal");
             }
-            return ResponseEntity.ok(entryRepository.updateEntry(new DatabaseEntry(entryId, subcategoryId, updatedApiEntry, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            List<DatabaseEntry> updatedEntries = new ArrayList<>();
+            for (int i = 0; i < updatedApiEntries.size(); i++) {
+                if (subcategoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+                } else if (entryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+                }
+                updatedEntries.add(entryRepository.updateEntry(new DatabaseEntry(entryIds.get(i), subcategoryIds.get(i), updatedApiEntries.get(i), userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            }
+            return ResponseEntity.ok(updatedEntries);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
@@ -203,36 +220,43 @@ public class EntryController {
     }
 
     /**
-     * Deletes an entry from a specific subcategory.
+     * Deletes entries from a specific subcategories.
      *
-     * @param subcategoryId     The ID of the subcategory.
-     * @param entryId           The ID of the entry to be deleted.
+     * @param subcategoryIds    The IDs of the subcategories.
+     * @param entryIds          The IDs of the entries to be deleted.
      * @param userDetails       The UserDetails object representing the logged-in user.
-     * @return An Integer representing the number of deleted rows.
+     * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/entries/{entryId}", headers = "API-Version=1")
+    @DeleteMapping(value = "/entries/{entryId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes an entry from a subcategory")
+    @Operation(summary = "deletes entries from subcategories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully deleted the given entry of the given subcategory",
+            @ApiResponse(responseCode = "200", description = "successfully deleted the given entries of the given subcategories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Integer.class)) }),
-            @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds and entryIds are not equal or a subcategoryId or a entryId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given entry does not exist inside the given subcategory or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteEntry(@PathVariable int subcategoryId,
-                                              @PathVariable int entryId,
-                                              @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> deleteEntries(@PathVariable List<Integer> subcategoryIds,
+                                                @PathVariable List<Integer> entryIds,
+                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (subcategoryId <= 0) {
-                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
-            } else if (entryId <= 0) {
-                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            if (subcategoryIds.size() != entryIds.size()) {
+                throw new MissingRequiredParameter("the number of subcategoryIds and entryIds must be equal");
             }
-            return ResponseEntity.status(HttpStatus.OK).body(entryRepository.deleteEntry(subcategoryId, entryId, userDetails.getUsername()));
+            List<Integer> deletedEntries = new ArrayList<>();
+            for (int i = 0; i < entryIds.size(); i++) {
+                if (subcategoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+                } else if (entryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+                }
+                deletedEntries.add(entryRepository.deleteEntry(subcategoryIds.get(i), entryIds.get(i), userDetails.getUsername()));
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(deletedEntries);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

@@ -19,6 +19,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
+
 /**
  * This configuration class defines security settings for the Secure Finance Manager application.
  * It includes configuration for user details retrieval from the repository, password encryption,
@@ -47,8 +49,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 16.11.2023 (version 1.3)
+ * @version 1.4
+ * @since 17.11.2023 (version 1.4)
  */
 @Configuration
 @EnableWebSecurity
@@ -67,6 +69,7 @@ public class SecurityConfig {
         List<UserDetails> userDetailsList = new ArrayList<>();
 
         for (DatabaseUser apiUser : users) {
+            userSingleton.getInstance().addUser(apiUser.getUsername(), apiUser.getUserId());
             UserDetails userDetails = User.withUsername(apiUser.getUsername())
                     .password(encoder.encode(apiUser.getPassword()))
                     .roles("USER")

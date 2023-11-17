@@ -18,6 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -42,8 +45,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 16.11.2023 (version 3.1)
+ * @version 3.2
+ * @since 17.11.2023 (version 3.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -126,76 +129,90 @@ public class SubcategoryController {
     }
 
     /**
-     * Adds a new subcategory to a specific category.
+     * Adds a new subcategories to a specific categories.
      *
-     * @param categoryId            The ID of the category, in which the subcategory will be created.
-     * @param newApiSubcategory     The new subcategory to be added.
+     * @param categoryIds            The IDs of the categories, in which the subcategories will be created.
+     * @param newApiSubcategories   The new subcategories to be added.
      * @param userDetails           The details of the logged-in user.
-     * @return The newly created subcategory.
+     * @return A List of the newly created subcategories.
      */
-    @PostMapping(value = "/subcategories", headers = "API-Version=1")
+    @PostMapping(value = "/subcategories", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creating a new subcategory inside a given category")
+    @Operation(summary = "creating new subcategories inside given categories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully created the given subcategory within the given category",
+            @ApiResponse(responseCode = "201", description = "successfully created the given subcategories within the given categories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseSubcategory.class)) }),
-            @ApiResponse(responseCode = "400", description = "the given categoryId or the subcategoryColourId is less than or equal to 0 or the categoryName is empty",
+            @ApiResponse(responseCode = "400", description = "the number of given categoryIds and newApiSubcategories are not equal or a given categoryId or a subcategoryColourId is less than or equal to 0 or a categoryName is empty",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addSubcategory(@PathVariable int categoryId,
-                                                 @RequestBody ApiSubcategory newApiSubcategory,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> addSubcategories(@PathVariable List<Integer> categoryIds,
+                                                   @RequestBody List<ApiSubcategory> newApiSubcategories,
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (categoryId <= 0) {
-                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
-            } else if (newApiSubcategory.getSubcategoryColourId() <= 0) {
-                throw new MissingRequiredParameter("subcategoryColourId cannot be less than or equal to 0");
-            } else if (newApiSubcategory.getSubcategoryName() == null || newApiSubcategory.getSubcategoryName().isBlank()) {
-                throw new MissingRequiredParameter("subcategoryName is required");
+            if (categoryIds.size() != newApiSubcategories.size()) {
+                throw new MissingRequiredParameter("the number of categoryIds and newApiSubcategories must be equal");
             }
-            return ResponseEntity.ok(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryId, newApiSubcategory, userSingleton.getUserId(userDetails.getUsername()))));
+            List<DatabaseSubcategory> createdSubcategories = new ArrayList<>();
+            for (int i = 0; i < categoryIds.size(); i++) {
+                if (categoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+                } else if (newApiSubcategories.get(i).getSubcategoryColourId() <= 0) {
+                    throw new MissingRequiredParameter("subcategoryColourId cannot be less than or equal to 0");
+                } else if (newApiSubcategories.get(i).getSubcategoryName() == null || newApiSubcategories.get(i).getSubcategoryName().isBlank()) {
+                    throw new MissingRequiredParameter("subcategoryName is required");
+                }
+                createdSubcategories.add(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryIds.get(i), newApiSubcategories.get(i), userSingleton.getUserId(userDetails.getUsername()))));
+            }
+            return ResponseEntity.ok(createdSubcategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
     /**
-     * Updates an existing subcategory from a specific category.
+     * Updates existing subcategories from a specific categories.
      *
-     * @param categoryId                The ID of the category.
-     * @param subcategoryId             The ID of the subcategory to update.
-     * @param updatedApiSubcategory     The updated subcategory data.
+     * @param categoryIds               The IDs of the categories.
+     * @param subcategoryIds            The IDs of the subcategories to update.
+     * @param updatedApiSubcategories   The updated subcategories.
      * @param userDetails               The details of the logged-in user.
-     * @return The updated subcategory.
+     * @return A List of the updated subcategories.
      */
-    @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=1")
+    @PatchMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing subcategory from a given category")
+    @Operation(summary = "updates existing subcategories from a given categories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully updated the given subcategory from the given category",
+            @ApiResponse(responseCode = "200", description = "successfully updated the given subcategories from the given categories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseSubcategory.class)) }),
-            @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0 or the categoryColourId is less than 0",
+            @ApiResponse(responseCode = "400", description = "the number of given categoryIds, subcategoryIds and updatedApiSubcategories are not equal or a categoryId or a subcategoryId is less than or equal to 0 or a categoryColourId is less than 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given subcategory with the given categoryId does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateSubcategory(@PathVariable int categoryId,
-                                                    @PathVariable int subcategoryId,
-                                                    @RequestBody ApiSubcategory updatedApiSubcategory,
-                                                    @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> updateSubcategories(@PathVariable List<Integer> categoryIds,
+                                                      @PathVariable List<Integer> subcategoryIds,
+                                                      @RequestBody List<ApiSubcategory> updatedApiSubcategories,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (categoryId <= 0) {
-                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
-            } else if (subcategoryId <= 0) {
-                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
-            } else if (updatedApiSubcategory.getSubcategoryColourId() < 0) {
-                throw new MissingRequiredParameter("subcategoryColourId cannot be less than 0, use 0 for no colour change");
+            if (categoryIds.size() != subcategoryIds.size() || categoryIds.size() != updatedApiSubcategories.size()) {
+                throw new MissingRequiredParameter("the number of categoryIds, subcategoryIds and updatedApiSubcategories must be equal");
             }
-            return ResponseEntity.ok(subcategoryRepository.updateSubcategory(new DatabaseSubcategory(subcategoryId, categoryId, updatedApiSubcategory, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            List<DatabaseSubcategory> updatedSubcategories = new ArrayList<>();
+            for (int i = 0; i < categoryIds.size(); i++) {
+                if (categoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+                } else if (subcategoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+                } else if (updatedApiSubcategories.get(i).getSubcategoryColourId() < 0) {
+                    throw new MissingRequiredParameter("subcategoryColourId cannot be less than 0, use 0 for no colour change");
+                }
+                updatedSubcategories.add(subcategoryRepository.updateSubcategory(new DatabaseSubcategory(subcategoryIds.get(i), categoryIds.get(i), updatedApiSubcategories.get(i), userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            }
+            return ResponseEntity.ok(updatedSubcategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
@@ -204,36 +221,43 @@ public class SubcategoryController {
     }
 
     /**
-     * Deletes a subcategory from a specific category.
+     * Deletes subcategories from specific categories.
      *
-     * @param categoryId       The ID of the category.
-     * @param subcategoryId    The ID of the subcategory to delete.
+     * @param categoryIds      The IDs of the categories.
+     * @param subcategoryIds   The IDs of the subcategories to delete.
      * @param userDetails      The details of the logged-in user.
-     * @return An Integer representing the number of deleted rows.
+     * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=1")
+    @DeleteMapping(value = "/subcategories/{subcategoryId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes a subcategory from a given category")
+    @Operation(summary = "deletes subcategories from given categories")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully deleted the given subcategory from the given category",
+            @ApiResponse(responseCode = "200", description = "successfully deleted the given subcategories from the given categories",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Integer.class)) }),
-            @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "the number of given categoryIds and subcategoryIds are not equal or a categoryId or a subcategoryId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given subcategory with the given categoryId does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteSubcategory(@PathVariable int categoryId,
-                                                    @PathVariable int subcategoryId,
-                                                    @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> deleteSubcategories(@PathVariable List<Integer> categoryIds,
+                                                      @PathVariable List<Integer> subcategoryIds,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (categoryId <= 0) {
-                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
-            } else if (subcategoryId <= 0) {
-                throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+            if (categoryIds.size() != subcategoryIds.size()) {
+                throw new MissingRequiredParameter("the number of categoryIds and subcategoryIds must be equal");
             }
-            return ResponseEntity.status(HttpStatus.OK).body(subcategoryRepository.deleteSubcategory(categoryId, subcategoryId, userDetails.getUsername()));
+            List<Integer> deletedRows = new ArrayList<>();
+            for (int i = 0; i < categoryIds.size(); i++) {
+                if (categoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+                } else if (subcategoryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
+                }
+                deletedRows.add(subcategoryRepository.deleteSubcategory(categoryIds.get(i), subcategoryIds.get(i), userDetails.getUsername()));
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(deletedRows);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

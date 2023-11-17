@@ -18,6 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -42,8 +45,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.2
- * @since 16.11.2023 (version 3.2)
+ * @version 3.3
+ * @since 17.11.2023 (version 3.3)
  */
 
 @RestController
@@ -114,68 +117,79 @@ public class LabelController {
     }
 
     /**
-     * Adds a new label for the logged-in user.
+     * Adds new labels for the logged-in user.
      *
-     * @param newApiLabel The Label object representing the new label.
-     * @param userDetails The UserDetails object representing the logged-in user.
-     * @return The newly created label.
+     * @param newApiLabels      The Labels representing the new labels.
+     * @param userDetails       The UserDetails object representing the logged-in user.
+     * @return A List of the newly created labels.
      */
-    @PostMapping(value = "/labels", headers = "API-Version=1")
+    @PostMapping(value = "/labels", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "adds a new label for the authenticated user")
+    @Operation(summary = "adds new labels for the authenticated user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully created the given label for the authenticated user",
+            @ApiResponse(responseCode = "201", description = "successfully created the given labels for the authenticated user",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class)) }),
-            @ApiResponse(responseCode = "400", description = "the labelName is empty or the labelColourId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "a labelName is empty or a labelColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabel(@RequestBody ApiLabel newApiLabel,
-                                           @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> addLabels(@RequestBody List<ApiLabel> newApiLabels,
+                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (newApiLabel.getLabelName() == null || newApiLabel.getLabelName().isBlank()) {
-                throw new MissingRequiredParameter("labelName is required");
-            } else if (newApiLabel.getLabelColourId() <= 0) {
-                throw new MissingRequiredParameter("labelColour cannot be less than or equal to 0");
+            List<DatabaseLabel> createdLabels = new ArrayList<>();
+            for (ApiLabel newApiLabel : newApiLabels) {
+                if (newApiLabel.getLabelName() == null || newApiLabel.getLabelName().isBlank()) {
+                    throw new MissingRequiredParameter("labelName is required");
+                } else if (newApiLabel.getLabelColourId() <= 0) {
+                    throw new MissingRequiredParameter("labelColour cannot be less than or equal to 0");
+                }
+                createdLabels.add(labelRepository.addLabel(new DatabaseLabel(newApiLabel, userSingleton.getUserId(userDetails.getUsername()))));
             }
-            return ResponseEntity.ok(labelRepository.addLabel(new DatabaseLabel(newApiLabel, userSingleton.getUserId(userDetails.getUsername()))));
+            return ResponseEntity.ok(createdLabels);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
     /**
-     * Updates an existing label for the logged-in user.
+     * Updates existing labels for the logged-in user.
      *
-     * @param labelId           The ID of the label that will be changed.
-     * @param updatedApiLabel   The Label object with updated information.
-     * @param userDetails       The UserDetails object representing the logged-in user.
-     * @return The updated Label object.
+     * @param labelIds              The IDs of the labels that will be changed.
+     * @param updatedApiLabels      The updated labels.
+     * @param userDetails           The UserDetails object representing the logged-in user.
+     * @return A List of the updated labels.
      */
-    @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=1")
+    @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing label")
+    @Operation(summary = "updates existing labels")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully updated the given label",
+            @ApiResponse(responseCode = "200", description = "successfully updated the given labels",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class)) }),
-            @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0 or the labelColourId is less than 0",
+            @ApiResponse(responseCode = "400", description = "the number of labelIds and updatedLabels are not equal or a labelId is less than or equal to 0 or a labelColourId is less than 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given label does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateLabel(@PathVariable int labelId,
-                                              @RequestBody ApiLabel updatedApiLabel,
-                                              @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> updateLabels(@PathVariable List<Integer> labelIds,
+                                               @RequestBody List<ApiLabel> updatedApiLabels,
+                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (updatedApiLabel.getLabelColourId() < 0) {
-                throw new MissingRequiredParameter("labelColourId can not be negative, use 0 for no colour change");
-            } else if (labelId <= 0) {
-                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            if (labelIds.size() != updatedApiLabels.size()) {
+                throw new MissingRequiredParameter("the number of labelIds and updatedLabels must be equal");
             }
-            return ResponseEntity.ok(labelRepository.updateLabel(new DatabaseLabel(labelId, updatedApiLabel, userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            List<DatabaseLabel> updatedLabels = new ArrayList<>();
+            for (int i = 0; i < updatedApiLabels.size(); i++) {
+                if (updatedApiLabels.get(i).getLabelColourId() < 0) {
+                    throw new MissingRequiredParameter("labelColourId can not be negative, use 0 for no colour change");
+                } else if (labelIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+                }
+                updatedLabels.add(labelRepository.updateLabel(new DatabaseLabel(labelIds.get(i), updatedApiLabels.get(i), userSingleton.getUserId(userDetails.getUsername())), userDetails.getUsername()));
+            }
+            return ResponseEntity.ok(updatedLabels);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
@@ -184,32 +198,36 @@ public class LabelController {
     }
 
     /**
-     * Deletes a label for the logged-in user.
+     * Deletes labels for the logged-in user.
      *
-     * @param labelId      The ID of the label to delete.
-     * @param userDetails  The UserDetails object representing the logged-in user.
-     * @return An Integer representing the number of deleted rows.
+     * @param labelIds      The IDs of the labels to delete.
+     * @param userDetails   The UserDetails object representing the logged-in user.
+     * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=1")
+    @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes a label")
+    @Operation(summary = "deletes labels")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully deleted the given label",
+            @ApiResponse(responseCode = "200", description = "successfully deleted the given labels",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Integer.class)) }),
-            @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0",
+            @ApiResponse(responseCode = "400", description = "a labelId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "the given label does not exist or is not found for the authenticated user",
+            @ApiResponse(responseCode = "404", description = "a given label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteCategory(@PathVariable int labelId,
-                                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> deleteLabels(@PathVariable List<Integer> labelIds,
+                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            if (labelId <= 0) {
-                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            List<Integer> deletedLabels = new ArrayList<>();
+            for (int labelId : labelIds) {
+                if (labelId <= 0) {
+                    throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+                }
+                deletedLabels.add(labelRepository.deleteLabel(labelId, userDetails.getUsername()));
             }
-            return ResponseEntity.status(HttpStatus.OK).body(labelRepository.deleteLabel(labelId, userDetails.getUsername()));
+            return ResponseEntity.status(HttpStatus.OK).body(deletedLabels);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
