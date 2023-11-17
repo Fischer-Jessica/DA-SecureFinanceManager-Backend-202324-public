@@ -37,8 +37,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 16.11.2023 (version 2.1)
+ * @version 2.2
+ * @since 17.11.2023 (version 2.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -47,6 +47,8 @@ public class ColourController {
     /** The ColourRepository instance for accessing colour data. */
     @Autowired
     ColourRepository colourRepository;
+
+    // GET /colours *******************************+********************************************************************
 
     /**
      * Returns a list of all colours.
@@ -63,13 +65,15 @@ public class ColourController {
             @ApiResponse(responseCode = "404", description = "no colours found",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getColours() {
+    public ResponseEntity<Object> getColoursV1() {
         try {
             return ResponseEntity.ok(colourRepository.getColours());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
+
+    // GET /colours/{colourId} ******************************************************************************************
 
     /**
      * Returns a specific colour.
@@ -89,7 +93,7 @@ public class ColourController {
             @ApiResponse(responseCode = "404", description = "the requested colour does not exist",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getColour(@PathVariable int colourId) {
+    public ResponseEntity<Object> getColourV1(@PathVariable int colourId) {
         try {
             if (colourId <= 0) {
                 throw new MissingRequiredParameter("colourId cannot be less than or equal to 0");

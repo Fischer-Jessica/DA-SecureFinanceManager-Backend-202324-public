@@ -46,16 +46,52 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 17.11.2023 (version 2.5)
+ * @version 2.6
+ * @since 17.11.2023 (version 2.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("secure-finance-manager/entry-labels/entries/{entryIds}")
+@RequestMapping("secure-finance-manager/entry-labels/entries")
 public class EntryLabelController {
     /** The EntryLabelRepository instance for accessing entry-label data. */
     @Autowired
     EntryLabelRepository entryLabelRepository;
+
+    // GET /labels *******************************************************************************************************
+
+    /**
+     * Retrieves a list of labels associated with a specific entry.
+     *
+     * @param entryId       The ID of the entry.
+     * @param userDetails   The UserDetails object representing the logged-in user.
+     * @return A list of labels associated with the entry.
+     */
+    @GetMapping(value = "/{entryId}/labels", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "retrieves a list of labels associated with a specific entry")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all labels for the given entryId",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseLabel.class)) }),
+            @ApiResponse(responseCode = "400", description = "the entryId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> getLabelsForEntryV1(@PathVariable int entryId,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            }
+            return ResponseEntity.ok(entryLabelRepository.getLabelsForEntry(entryId, userDetails.getUsername()));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
 
     /**
      * Retrieves lists of labels associated with a specific entries.
@@ -64,7 +100,7 @@ public class EntryLabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return Lists of labels associated with the entries.
      */
-    @GetMapping(value = "/labels", headers = "API-Version=2")
+    @GetMapping(value = "/{entryIds}/labels", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "retrieves lists of labels associated with specific entries")
@@ -77,8 +113,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "a requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getLabelsForEntries(@PathVariable List<Integer> entryIds,
-                                                      @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> getLabelsForEntriesV2(@PathVariable List<Integer> entryIds,
+                                                        @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<List<DatabaseLabel>> labels = new ArrayList<>();
             for (int entryId : entryIds) {
@@ -95,6 +131,89 @@ public class EntryLabelController {
         }
     }
 
+    // POST /labels/{labelIds} *******************************************************************************************
+
+    /**
+     * Adds a label to a specific entry.
+     *
+     * @param entryId      The ID of the entry.
+     * @param labelId      The ID of the label to add.
+     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @return The newly created EntryLabel association.
+     */
+    @PostMapping(value = "/{entryId}/labels/{labelId}", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "adds a label to a specific entry")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully added the given label to the given entry",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseEntryLabel.class)) }),
+            @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given entry or label does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> addLabelToEntryV1(@PathVariable int entryId,
+                                                    @PathVariable int labelId,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            } else if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
+            return ResponseEntity.ok(entryLabelRepository.addLabelToEntry(entryId, labelId, userDetails.getUsername()));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Adds a labels to a specific entries.
+     *
+     * @param entryIds     The IDs of the entries.
+     * @param labelIds     The IDs of the labels to add the entries to.
+     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @return A List of the newly created EntryLabel associations.
+     */
+    @PostMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "adds labels to specific entries")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "successfully added the given labels to the given entries",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseEntryLabel.class)) }),
+            @ApiResponse(responseCode = "400", description = "the number of given entryIds and labelIds are not equal or a entryId or a labelId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "a given entry or label does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> addLabelsToEntriesV2(@PathVariable List<Integer> entryIds,
+                                                       @PathVariable List<Integer> labelIds,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (entryIds.size() != labelIds.size()) {
+                throw new MissingRequiredParameter("the number of entryIds and labelIds must be equal");
+            }
+            List<DatabaseEntryLabel> entryLabels = new ArrayList<>();
+            for (int i = 0; i < entryIds.size(); i++) {
+                if (entryIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+                } else if (labelIds.get(i) <= 0) {
+                    throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+                }
+                entryLabels.add(entryLabelRepository.addLabelToEntry(entryIds.get(i), labelIds.get(i), userDetails.getUsername()));
+            }
+            return ResponseEntity.ok(entryLabels);
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
     /**
      * Adds a labels to a specific entries.
      *
@@ -104,7 +223,7 @@ public class EntryLabelController {
      * @param userDetails           The UserDetails object representing the logged-in user.
      * @return A List of the newly created EntryLabel associations.
      */
-    @PostMapping(value = "/labels/{labelIds}", headers = "API-Version=3")
+    @PostMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "adds labels to specific entries")
     @ApiResponses(value = {
@@ -116,10 +235,10 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "a given entry or label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabelsToEntries(@PathVariable List<Integer> entryIds,
-                                                     @PathVariable List<Integer> labelIds,
-                                                     @RequestParam List<Integer> mobileEntryLabelIds,
-                                                     @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> addLabelsToEntriesV3(@PathVariable List<Integer> entryIds,
+                                                       @PathVariable List<Integer> labelIds,
+                                                       @RequestParam List<Integer> mobileEntryLabelIds,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (entryIds.size() != labelIds.size() || entryIds.size() != mobileEntryLabelIds.size()) {
                 throw new MissingRequiredParameter("the number of entryIds, labelIds and mobileEntryLabelIds must be equal");
@@ -143,6 +262,45 @@ public class EntryLabelController {
         }
     }
 
+    // DELETE /labels/{labelIds} *****************************************************************************************
+
+    /**
+     * Removes a label from a specific entry.
+     *
+     * @param entryId      The ID of the entry.
+     * @param labelId      The ID of the label to remove.
+     * @param userDetails  The UserDetails object representing the logged-in user.
+     * @return An Integer representing the number of deleted rows.
+     */
+    @DeleteMapping(value = "/{entryId}/labels/{labelId}", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "removes a label from a specific entry")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully removed the given label from the given entry",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class)) }),
+            @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the given entry, label or association does not exist or is not found for the authenticated user",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> removeLabelFromEntryV1(@PathVariable int entryId,
+                                                         @PathVariable int labelId,
+                                                         @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (entryId <= 0) {
+                throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
+            } else if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(entryLabelRepository.removeLabelFromEntry(entryId, labelId, userDetails.getUsername()));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
     /**
      * Removes labels from specific entries.
      *
@@ -151,7 +309,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
+    @DeleteMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "removes labels from specific entries")
     @ApiResponses(value = {
@@ -163,9 +321,9 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "a given entry, label or association does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> removeLabelsFromEntries(@PathVariable List<Integer> entryIds,
-                                                          @PathVariable List<Integer> labelIds,
-                                                          @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Object> removeLabelsFromEntriesV2(@PathVariable List<Integer> entryIds,
+                                                            @PathVariable List<Integer> labelIds,
+                                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (entryIds.size() != labelIds.size()) {
                 throw new MissingRequiredParameter("the number of entryIds and labelIds must be equal");

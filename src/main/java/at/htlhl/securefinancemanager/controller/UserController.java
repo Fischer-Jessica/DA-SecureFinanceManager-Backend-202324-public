@@ -52,8 +52,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 17.11.2023 (version 3.1)
+ * @version 3.2
+ * @since 17.11.2023 (version 3.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -62,6 +62,8 @@ public class UserController {
     /** The UserRepository instance for accessing user data. */
     @Autowired
     UserRepository userRepository;
+
+    // GET /users *******************************************************************************************************
 
     /**
      * Returns a list of all users.
@@ -79,13 +81,15 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "no users found",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getUsers() {
+    public ResponseEntity<Object> getUsersV1() {
         try {
             return ResponseEntity.ok(userRepository.getUsers());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
+
+    // GET /user ********************************************************************************************************
 
     /**
      * Retrieves information about the currently authenticated user upon successful login.
@@ -110,11 +114,75 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getUser(@AuthenticationPrincipal UserDetails activeUser) {
+    public ResponseEntity<Object> getUserV1(@AuthenticationPrincipal UserDetails activeUser) {
         try {
             return ResponseEntity.ok(UserRepository.getUserObject(activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
+    // GET /users *******************************************************************************************************
+
+    /**
+     * Adds a new user.
+     *
+     * @param newApiUser    The User object representing the new user to be added.
+     * @return The newly created user.
+     */
+    @PostMapping(value = "/users", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "creates a new user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "created a new user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class)) }),
+            @ApiResponse(responseCode = "400", description = "the username or the password is missing",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> addUserV1(@RequestBody ApiUser newApiUser) {
+        try {
+            if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
+                throw new MissingRequiredParameter("username is required");
+            } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
+                throw new MissingRequiredParameter("password is required");
+            }
+            return ResponseEntity.ok(userRepository.addUser(newApiUser));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Adds new users.
+     *
+     * @param newApiUsers   The users representing the new users to be added.
+     * @return A List of the newly created users.
+     */
+    @PostMapping(value = "/users", headers = "API-Version=2")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "creates new users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "created the new users",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class)) }),
+            @ApiResponse(responseCode = "400", description = "a username or a password is missing",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> addUsersV2(@RequestBody List<ApiUser> newApiUsers) {
+        try {
+            List<DatabaseUser> createdUsers = new ArrayList<>();
+            for (ApiUser newApiUser : newApiUsers) {
+                if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
+                    throw new MissingRequiredParameter("username is required");
+                } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
+                    throw new MissingRequiredParameter("password is required");
+                }
+                createdUsers.add(userRepository.addUser(newApiUser));
+            }
+            return ResponseEntity.ok(createdUsers);
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         }
     }
 
@@ -135,8 +203,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "a mobileUserId is less than or equal to 0 or a username or a password is missing",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addUsers(@RequestParam List<Integer> mobileUserId,
-                                           @RequestBody List<ApiUser> newApiUsers) {
+    public ResponseEntity<Object> addUsersV3(@RequestParam List<Integer> mobileUserId,
+                                             @RequestBody List<ApiUser> newApiUsers) {
         try {
             List<ResponseUser> createdUsers = new ArrayList<>();
             if (mobileUserId.size() != newApiUsers.size()) {
@@ -158,6 +226,8 @@ public class UserController {
         }
     }
 
+    // GET /users *******************************************************************************************************
+
     /**
      * Updates an existing user.
      *
@@ -176,14 +246,16 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "the authenticated user is not found",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateUser(@RequestBody ApiUser updatedApiUser,
-                                             @AuthenticationPrincipal UserDetails activeUser) {
+    public ResponseEntity<Object> updateUserV1(@RequestBody ApiUser updatedApiUser,
+                                               @AuthenticationPrincipal UserDetails activeUser) {
         try {
             return ResponseEntity.ok(userRepository.updateUser(updatedApiUser, activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
+
+    // DELETE /users ****************************************************************************************************
 
     /**
      * Deletes a user.
@@ -202,7 +274,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteUser(@AuthenticationPrincipal UserDetails activeUser) {
+    public ResponseEntity<Object> deleteUserV1(@AuthenticationPrincipal UserDetails activeUser) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userRepository.deleteUser(activeUser.getUsername()));
         } catch (ValidationException exception) {
