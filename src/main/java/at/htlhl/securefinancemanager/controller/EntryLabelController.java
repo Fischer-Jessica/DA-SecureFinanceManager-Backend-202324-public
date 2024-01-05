@@ -4,9 +4,9 @@ import at.htlhl.securefinancemanager.exception.MissingRequiredParameter;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
-import at.htlhl.securefinancemanager.model.response.ResponseEntryLabel;
 import at.htlhl.securefinancemanager.repository.EntryLabelRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -46,8 +46,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 17.11.2023 (version 2.6)
+ * @version 2.7
+ * @since 05.01.2024 (version 2.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -69,7 +69,8 @@ public class EntryLabelController {
     @GetMapping(value = "/{entryId}/labels", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "retrieves a list of labels associated with a specific entry")
+    @Operation(summary = "retrieves a list of labels associated with a specific entry",
+            description = "Returns a list of labels associated with the specified entryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all labels for the given entryId",
                     content = { @Content(mediaType = "application/json",
@@ -79,7 +80,7 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "the requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getLabelsForEntryV1(@PathVariable int entryId,
+    public ResponseEntity<Object> getLabelsForEntryV1(@Parameter(description = "The entryId added to the URL to retrieve the associated labels.")@PathVariable int entryId,
                                                       @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (entryId <= 0) {
@@ -103,7 +104,8 @@ public class EntryLabelController {
     @GetMapping(value = "/{entryIds}/labels", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "retrieves lists of labels associated with specific entries")
+    @Operation(summary = "retrieves lists of labels associated with specific entries",
+            description = "Returns a list of labels with the specified entryIds from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all labels for the given entryIds",
                     content = { @Content(mediaType = "application/json",
@@ -113,7 +115,7 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "a requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getLabelsForEntriesV2(@PathVariable List<Integer> entryIds,
+    public ResponseEntity<Object> getLabelsForEntriesV2(@Parameter(description = "List of entryIds added to the URL to retrieve the associated labels.")@PathVariable List<Integer> entryIds,
                                                         @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<List<DatabaseLabel>> labels = new ArrayList<>();
@@ -143,7 +145,8 @@ public class EntryLabelController {
      */
     @PostMapping(value = "/{entryId}/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "adds a label to a specific entry")
+    @Operation(summary = "adds a label to a specific entry",
+            description = "Adds a specified label to a specified entry, whose ids are added to the URL. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully added the given label to the given entry",
                     content = { @Content(mediaType = "application/json",
@@ -153,8 +156,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "the given entry or label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabelToEntryV1(@PathVariable int entryId,
-                                                    @PathVariable int labelId,
+    public ResponseEntity<Object> addLabelToEntryV1(@Parameter(description = "The entryId added to the URL to retrieve the associated entry.") @PathVariable int entryId,
+                                                    @Parameter(description = "The labelId added to the URL to retrieve the associated label.") @PathVariable int labelId,
                                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (entryId <= 0) {
@@ -180,7 +183,8 @@ public class EntryLabelController {
      */
     @PostMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "adds labels to specific entries")
+    @Operation(summary = "adds labels to specific entries",
+        description = "Adds specified labels to specified entries, whose ids are added to the URL. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully added the given labels to the given entries",
                     content = { @Content(mediaType = "application/json",
@@ -190,8 +194,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "a given entry or label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabelsToEntriesV2(@PathVariable List<Integer> entryIds,
-                                                       @PathVariable List<Integer> labelIds,
+    public ResponseEntity<Object> addLabelsToEntriesV2(@Parameter(description = "A list of entryIdd added to the URL, in the same order as the associated labelIds, to retrieve the associated entries.") @PathVariable List<Integer> entryIds,
+                                                       @Parameter(description = "A list of labelIds added to the URL, in the same order as the associated entryIds, to retrieve the associated labels.") @PathVariable List<Integer> labelIds,
                                                        @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (entryIds.size() != labelIds.size()) {
@@ -214,54 +218,6 @@ public class EntryLabelController {
         }
     }
 
-    /**
-     * Adds a labels to a specific entries.
-     *
-     * @param entryIds              The IDs of the entries.
-     * @param labelIds              The IDs of the labels to add the entries to.
-     * @param mobileEntryLabelIds   The IDs of the mobile entry-label associations in the mobile applications.
-     * @param userDetails           The UserDetails object representing the logged-in user.
-     * @return A List of the newly created EntryLabel associations.
-     */
-    @PostMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=3")
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "adds labels to specific entries")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "successfully added the given labels to the given entries",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseEntryLabel.class)) }),
-            @ApiResponse(responseCode = "400", description = "the number of given entryIds, labelIds and mobileEntryLabelIds are not equal or a entryId or a labelId or a mobileEntryLabelId is less than or equal to 0",
-                    content = { @Content(mediaType = "text/plain") }),
-            @ApiResponse(responseCode = "404", description = "a given entry or label does not exist or is not found for the authenticated user",
-                    content = { @Content(mediaType = "text/plain") })
-    })
-    public ResponseEntity<Object> addLabelsToEntriesV3(@PathVariable List<Integer> entryIds,
-                                                       @PathVariable List<Integer> labelIds,
-                                                       @RequestParam List<Integer> mobileEntryLabelIds,
-                                                       @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            if (entryIds.size() != labelIds.size() || entryIds.size() != mobileEntryLabelIds.size()) {
-                throw new MissingRequiredParameter("the number of entryIds, labelIds and mobileEntryLabelIds must be equal");
-            }
-            List<DatabaseEntryLabel> entryLabels = new ArrayList<>();
-            for (int i = 0; i < entryIds.size(); i++) {
-                if (entryIds.get(i) <= 0) {
-                    throw new MissingRequiredParameter("entryId cannot be less than or equal to 0");
-                } else if (labelIds.get(i) <= 0) {
-                    throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
-                } else if (mobileEntryLabelIds.get(i) <= 0) {
-                    throw new MissingRequiredParameter("mobileEntryLabelId cannot be less than or equal to 0");
-                }
-                entryLabels.add(new ResponseEntryLabel(entryLabelRepository.addLabelToEntry(entryIds.get(i), labelIds.get(i), userDetails.getUsername()), mobileEntryLabelIds.get(i)));
-            }
-            return ResponseEntity.ok(entryLabels);
-        } catch (MissingRequiredParameter exception) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
-        }
-    }
-
     // DELETE /labels/{labelIds} *****************************************************************************************
 
     /**
@@ -274,7 +230,8 @@ public class EntryLabelController {
      */
     @DeleteMapping(value = "/{entryId}/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "removes a label from a specific entry")
+    @Operation(summary = "removes a label from a specific entry",
+            description = "Removes a specified label from a specified entry, whose ids are added to the URL. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully removed the given label from the given entry",
                     content = { @Content(mediaType = "application/json",
@@ -284,8 +241,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "the given entry, label or association does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> removeLabelFromEntryV1(@PathVariable int entryId,
-                                                         @PathVariable int labelId,
+    public ResponseEntity<Object> removeLabelFromEntryV1(@Parameter(description = "The entryId added to the URL to retrieve the associated entry.") @PathVariable int entryId,
+                                                         @Parameter(description = "The labelId added to the URL to retrieve the associated label.") @PathVariable int labelId,
                                                          @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (entryId <= 0) {
@@ -311,7 +268,8 @@ public class EntryLabelController {
      */
     @DeleteMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "removes labels from specific entries")
+    @Operation(summary = "removes labels from specific entries",
+            description = "Removes specified labels from specified entries, whose ids are added to the URL. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully removed the given labels from the given entries",
                     content = { @Content(mediaType = "application/json",
@@ -321,8 +279,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "404", description = "a given entry, label or association does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> removeLabelsFromEntriesV2(@PathVariable List<Integer> entryIds,
-                                                            @PathVariable List<Integer> labelIds,
+    public ResponseEntity<Object> removeLabelsFromEntriesV2(@Parameter(description = "A list of entryIds added to the URL, in the same order as the associated labelIds, to retrieve the associated entries.") @PathVariable List<Integer> entryIds,
+                                                            @Parameter(description = "A list of labelIds added to the URL, in the same order as the associated entryIds, to retrieve the associated labels.") @PathVariable List<Integer> labelIds,
                                                             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (entryIds.size() != labelIds.size()) {

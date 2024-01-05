@@ -7,6 +7,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import at.htlhl.securefinancemanager.model.response.ResponseLabel;
 import at.htlhl.securefinancemanager.repository.LabelRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -46,8 +47,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.6
- * @since 17.11.2023 (version 3.6)
+ * @version 3.7
+ * @since 05.01.2024 (version 3.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -68,7 +69,8 @@ public class LabelController {
     @GetMapping(value = "/labels", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns all labels of the authenticated user")
+    @Operation(summary = "returns all labels of the authenticated user",
+            description = "Returns a list of all labels created by the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all labels of the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -96,7 +98,8 @@ public class LabelController {
     @GetMapping(value = "/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns one label")
+    @Operation(summary = "returns one label",
+            description = "Returns the label with the specified labelId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the requested label",
                     content = { @Content(mediaType = "application/json",
@@ -106,7 +109,7 @@ public class LabelController {
             @ApiResponse(responseCode = "404", description = "the requested label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getLabelV1(@PathVariable int labelId,
+    public ResponseEntity<Object> getLabelV1(@Parameter(description = "The labelId added to the URL to retrieve the associated label.") @PathVariable int labelId,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (labelId <= 0) {
@@ -132,7 +135,8 @@ public class LabelController {
     @PostMapping(value = "/labels", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "adds a new label for the authenticated user")
+    @Operation(summary = "adds a new label for the authenticated user",
+            description = "Creates a new label for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given label for the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -140,7 +144,14 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "the labelName is empty or the labelColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabelV1(@RequestBody ApiLabel newApiLabel,
+    public ResponseEntity<Object> addLabelV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "The new Label-Object.",
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiLabel.class)
+            )
+    ) @RequestBody ApiLabel newApiLabel,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (newApiLabel.getLabelName() == null || newApiLabel.getLabelName().isBlank()) {
@@ -164,7 +175,8 @@ public class LabelController {
     @PostMapping(value = "/labels", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "adds new labels for the authenticated user")
+    @Operation(summary = "adds new labels for the authenticated user",
+            description = "Creates new labels for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given labels for the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -172,7 +184,14 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "a labelName is empty or a labelColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabelsV2(@RequestBody List<ApiLabel> newApiLabels,
+    public ResponseEntity<Object> addLabelsV2(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "List of new labels. As it is a List, the objects need to be enclosed in [].",
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiLabel.class)
+            )
+    )@RequestBody List<ApiLabel> newApiLabels,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<DatabaseLabel> createdLabels = new ArrayList<>();
@@ -201,7 +220,8 @@ public class LabelController {
     @PostMapping(value = "/labels", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "adds new labels for the authenticated user")
+    @Operation(summary = "adds new labels for the authenticated user",
+            description = "Creates new Labels for the authenticated user. It requires a Basic-Auth-Header. This version for mobile applications also requires a List of mobileLabelIds added to the URL.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given labels for the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -209,8 +229,15 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "the number of mobileLabelIds and newApiLabels are not equal or a labelName is empty or a mobileLabelId or a labelColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addLabelsV3(@RequestParam List<Integer> mobileLabelIds,
-                                              @RequestBody List<ApiLabel> newApiLabels,
+    public ResponseEntity<Object> addLabelsV3(@Parameter(description = "List of mobileLabelIds from mobile applications to be added to the URL. The mobileLabelIds and newApiLabels must be in the same order.")@RequestParam List<Integer> mobileLabelIds,
+                                              @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                      description = "List of new labels. As it is a List, the objects need to be enclosed in [].",
+                                                      required = true,
+                                                      content = @Content(
+                                                              mediaType = "application/json",
+                                                              schema = @Schema(implementation = ApiLabel.class)
+                                                      )
+                                              )@RequestBody List<ApiLabel> newApiLabels,
                                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<ResponseLabel> createdLabels = new ArrayList<>();
@@ -244,7 +271,8 @@ public class LabelController {
     @PatchMapping(value = "/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing label")
+    @Operation(summary = "updates an existing label",
+            description = "Updates an existing label, whose id is given in the URL, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given label",
                     content = { @Content(mediaType = "application/json",
@@ -254,8 +282,15 @@ public class LabelController {
             @ApiResponse(responseCode = "404", description = "the given label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateLabelV1(@PathVariable int labelId,
-                                                @RequestBody ApiLabel updatedApiLabel,
+    public ResponseEntity<Object> updateLabelV1(@Parameter(description = "The id of the label to be updated, added to the URL.")@PathVariable int labelId,
+                                                @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                        description = "The updated label-Object.",
+                                                        required = true,
+                                                        content = @Content(
+                                                                mediaType = "application/json",
+                                                                schema = @Schema(implementation = ApiLabel.class)
+                                                        )
+                                                )@RequestBody ApiLabel updatedApiLabel,
                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (updatedApiLabel.getLabelColourId() < 0) {
@@ -282,7 +317,8 @@ public class LabelController {
     @PatchMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates existing labels")
+    @Operation(summary = "updates existing labels",
+            description = "Updates existing labels, whose ids are given in the URL, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given labels",
                     content = { @Content(mediaType = "application/json",
@@ -292,8 +328,15 @@ public class LabelController {
             @ApiResponse(responseCode = "404", description = "a given label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateLabelsV2(@PathVariable List<Integer> labelIds,
-                                                 @RequestBody List<ApiLabel> updatedApiLabels,
+    public ResponseEntity<Object> updateLabelsV2(@Parameter(description = "List of labelIds to be updated. They need to be added to the URL in the same order as the updatedApiLabels.")@PathVariable List<Integer> labelIds,
+                                                 @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                         description = "List of the updated labels. As it is a List, the objects need to be enclosed in [].",
+                                                         required = true,
+                                                         content = @Content(
+                                                                 mediaType = "application/json",
+                                                                 schema = @Schema(implementation = ApiLabel.class)
+                                                         )
+                                                 ) @RequestBody List<ApiLabel> updatedApiLabels,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (labelIds.size() != updatedApiLabels.size()) {
@@ -328,7 +371,8 @@ public class LabelController {
     @DeleteMapping(value = "/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes a label")
+    @Operation(summary = "deletes a label",
+            description = "Deletes a label, whose id is given in the URL, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given label",
                     content = { @Content(mediaType = "application/json",
@@ -338,7 +382,7 @@ public class LabelController {
             @ApiResponse(responseCode = "404", description = "the given label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteCategoryV1(@PathVariable int labelId,
+    public ResponseEntity<Object> deleteCategoryV1(@Parameter(description = "The id of the label to be deleted, added to the URL.")@PathVariable int labelId,
                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (labelId <= 0) {
@@ -362,8 +406,9 @@ public class LabelController {
     @DeleteMapping(value = "/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes labels")
-    @ApiResponses(value = {
+    @Operation(summary = "deletes labels",
+            description = "Deletes labels, whose ids are given in the URL, for the authenticated user. It requires a Basic-Auth-Header.")
+            @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given labels",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Integer.class)) }),
@@ -372,7 +417,7 @@ public class LabelController {
             @ApiResponse(responseCode = "404", description = "a given label does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteLabelsV2(@PathVariable List<Integer> labelIds,
+    public ResponseEntity<Object> deleteLabelsV2(@Parameter(description = "List of labelIds to be deleted. They need to be added to the URL.")@PathVariable List<Integer> labelIds,
                                                  @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<Integer> deletedLabels = new ArrayList<>();

@@ -27,8 +27,8 @@ import at.htlhl.securefinancemanager.model.database.DatabaseUser;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 17.11.2023 (version 1.0)
+ * @version 1.1
+ * @since 05.01.2024 (version 1.1)
  *
  * @see DatabaseUser
  */
@@ -45,5 +45,14 @@ public class ResponseUser extends DatabaseUser {
     public ResponseUser(DatabaseUser databaseUser, int mobileUserId) {
         super(databaseUser.getUserId(), databaseUser.getUsername(), databaseUser.getPassword(), databaseUser.getEMailAddress(), databaseUser.getFirstName(), databaseUser.getLastName());
         this.mobileUserId = mobileUserId;
+    }
+
+    /**
+     * Returns the unique identifier for the mobile user.
+     *
+     * @return The unique identifier for the mobile user.
+     */
+    public int getMobileUserId() {
+        return mobileUserId;
     }
 }

@@ -7,6 +7,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import at.htlhl.securefinancemanager.model.response.ResponseCategory;
 import at.htlhl.securefinancemanager.repository.CategoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -47,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.6
- * @since 17.11.2023 (version 3.6)
+ * @version 3.7
+ * @since 05.01.2024 (version 3.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -69,7 +70,8 @@ public class CategoryController {
     @GetMapping(value = "/categories", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns a list of all categories of the authenticated user")
+    @Operation(summary = "returns a list of all categories of the authenticated user",
+        description = "Returns a list of all Categories created by the authenticated user. It requires a Basic-Auth-Header")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all categories of the authenticated user",
                 content = { @Content(mediaType = "application/json",
@@ -97,7 +99,8 @@ public class CategoryController {
     @GetMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns the requested category")
+    @Operation(summary = "returns the requested category",
+        description = "Returns the Category with the specified categoryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the requested category",
                     content = { @Content(mediaType = "application/json",
@@ -107,7 +110,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getCategoryV1(@PathVariable int categoryId,
+    public ResponseEntity<Object> getCategoryV1(@Parameter(description = "The categoryId added to the URL to retrieve the associated Category.") @PathVariable int categoryId,
                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (categoryId <= 0) {
@@ -133,7 +136,8 @@ public class CategoryController {
     @PostMapping(value =  "/categories", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates a new category for the authenticated user")
+    @Operation(summary = "creates a new category for the authenticated user",
+        description = "Creates a new Category for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given category for the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -141,7 +145,14 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryName is empty or the categoryColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addCategoryV1(@RequestBody ApiCategory newApiCategory,
+    public ResponseEntity<Object> addCategoryV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                    description = "The new Category-Object.",
+                                                    required = true,
+                                                    content = @Content(
+                                                            mediaType = "application/json",
+                                                            schema = @Schema(implementation = ApiCategory.class)
+                                                    )
+                                                    ) @RequestBody ApiCategory newApiCategory,
                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (newApiCategory.getCategoryName() == null || newApiCategory.getCategoryName().isBlank()) {
@@ -166,7 +177,8 @@ public class CategoryController {
     @PostMapping(value =  "/categories", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates new categories for the authenticated user")
+    @Operation(summary = "creates new categories for the authenticated user",
+        description = "Creates new categories for the authenticated user, it needs an Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given categories for the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -174,7 +186,14 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "A categoryName is empty or a categoryColourId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addCategoriesV2(@RequestBody List<ApiCategory> newApiCategories,
+    public ResponseEntity<Object> addCategoriesV2(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                            description = "List of new categories. As it is a List, the objects need to be enclosed in [].",
+                                                            required = true,
+                                                            content = @Content(
+                                                                    mediaType = "application/json",
+                                                                    schema = @Schema(implementation = ApiCategory.class)
+                                                            )
+                                                    ) @RequestBody List<ApiCategory> newApiCategories,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<DatabaseCategory> createdCategories = new ArrayList<>();
@@ -203,7 +222,8 @@ public class CategoryController {
     @PostMapping(value =  "/categories", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates new categories for the authenticated user")
+    @Operation(summary = "creates new categories for the authenticated user",
+        description = "Creates new Categories for the authenticated user. It requires a Basic-Auth-Header. This version for mobile applications also requires a List of mobileCategoryIds added to the URL.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given categories for the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -211,7 +231,16 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "the number of newCategories and mobileCategoryIds are not equal or categoryName is empty or a categoryColourId or a mobileCategoryId is less than or equal to 0",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addCategoriesV3(@RequestParam List<Integer> mobileCategoryIds,
+    public ResponseEntity<Object> addCategoriesV3(@Parameter(description = "List of mobileCategoryIds from mobile applications to be added to the URL. The mobileCategoryIds and newApiCategories must be in the same order.")
+                                                      @RequestParam List<Integer> mobileCategoryIds,
+                                                  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                          description = "List of new Categories. As it is a List, the objects need to be enclosed in [].",
+                                                          required = true,
+                                                          content = @Content(
+                                                                  mediaType = "application/json",
+                                                                  schema = @Schema(implementation = ApiCategory.class)
+                                                          )
+                                                  )
                                                   @RequestBody List<ApiCategory> newApiCategories,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -248,7 +277,8 @@ public class CategoryController {
     @PatchMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing category")
+    @Operation(summary = "updates an existing category",
+        description = "Updates an existing category, whose id is given in the url, for the authenticated user, it needs an Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given category",
                     content = { @Content(mediaType = "application/json",
@@ -258,7 +288,15 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateCategoryV1(@PathVariable int categoryId,
+    public ResponseEntity<Object> updateCategoryV1(@Parameter(description = "The id of the category to be updated, added to the URL.") @PathVariable int categoryId,
+                                                   @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                           description = "The updated category-Object.",
+                                                           required = true,
+                                                           content = @Content(
+                                                                   mediaType = "application/json",
+                                                                   schema = @Schema(implementation = ApiCategory.class)
+                                                           )
+                                                   )
                                                    @RequestBody ApiCategory updatedApiCategory,
                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -286,7 +324,8 @@ public class CategoryController {
     @PatchMapping(value = "/categories/{categoryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates existing categories")
+    @Operation(summary = "updates existing categories",
+        description = "Updates existing categories, whose ids are given in the url, for the authenticated user, it needs an Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given categories",
                     content = { @Content(mediaType = "application/json",
@@ -296,8 +335,15 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "a given category does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateCategoriesV2(@PathVariable List<Integer> categoryIds,
-                                                     @RequestBody List<ApiCategory> updatedApiCategories,
+    public ResponseEntity<Object> updateCategoriesV2(@Parameter(description = "List of categoryIds to be updated. They need to be added to the URL in the same order as the updatedApiCategories.") @PathVariable List<Integer> categoryIds,
+                                                     @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                             description = "List of the updated categories. As it is a List, the objects need to be enclosed in [].",
+                                                             required = true,
+                                                             content = @Content(
+                                                                     mediaType = "application/json",
+                                                                     schema = @Schema(implementation = ApiCategory.class)
+                                                             )
+                                                     )@RequestBody List<ApiCategory> updatedApiCategories,
                                                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (categoryIds.size() != updatedApiCategories.size()) {
@@ -332,7 +378,8 @@ public class CategoryController {
     @DeleteMapping(value = "/categories/{categoryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes a category")
+    @Operation(summary = "deletes a category",
+        description = "Deletes a category, whose id is given in the url, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given category",
                     content = { @Content(mediaType = "application/json",
@@ -342,7 +389,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteCategoryV1(@PathVariable int categoryId,
+    public ResponseEntity<Object> deleteCategoryV1(@Parameter(description = "The id of the category to be deleted, added to the URL.") @PathVariable int categoryId,
                                                    @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (categoryId <= 0) {
@@ -366,7 +413,8 @@ public class CategoryController {
     @DeleteMapping(value = "/categories/{categoryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes categories")
+    @Operation(summary = "deletes categories",
+        description = "Deletes categories, whose ids are given in the url, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given categories",
                     content = { @Content(mediaType = "application/json",
@@ -376,7 +424,7 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "a given category does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteCategoriesV2(@PathVariable List<Integer> categoryIds,
+    public ResponseEntity<Object> deleteCategoriesV2(@Parameter(description = "List of categoryIds to be deleted. They need to be added to the URL.") @PathVariable List<Integer> categoryIds,
                                                      @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<Integer> deletedRows = new ArrayList<>();

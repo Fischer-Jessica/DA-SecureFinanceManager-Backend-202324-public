@@ -5,6 +5,7 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseColour;
 import at.htlhl.securefinancemanager.repository.ColourRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,8 +38,8 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 17.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 05.01.2024 (version 2.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -57,7 +58,8 @@ public class ColourController {
      */
     @GetMapping(value = "/colours", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "returns a list of all colours")
+    @Operation(summary = "returns a list of all colours",
+            description = "Returns a list of all colours in the database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all colours",
                     content = { @Content(mediaType = "application/json",
@@ -83,7 +85,8 @@ public class ColourController {
      */
     @GetMapping(value = "/colours/{colourId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "returns the requested category")
+    @Operation(summary = "returns the requested colour",
+            description = "Returns the requested colour from the database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the requested colour",
                     content = { @Content(mediaType = "application/json",
@@ -93,7 +96,7 @@ public class ColourController {
             @ApiResponse(responseCode = "404", description = "the requested colour does not exist",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getColourV1(@PathVariable int colourId) {
+    public ResponseEntity<Object> getColourV1(@Parameter(description = "The colourId added to the Url to retrieve the associated colour.") @PathVariable int colourId) {
         try {
             if (colourId <= 0) {
                 throw new MissingRequiredParameter("colourId cannot be less than or equal to 0");

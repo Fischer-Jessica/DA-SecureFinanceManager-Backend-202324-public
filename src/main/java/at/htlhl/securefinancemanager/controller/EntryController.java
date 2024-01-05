@@ -7,6 +7,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import at.htlhl.securefinancemanager.model.response.ResponseEntry;
 import at.htlhl.securefinancemanager.repository.EntryRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -47,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.8
- * @since 17.12.2023 (version 3.8)
+ * @version 3.9
+ * @since 05.01.2024 (version 3.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -70,7 +71,8 @@ public class EntryController {
     @GetMapping(value = "/{subcategoryId}/entries", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns all entries of one subcategory")
+    @Operation(summary = "returns all entries of one subcategory",
+            description = "Returns a list of all entries with the specified subcategoryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all entries of the given subcategory",
                     content = { @Content(mediaType = "application/json",
@@ -80,7 +82,7 @@ public class EntryController {
             @ApiResponse(responseCode = "404", description = "no entries found with the given subcategoryId for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getEntriesV1(@PathVariable int subcategoryId,
+    public ResponseEntity<Object> getEntriesV1(@Parameter(description = "The subcategoryId added to the URL to retrieve the subordinated entries.") @PathVariable int subcategoryId,
                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryId <= 0) {
@@ -107,7 +109,8 @@ public class EntryController {
     @GetMapping(value = "/{subcategoryId}/entries/{entryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns one entry of a subcategory")
+    @Operation(summary = "returns one entry of a subcategory",
+            description = "Returns one entry of a subcategory specified by the entryId from the URL and the subcategoryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the requested entry of the given subcategory",
                     content = { @Content(mediaType = "application/json",
@@ -117,8 +120,8 @@ public class EntryController {
             @ApiResponse(responseCode = "404", description = "the requested entry with the given subcategoryId does not exist or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> getEntryV1(@PathVariable int subcategoryId,
-                                             @PathVariable int entryId,
+    public ResponseEntity<Object> getEntryV1(@Parameter(description = "The subcategoryId added to the URL to retrieve the associated entry.")@PathVariable int subcategoryId,
+                                             @Parameter(description = "The entryId added to the URL to retrieve the subordinated entry.") @PathVariable int entryId,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryId <= 0) {
@@ -147,7 +150,8 @@ public class EntryController {
     @PostMapping(value = "/{subcategoryId}/entries", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates a new entry in a subcategory")
+    @Operation(summary = "creates a new entry in a subcategory",
+            description = "Creates a new entry within the specified subcategoryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given entry within the given subcategory",
                     content = { @Content(mediaType = "application/json",
@@ -155,8 +159,15 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the categoryColourId is less than or equal to 0 or the entryAmount or the entryTimeOfTransaction is empty",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addEntryV1(@PathVariable int subcategoryId,
-                                             @RequestBody ApiEntry newApiEntry,
+    public ResponseEntity<Object> addEntryV1(@Parameter(description = "The subcategoryId added to the URL to create the new entry within it.") @PathVariable int subcategoryId,
+                                             @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                     description = "The new entry-Object.",
+                                                     required = true,
+                                                     content = @Content(
+                                                             mediaType = "application/json",
+                                                             schema = @Schema(implementation = ApiEntry.class)
+                                                     )
+                                             ) @RequestBody ApiEntry newApiEntry,
                                              @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryId <= 0) {
@@ -183,7 +194,8 @@ public class EntryController {
     @PostMapping(value = "/{subcategoryIds}/entries", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates new entries in subcategories")
+    @Operation(summary = "creates new entries in subcategories",
+        description = "Creates new entries within the specified subcategoryIds from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given entries within the given subcategories",
                     content = { @Content(mediaType = "application/json",
@@ -191,8 +203,15 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds and newApiEntries are not equal or a categoryColourId is less than or equal to 0 or a entryAmount or a entryTimeOfTransaction is empty",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addEntriesV2(@PathVariable List<Integer> subcategoryIds,
-                                               @RequestBody List<ApiEntry> newApiEntries,
+    public ResponseEntity<Object> addEntriesV2(@Parameter(description = "The subcategoryIds added to the URL to create the new entries within them. The subcategoryId and the newApiEntries need to be added in the same order.") @PathVariable List<Integer> subcategoryIds,
+                                               @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                       description = "List of new entries. As it is a List, the objects need to be enclosed in [].",
+                                                       required = true,
+                                                       content = @Content(
+                                                               mediaType = "application/json",
+                                                               schema = @Schema(implementation = ApiEntry.class)
+                                                       )
+                                               ) @RequestBody List<ApiEntry> newApiEntries,
                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryIds.size() != newApiEntries.size()) {
@@ -227,7 +246,8 @@ public class EntryController {
     @PostMapping(value = "/{subcategoryIds}/entries", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "creates new entries in subcategories")
+    @Operation(summary = "creates new entries in subcategories",
+            description = "Creates new entries within the specified subcategoryIds from the URL for the authenticated user. It requires a Basic-Auth-Header. This version for mobile applications also requires a List of mobileEntryIds added to the URL.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given entries within the given subcategories",
                     content = { @Content(mediaType = "application/json",
@@ -235,9 +255,16 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds, mobileEntryIds and newApiEntries are not equal or a categoryColourId or a mobileEntryId is less than or equal to 0 or a entryAmount or a entryTimeOfTransaction is empty",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addEntriesV3(@PathVariable List<Integer> subcategoryIds,
-                                               @RequestParam List<Integer> mobileEntryIds,
-                                               @RequestBody List<ApiEntry> newApiEntries,
+    public ResponseEntity<Object> addEntriesV3(@Parameter(description = "The subcategoryIds added to the URL to create the new entries within them. The subcategoryId and the newApiEntries need to be added in the same order.") @PathVariable List<Integer> subcategoryIds,
+                                               @Parameter(description = "List of mobileEntryIds from mobile applications to be added to the URL. The mobileEntryIds and newApiEntries must be in the same order.") @RequestParam List<Integer> mobileEntryIds,
+                                               @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                       description = "List of new entries. As it is a List, the objects need to be enclosed in [].",
+                                                       required = true,
+                                                       content = @Content(
+                                                               mediaType = "application/json",
+                                                               schema = @Schema(implementation = ApiEntry.class)
+                                                       )
+                                               ) @RequestBody List<ApiEntry> newApiEntries,
                                                @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryIds.size() != newApiEntries.size() || subcategoryIds.size() != mobileEntryIds.size()) {
@@ -276,7 +303,8 @@ public class EntryController {
     @PatchMapping(value = "/{subcategoryId}/entries/{entryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing entry in a subcategory")
+    @Operation(summary = "updates an existing entry in a subcategory",
+            description = "Updates an existing entry, whose id is given in the URL as well as its superior subcategoryId, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given entry of the given subcategory",
                     content = { @Content(mediaType = "application/json",
@@ -286,9 +314,16 @@ public class EntryController {
             @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateEntryV1(@PathVariable int subcategoryId,
-                                                @PathVariable int entryId,
-                                                @RequestBody ApiEntry updatedApiEntry,
+    public ResponseEntity<Object> updateEntryV1(@Parameter(description = "The id of the superior subcategory, added to the URL") @PathVariable int subcategoryId,
+                                                @Parameter(description = "The id of the entry to be updated, added to the URL.") @PathVariable int entryId,
+                                                @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                        description = "The updated entry-Object.",
+                                                        required = true,
+                                                        content = @Content(
+                                                                mediaType = "application/json",
+                                                                schema = @Schema(implementation = ApiEntry.class)
+                                                        )
+                                                )@RequestBody ApiEntry updatedApiEntry,
                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryId <= 0) {
@@ -316,7 +351,8 @@ public class EntryController {
     @PatchMapping(value = "/{subcategoryIds}/entries/{entryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates existing entries in subcategories")
+    @Operation(summary = "updates existing entries in subcategories",
+            description = "Updates existing entries, whose ids are given in the URL as well as their superior subcategoryIds, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given entries of the given subcategories",
                     content = { @Content(mediaType = "application/json",
@@ -326,9 +362,16 @@ public class EntryController {
             @ApiResponse(responseCode = "404", description = "a given entry does not exist inside the given subcategory or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateEntriesV2(@PathVariable List<Integer> subcategoryIds,
-                                                  @PathVariable List<Integer> entryIds,
-                                                  @RequestBody List<ApiEntry> updatedApiEntries,
+    public ResponseEntity<Object> updateEntriesV2(@Parameter(description = "List of the superior subcategoryIds. They need to be added to the URL in the same order as the updatedApiEntries") @PathVariable List<Integer> subcategoryIds,
+                                                  @Parameter(description = "List of entryIds to be updated. They need to be added to the URL in the same order as the updatedApiEntries.") @PathVariable List<Integer> entryIds,
+                                                  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                          description = "List of the updated entries. As it is a List, the objects need to be enclosed in [].",
+                                                          required = true,
+                                                          content = @Content(
+                                                                  mediaType = "application/json",
+                                                                  schema = @Schema(implementation = ApiEntry.class)
+                                                          )
+                                                  ) @RequestBody List<ApiEntry> updatedApiEntries,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryIds.size() != entryIds.size() || subcategoryIds.size() != updatedApiEntries.size()) {
@@ -364,7 +407,8 @@ public class EntryController {
     @DeleteMapping(value = "/{subcategoryId}/entries/{entryId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes an entry from a subcategory")
+    @Operation(summary = "deletes an entry from a subcategory",
+            description = "Deletes a entry, whose id is given in the URL as well as its superior subcategoryId, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given entry of the given subcategory",
                     content = { @Content(mediaType = "application/json",
@@ -374,8 +418,8 @@ public class EntryController {
             @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteEntryV1(@PathVariable int subcategoryId,
-                                                @PathVariable int entryId,
+    public ResponseEntity<Object> deleteEntryV1(@Parameter(description = "The id of the superior subcategory, added to the URL.") @PathVariable int subcategoryId,
+                                                @Parameter(description = "The id of the entry to be deleted, added to the URL.") @PathVariable int entryId,
                                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryId <= 0) {
@@ -402,7 +446,8 @@ public class EntryController {
     @DeleteMapping(value = "/{subcategoryIds}/entries/{entryIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes entries from subcategories")
+    @Operation(summary = "deletes entries from subcategories",
+            description = "Deletes entries, whose ids are given in the URL as well as their superior subcategoryIds, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given entries of the given subcategories",
                     content = { @Content(mediaType = "application/json",
@@ -412,8 +457,8 @@ public class EntryController {
             @ApiResponse(responseCode = "404", description = "a given entry does not exist inside the given subcategory or is not found for the authenticated user",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> deleteEntriesV2(@PathVariable List<Integer> subcategoryIds,
-                                                  @PathVariable List<Integer> entryIds,
+    public ResponseEntity<Object> deleteEntriesV2(@Parameter(description = "List of superior subcategoryIds. They need to be added to the URL in the same order as the entryIds.") @PathVariable List<Integer> subcategoryIds,
+                                                  @Parameter(description = "List of entryIds to be deleted. They need to be added to the URL.") @PathVariable List<Integer> entryIds,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
         try {
             if (subcategoryIds.size() != entryIds.size()) {

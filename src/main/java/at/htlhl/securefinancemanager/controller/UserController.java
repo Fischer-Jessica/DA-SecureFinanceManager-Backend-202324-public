@@ -8,6 +8,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import at.htlhl.securefinancemanager.model.response.ResponseUser;
 import at.htlhl.securefinancemanager.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -52,8 +53,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 3.2
- * @since 17.11.2023 (version 3.2)
+ * @version 3.3
+ * @since 05.01.2024 (version 3.3)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -73,7 +74,7 @@ public class UserController {
     // TODO: This will be restricted or removed in the final product.
     @GetMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "returns all users")
+    @Operation(summary = "returns all users", description = "This endpoint will be removed in the final product. It returns a list of all users.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all users",
                     content = { @Content(mediaType = "application/json",
@@ -106,7 +107,7 @@ public class UserController {
     @GetMapping(value = "/user", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "returns the currently authenticated user")
+    @Operation(summary = "returns the currently authenticated user", description = "This endpoint returns information about the currently authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -132,7 +133,7 @@ public class UserController {
      */
     @PostMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "creates a new user")
+    @Operation(summary = "creates a new user", description = "This endpoint creates a new user. It does not require a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "created a new user",
                     content = { @Content(mediaType = "application/json",
@@ -140,7 +141,14 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "the username or the password is missing",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addUserV1(@RequestBody ApiUser newApiUser) {
+    public ResponseEntity<Object> addUserV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "The new User-Object.",
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiUser.class)
+            )
+    )@RequestBody ApiUser newApiUser) {
         try {
             if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
                 throw new MissingRequiredParameter("username is required");
@@ -161,7 +169,7 @@ public class UserController {
      */
     @PostMapping(value = "/users", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "creates new users")
+    @Operation(summary = "creates new users", description = "This endpoint creates new users. It does not require a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "created the new users",
                     content = { @Content(mediaType = "application/json",
@@ -169,7 +177,14 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "a username or a password is missing",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addUsersV2(@RequestBody List<ApiUser> newApiUsers) {
+    public ResponseEntity<Object> addUsersV2( @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "List of new Users. As it is a List, the objects need to be enclosed in [].",
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiUser.class)
+            )
+    )@RequestBody List<ApiUser> newApiUsers) {
         try {
             List<DatabaseUser> createdUsers = new ArrayList<>();
             for (ApiUser newApiUser : newApiUsers) {
@@ -195,7 +210,8 @@ public class UserController {
      */
     @PostMapping(value = "/users", headers = "API-Version=3")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "creates new users")
+    @Operation(summary = "creates new users", description = "Creates new Users. It does not requires a Basic-Auth-Header. This version for mobile applications also requires a List of mobileUserIds added to the URL."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "created the new users",
                     content = { @Content(mediaType = "application/json",
@@ -203,8 +219,15 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "a mobileUserId is less than or equal to 0 or a username or a password is missing",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> addUsersV3(@RequestParam List<Integer> mobileUserId,
-                                             @RequestBody List<ApiUser> newApiUsers) {
+    public ResponseEntity<Object> addUsersV3(@Parameter(description = "List of mobileUserIds from mobile applications to be added to the URL. The mobileUserIds and newApiUsers must be in the same order.")@RequestParam List<Integer> mobileUserId,
+                                             @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                     description = "List of new users. As it is a List, the objects need to be enclosed in [].",
+                                                     required = true,
+                                                     content = @Content(
+                                                             mediaType = "application/json",
+                                                             schema = @Schema(implementation = ApiUser.class)
+                                                     )
+                                             ) @RequestBody List<ApiUser> newApiUsers) {
         try {
             List<ResponseUser> createdUsers = new ArrayList<>();
             if (mobileUserId.size() != newApiUsers.size()) {
@@ -219,6 +242,7 @@ public class UserController {
                     throw new MissingRequiredParameter("mobileUserId cannot be less than or equal to 0");
                 }
                 createdUsers.add(new ResponseUser(userRepository.addUser(newApiUsers.get(i)), mobileUserId.get(i)));
+                System.out.println(createdUsers.get(i).getMobileUserId());
             }
             return ResponseEntity.ok(createdUsers);
         } catch (MissingRequiredParameter exception) {
@@ -238,7 +262,7 @@ public class UserController {
     @PatchMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "updates an existing user which is authenticated at the moment")
+    @Operation(summary = "updates an existing user which is authenticated at the moment", description = "Updates an existing user, which is authenticated. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the authenticated user",
                     content = { @Content(mediaType = "application/json",
@@ -246,7 +270,14 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "the authenticated user is not found",
                     content = { @Content(mediaType = "text/plain") })
     })
-    public ResponseEntity<Object> updateUserV1(@RequestBody ApiUser updatedApiUser,
+    public ResponseEntity<Object> updateUserV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "The updated user-Object.",
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiUser.class)
+            )
+    )@RequestBody ApiUser updatedApiUser,
                                                @AuthenticationPrincipal UserDetails activeUser) {
         try {
             return ResponseEntity.ok(userRepository.updateUser(updatedApiUser, activeUser.getUsername()));
@@ -266,7 +297,7 @@ public class UserController {
     @DeleteMapping(value = "/users", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
-    @Operation(summary = "deletes an user which is authenticated at the moment")
+    @Operation(summary = "deletes an user which is authenticated at the moment", description = "Deletes an existing user, which is authenticated. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the authenticated user",
                     content = { @Content(mediaType = "application/json",
