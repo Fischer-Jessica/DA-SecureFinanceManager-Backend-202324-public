@@ -46,8 +46,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.7
- * @since 05.01.2024 (version 2.7)
+ * @version 2.8
+ * @since 11.01.2024 (version 2.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -126,6 +126,41 @@ public class EntryLabelController {
                 labels.add(entryLabelRepository.getLabelsForEntry(entryId, userDetails.getUsername()));
             }
             return ResponseEntity.ok(labels);
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Retrieves a list of entries associated with a specific label.
+     *
+     * @param labelId       The ID of the label.
+     * @param userDetails   The UserDetails object representing the logged-in user.
+     * @return A list of labels associated with the entry.
+     */
+    @GetMapping(value = "/{labelId}/entries", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "retrieves a list of entries associated with a specific label",
+            description = "Returns a list of entries associated with the specified labelId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned all entries for the given labelId",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseLabel.class)) }),
+            @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0",
+                    content = { @Content(mediaType = "text/plain") }),
+            @ApiResponse(responseCode = "404", description = "the requested labelId does not exist or is not found for the authenticated user or the label does not have any entries associated with it",
+                    content = { @Content(mediaType = "text/plain") })
+    })
+    public ResponseEntity<Object> getEntriesForLabelV1(@Parameter(description = "The labelId added to the URL to retrieve the associated entries.")@PathVariable int labelId,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
+            return ResponseEntity.ok(entryLabelRepository.getEntriesForLabel(labelId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>at.htlhl</groupId>
 	<artifactId>SecureFinanceManager</artifactId>
-	<version>version_4</version>
+	<version>version_5</version>
 	<name>SecureFinanceManager</name>
 	<description>The backend of our diploma thesis.</description>
 	<properties>

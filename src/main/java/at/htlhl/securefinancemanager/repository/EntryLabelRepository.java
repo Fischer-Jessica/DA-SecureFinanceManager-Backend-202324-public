@@ -1,6 +1,7 @@
 package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
+import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -30,8 +31,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.2
- * @since 16.11.2023 (version 2.2)
+ * @version 2.3
+ * @since 11.01.2024 (version 2.3)
  */
 @Repository
 public class EntryLabelRepository {
@@ -39,7 +40,13 @@ public class EntryLabelRepository {
     private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
             "FROM labels " +
             "JOIN entry_labels ON labels.pk_label_id = entry_labels.fk_label_id " +
-            "WHERE entry_labels.fk_entry_id = ? AND entry_labels.fk_user_id = ? AND entry_labels.fk_user_id = ?;";
+            "WHERE entry_labels.fk_entry_id = ? AND entry_labels.fk_user_id = ? AND labels.fk_user_id = ?;";
+
+    /** SQL query to retrieve entries for a specific label and user from the 'entries' and 'entry_labels' tables in the database. */
+    private static final String SELECT_ENTRIES_FOR_LABEL = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_subcategory_id, entries.fk_user_id " +
+            "FROM entries " +
+            "JOIN entry_labels ON entries.pk_entry_id = entry_labels.fk_entry_id " +
+            "WHERE entry_labels.fk_label_id = ? AND entry_labels.fk_user_id = ? AND entries.fk_user_id = ?;";
 
     /** SQL query to add a label to an entry in the 'entry_labels' table in the database. */
     private static final String ADD_LABEL_TO_ENTRY = "INSERT INTO entry_labels " +
@@ -77,10 +84,73 @@ public class EntryLabelRepository {
                 byte[] labelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
+                if (labelDescription == null) {
+                    databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), null, labelColourId, activeUserId));
+                } else {
+                    databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
+                }
             }
             if (databaseLabels.isEmpty()) {
                 throw new ValidationException("No labels found for an entry with ID " + entryId);
+            }
+            return databaseLabels;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Retrieves a list of entries associated with a specific label and user from the 'entries' and 'entry_labels' tables in the database.
+     *
+     * @param labelId   The ID of the label to retrieve entries for.
+     * @param username  The username of the logged-in user.
+     * @return A list of Label objects representing the entries associated with the label and user.
+     * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
+     *                              This exception may indicate that the labelId is not found or that the userId associated
+     *                              with the provided username does not match the expected owner of the label.
+     */
+    public List<DatabaseEntry> getEntriesForLabel(int labelId, String username) throws ValidationException {
+        int activeUserId = userSingleton.getUserId(username);
+        try {
+            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES_FOR_LABEL);
+            ps.setInt(1, labelId);
+            ps.setInt(2, activeUserId);
+            ps.setInt(3, activeUserId);
+            ResultSet rs = ps.executeQuery();
+
+            List<DatabaseEntry> databaseLabels = new ArrayList<>();
+            while (rs.next()) {
+                int entryId = rs.getInt("pk_entry_id");
+                byte[] entryName = rs.getBytes("entry_name");
+                byte[] entryDescription = rs.getBytes("entry_description");
+                byte[] entryAmount = rs.getBytes("entry_amount");
+                byte[] entryCreationTime = rs.getBytes("entry_creation_time");
+                byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
+                byte[] entryAttachment = rs.getBytes("entry_attachment");
+                int subcategoryId = rs.getInt("fk_subcategory_id");
+                int entryUserId = rs.getInt("fk_user_id");
+
+                String stringEntryName = null;
+                String stringEntryDescription = null;
+                String stringEntryAttachment = null;
+
+                if (entryName != null) {
+                    stringEntryName = Base64.getEncoder().encodeToString(entryName);
+                }
+                if (entryDescription != null) {
+                    stringEntryDescription = Base64.getEncoder().encodeToString(entryDescription);
+                }
+                if (entryAttachment != null) {
+                    stringEntryAttachment = Base64.getEncoder().encodeToString(entryAttachment);
+                }
+
+                databaseLabels.add(new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
+                        Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
+                        Base64.getEncoder().encodeToString(entryTimeOfTransaction), stringEntryAttachment, activeUserId));
+            }
+            if (databaseLabels.isEmpty()) {
+                throw new ValidationException("No entries found for an label with ID " + labelId);
             }
             return databaseLabels;
         } catch (SQLException e) {
