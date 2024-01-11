@@ -46,12 +46,12 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 11.01.2024 (version 2.8)
+ * @version 2.9
+ * @since 11.01.2024 (version 2.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("secure-finance-manager/entry-labels/entries")
+@RequestMapping("secure-finance-manager/entry-labels")
 public class EntryLabelController {
     /** The EntryLabelRepository instance for accessing entry-label data. */
     @Autowired
@@ -66,7 +66,7 @@ public class EntryLabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return A list of labels associated with the entry.
      */
-    @GetMapping(value = "/{entryId}/labels", headers = "API-Version=1")
+    @GetMapping(value = "/entries/{entryId}/labels", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "retrieves a list of labels associated with a specific entry",
@@ -101,7 +101,7 @@ public class EntryLabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return Lists of labels associated with the entries.
      */
-    @GetMapping(value = "/{entryIds}/labels", headers = "API-Version=2")
+    @GetMapping(value = "/entries/{entryIds}/labels", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "retrieves lists of labels associated with specific entries",
@@ -140,7 +140,7 @@ public class EntryLabelController {
      * @param userDetails   The UserDetails object representing the logged-in user.
      * @return A list of labels associated with the entry.
      */
-    @GetMapping(value = "/{labelId}/entries", headers = "API-Version=1")
+    @GetMapping(value = "/labels/{labelId}/entries", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "retrieves a list of entries associated with a specific label",
@@ -178,7 +178,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return The newly created EntryLabel association.
      */
-    @PostMapping(value = "/{entryId}/labels/{labelId}", headers = "API-Version=1")
+    @PostMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "adds a label to a specific entry",
             description = "Adds a specified label to a specified entry, whose ids are added to the URL. It requires a Basic-Auth-Header.")
@@ -216,7 +216,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return A List of the newly created EntryLabel associations.
      */
-    @PostMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
+    @PostMapping(value = "/entries/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "adds labels to specific entries",
         description = "Adds specified labels to specified entries, whose ids are added to the URL. It requires a Basic-Auth-Header.")
@@ -263,7 +263,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return An Integer representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/{entryId}/labels/{labelId}", headers = "API-Version=1")
+    @DeleteMapping(value = "/entries/{entryId}/labels/{labelId}", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "removes a label from a specific entry",
             description = "Removes a specified label from a specified entry, whose ids are added to the URL. It requires a Basic-Auth-Header.")
@@ -301,7 +301,7 @@ public class EntryLabelController {
      * @param userDetails  The UserDetails object representing the logged-in user.
      * @return An Integer List representing the number of deleted rows.
      */
-    @DeleteMapping(value = "/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
+    @DeleteMapping(value = "/entries/{entryIds}/labels/{labelIds}", headers = "API-Version=2")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "removes labels from specific entries",
             description = "Removes specified labels from specified entries, whose ids are added to the URL. It requires a Basic-Auth-Header.")
