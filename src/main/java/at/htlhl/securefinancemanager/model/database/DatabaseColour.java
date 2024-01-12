@@ -34,8 +34,8 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 16.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 12.12.2024 (version 1.8)
  */
 public class DatabaseColour {
     /**
@@ -51,7 +51,7 @@ public class DatabaseColour {
 
     /** The hex-value of the colour. */
     @NotBlank
-    private byte[] colourCode;
+    private String colourCode;
 
     /**
      * Constructs a new DatabaseColour object with the specified ID, name, and code.
@@ -60,7 +60,7 @@ public class DatabaseColour {
      * @param colourName    The name of the colour.
      * @param colourCode    The code of the colour.
      */
-    public DatabaseColour(int colourId, String colourName, byte[] colourCode) {
+    public DatabaseColour(int colourId, String colourName, String colourCode) {
         this.colourId = colourId;
         this.colourName = colourName;
         this.colourCode = colourCode;
@@ -89,7 +89,7 @@ public class DatabaseColour {
      *
      * @return The code of the colour.
      */
-    public byte[] getColourCode() {
+    public String getColourCode() {
         return colourCode;
     }
 }

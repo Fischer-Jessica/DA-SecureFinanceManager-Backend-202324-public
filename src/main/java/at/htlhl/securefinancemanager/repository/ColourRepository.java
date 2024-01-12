@@ -24,8 +24,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 16.11.2023 (version 1.7)
+ * @version 1.8
+ * @since 12.01.2024 (version 1.8)
  */
 @Repository
 public class ColourRepository {
@@ -49,7 +49,7 @@ public class ColourRepository {
             int colourId = rs.getInt("pk_colour_id");
             String colourName = rs.getString("colour_name");
             byte[] colourCode = rs.getBytes("colour_code");
-            return new DatabaseColour(colourId, colourName, colourCode);
+            return new DatabaseColour(colourId, colourName, bytesToHex(colourCode));
         });
         if (databaseColours.isEmpty()) {
             throw new ValidationException("No colours found.");
@@ -75,7 +75,7 @@ public class ColourRepository {
             if (rs.next()) {
                 databaseColour = new DatabaseColour(rs.getInt("pk_colour_id"),
                         rs.getString("colour_name"),
-                        rs.getBytes("colour_code"));
+                        bytesToHex((rs.getBytes("colour_code"))));
             }
             conn.close();
             if (databaseColour == null) {
@@ -85,5 +85,19 @@ public class ColourRepository {
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    /**
+     * Converts a byte array to its hexadecimal representation.
+     *
+     * @param bytes The byte array to be converted.
+     * @return A hexadecimal representation of the input byte array.
+     */
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexStringBuilder = new StringBuilder(2 * bytes.length);
+        for (byte b : bytes) {
+            hexStringBuilder.append(String.format("%02X", b));
+        }
+        return hexStringBuilder.toString();
     }
 }
