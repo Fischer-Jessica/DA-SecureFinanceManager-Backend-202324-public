@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Base64;
 import java.util.List;
@@ -30,8 +31,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 17.11.2023 (version 3.1)
+ * @version 3.2
+ * @since 12.01.2024 (version 3.2)
  */
 @Repository
 public class UserRepository {
@@ -92,13 +93,13 @@ public class UserRepository {
             if (rs.next()) {
                 int userId = rs.getInt("pk_user_id");
                 String username = rs.getString("username");
-                byte[] password = rs.getBytes("password");
+                byte[] encodedPassword = rs.getBytes("password");
                 String eMailAddress = rs.getString("email_address");
                 String firstName = rs.getString("first_name");
                 String lastName = rs.getString("last_name");
 
                 conn.close();
-                databaseUser = new DatabaseUser(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
+                databaseUser = new DatabaseUser(userId, username, new String(Base64.getDecoder().decode(encodedPassword), StandardCharsets.UTF_8), eMailAddress, firstName, lastName);
             }
             conn.close();
         } catch (SQLException exception) {
@@ -119,11 +120,11 @@ public class UserRepository {
         List<DatabaseUser> users = jdbcTemplate.query(SELECT_USERS, (rs, rowNum) -> {
             int userId = rs.getInt("pk_user_id");
             String username = rs.getString("username");
-            byte[] password = rs.getBytes("password");
+            byte[] encodedPassword = rs.getBytes("password");
             String eMailAddress = rs.getString("email_address");
             String firstName = rs.getString("first_name");
             String lastName = rs.getString("last_name");
-            return new DatabaseUser(userId, username, Base64.getEncoder().encodeToString(password), eMailAddress, firstName, lastName);
+            return new DatabaseUser(userId, username, new String(Base64.getDecoder().decode(encodedPassword), StandardCharsets.UTF_8), eMailAddress, firstName, lastName);
         });
         if (users.isEmpty()) {
             throw new ValidationException("No users found.");
@@ -146,7 +147,7 @@ public class UserRepository {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_USER, new String[]{"pk_user_id"});
                 ps.setString(1, newApiUser.getUsername());
-                ps.setBytes(2, Base64.getDecoder().decode(newApiUser.getPassword()));
+                ps.setBytes(2, Base64.getEncoder().encode(newApiUser.getPassword().getBytes(StandardCharsets.UTF_8)));
                 if (newApiUser.getEMailAddress() == null) {
                     ps.setNull(3, Types.NULL);
                 } else {
@@ -197,9 +198,9 @@ public class UserRepository {
             }
 
             if (updatedUser.getPassword() != null) {
-                ps.setBytes(2, Base64.getDecoder().decode(updatedUser.getPassword()));
+                ps.setBytes(2, Base64.getEncoder().encode(updatedUser.getPassword().getBytes(StandardCharsets.UTF_8)));
             } else {
-                ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseUser.getPassword()));
+                ps.setBytes(2, Base64.getEncoder().encode(oldDatabaseUser.getPassword().getBytes(StandardCharsets.UTF_8)));
             }
 
             if (updatedUser.getEMailAddress() != null) {

@@ -5,6 +5,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -22,8 +23,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.0
- * @since 17.11.2023 (version 3.0)
+ * @version 3.1
+ * @since 12.01.2024 (version 3.1)
  */
 @Repository
 public class EntryRepository {
@@ -76,30 +77,31 @@ public class EntryRepository {
 
             while (rs.next()) {
                 int entryId = rs.getInt("pk_entry_id");
-                byte[] entryName = rs.getBytes("entry_name");
-                byte[] entryDescription = rs.getBytes("entry_description");
-                byte[] entryAmount = rs.getBytes("entry_amount");
-                byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
-                byte[] entryAttachment = rs.getBytes("entry_attachment");
+                byte[] encodedEntryName = rs.getBytes("entry_name");
+                byte[] encodedEntryDescription = rs.getBytes("entry_description");
+                byte[] encodedEntryAmount = rs.getBytes("entry_amount");
+                byte[] encodedEntryCreationTime = rs.getBytes("entry_creation_time");
+                byte[] encodedEntryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
+                byte[] encodedEntryAttachment = rs.getBytes("entry_attachment");
 
                 String stringEntryName = null;
                 String stringEntryDescription = null;
                 String stringEntryAttachment = null;
 
-                if (entryName != null) {
-                    stringEntryName = Base64.getEncoder().encodeToString(entryName);
+                if (encodedEntryName != null) {
+                    stringEntryName = new String(Base64.getDecoder().decode(encodedEntryName), StandardCharsets.UTF_8);
                 }
-                if (entryDescription != null) {
-                    stringEntryDescription = Base64.getEncoder().encodeToString(entryDescription);
+                if (encodedEntryDescription != null) {
+                    stringEntryDescription = new String(Base64.getDecoder().decode(encodedEntryDescription), StandardCharsets.UTF_8);
                 }
-                if (entryAttachment != null) {
-                    stringEntryAttachment = Base64.getEncoder().encodeToString(entryAttachment);
+                if (encodedEntryAttachment != null) {
+                    stringEntryAttachment = new String(Base64.getDecoder().decode(encodedEntryAttachment), StandardCharsets.UTF_8);
                 }
 
-                databaseEntries.add(new DatabaseEntry(entryId, subcategoryId, stringEntryName , stringEntryDescription,
-                        Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
-                        Base64.getEncoder().encodeToString(entryTimeOfTransaction),stringEntryAttachment, activeUserId));
+                databaseEntries.add(new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
+                        new String(Base64.getDecoder().decode(encodedEntryAmount), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryCreationTime), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryTimeOfTransaction), StandardCharsets.UTF_8), stringEntryAttachment, activeUserId));
             }
             if (databaseEntries.isEmpty()) {
                 throw new ValidationException("No entries found for the subcategoryId " + subcategoryId + " for the authenticated user.");
@@ -133,30 +135,31 @@ public class EntryRepository {
 
             DatabaseEntry databaseEntry = null;
             if (rs.next()) {
-                byte[] entryName = rs.getBytes("entry_name");
-                byte[] entryDescription = rs.getBytes("entry_description");
-                byte[] entryAmount = rs.getBytes("entry_amount");
-                byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
-                byte[] entryAttachment = rs.getBytes("entry_attachment");
+                byte[] encodedEntryName = rs.getBytes("entry_name");
+                byte[] encodedEntryDescription = rs.getBytes("entry_description");
+                byte[] encodedEntryAmount = rs.getBytes("entry_amount");
+                byte[] encodedEntryCreationTime = rs.getBytes("entry_creation_time");
+                byte[] encodedEntryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
+                byte[] encodedEntryAttachment = rs.getBytes("entry_attachment");
 
                 String stringEntryName = null;
                 String stringEntryDescription = null;
                 String stringEntryAttachment = null;
 
-                if (entryName != null) {
-                    stringEntryName = Base64.getEncoder().encodeToString(entryName);
+                if (encodedEntryName != null) {
+                    stringEntryName = new String(Base64.getDecoder().decode(encodedEntryName), StandardCharsets.UTF_8);
                 }
-                if (entryDescription != null) {
-                    stringEntryDescription = Base64.getEncoder().encodeToString(entryDescription);
+                if (encodedEntryDescription != null) {
+                    stringEntryDescription = new String(Base64.getDecoder().decode(encodedEntryDescription), StandardCharsets.UTF_8);
                 }
-                if (entryAttachment != null) {
-                    stringEntryAttachment = Base64.getEncoder().encodeToString(entryAttachment);
+                if (encodedEntryAttachment != null) {
+                    stringEntryAttachment = new String(Base64.getDecoder().decode(encodedEntryAttachment), StandardCharsets.UTF_8);
                 }
 
                 databaseEntry = new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
-                        Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
-                        Base64.getEncoder().encodeToString(entryTimeOfTransaction), stringEntryAttachment, activeUserId);
+                        new String(Base64.getDecoder().decode(encodedEntryAmount), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryCreationTime), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryTimeOfTransaction), StandardCharsets.UTF_8), stringEntryAttachment, activeUserId);
             }
             if (databaseEntry == null) {
                 throw new ValidationException("Entry with ID " + entryId + " and subcategoryId " + subcategoryId + " not found.");
@@ -188,31 +191,32 @@ public class EntryRepository {
 
             DatabaseEntry databaseEntry = null;
             if (rs.next()) {
-                byte[] entryName = rs.getBytes("entry_name");
-                byte[] entryDescription = rs.getBytes("entry_description");
-                byte[] entryAmount = rs.getBytes("entry_amount");
-                byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
-                byte[] entryAttachment = rs.getBytes("entry_attachment");
+                byte[] encodedEntryName = rs.getBytes("entry_name");
+                byte[] encodedEntryDescription = rs.getBytes("entry_description");
+                byte[] encodedEntryAmount = rs.getBytes("entry_amount");
+                byte[] encodedEntryCreationTime = rs.getBytes("entry_creation_time");
+                byte[] encodedEntryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
+                byte[] encodedEntryAttachment = rs.getBytes("entry_attachment");
                 int subcategoryId = rs.getInt("fk_subcategory_id");
 
                 String stringEntryName = null;
                 String stringEntryDescription = null;
                 String stringEntryAttachment = null;
 
-                if (entryName != null) {
-                    stringEntryName = Base64.getEncoder().encodeToString(entryName);
+                if (encodedEntryName != null) {
+                    stringEntryName = new String(Base64.getDecoder().decode(encodedEntryName), StandardCharsets.UTF_8);
                 }
-                if (entryDescription != null) {
-                    stringEntryDescription = Base64.getEncoder().encodeToString(entryDescription);
+                if (encodedEntryDescription != null) {
+                    stringEntryDescription = new String(Base64.getDecoder().decode(encodedEntryDescription), StandardCharsets.UTF_8);
                 }
-                if (entryAttachment != null) {
-                    stringEntryAttachment = Base64.getEncoder().encodeToString(entryAttachment);
+                if (encodedEntryAttachment != null) {
+                    stringEntryAttachment = new String(Base64.getDecoder().decode(encodedEntryAttachment), StandardCharsets.UTF_8);
                 }
 
                 databaseEntry = new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
-                        Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
-                        Base64.getEncoder().encodeToString(entryTimeOfTransaction), stringEntryAttachment, activeUserId);
+                        new String(Base64.getDecoder().decode(encodedEntryAmount), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryCreationTime), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryTimeOfTransaction), StandardCharsets.UTF_8), stringEntryAttachment, activeUserId);
             }
             if (databaseEntry == null) {
                 throw new ValidationException("Entry with ID " + entryId + " not found.");
@@ -236,7 +240,7 @@ public class EntryRepository {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-            byte[] entryCreationTimeBytes = currentTimestamp.toString().getBytes();
+            byte[] encodedEntryCreationTimeBytes = Base64.getEncoder().encode(currentTimestamp.toString().getBytes(StandardCharsets.UTF_8));
 
             UserRepository.jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_ENTRY, new String[]{"pk_entry_id"});
@@ -244,26 +248,26 @@ public class EntryRepository {
                 if (newEntry.getEntryName() == null) {
                     ps.setNull(2, Types.NULL);
                 } else {
-                    ps.setBytes(2, Base64.getDecoder().decode(newEntry.getEntryName()));
+                    ps.setBytes(2, Base64.getEncoder().encode(newEntry.getEntryName().getBytes(StandardCharsets.UTF_8)));
                 }
                 if (newEntry.getEntryDescription() == null) {
                     ps.setNull(3, Types.NULL);
                 } else {
-                    ps.setBytes(3, Base64.getDecoder().decode(newEntry.getEntryDescription()));
+                    ps.setBytes(3, Base64.getEncoder().encode(newEntry.getEntryDescription().getBytes(StandardCharsets.UTF_8)));
                 }
-                ps.setBytes(4, Base64.getDecoder().decode(newEntry.getEntryAmount()));
-                ps.setBytes(5, entryCreationTimeBytes);
-                ps.setBytes(6, Base64.getDecoder().decode(newEntry.getEntryTimeOfTransaction()));
+                ps.setBytes(4, Base64.getEncoder().encode(newEntry.getEntryAmount().getBytes(StandardCharsets.UTF_8)));
+                ps.setBytes(5, encodedEntryCreationTimeBytes);
+                ps.setBytes(6, Base64.getEncoder().encode(newEntry.getEntryTimeOfTransaction().getBytes(StandardCharsets.UTF_8)));
                 if (newEntry.getEntryAttachment() == null) {
                     ps.setNull(7, Types.NULL);
                 } else {
-                    ps.setBytes(7, Base64.getDecoder().decode(newEntry.getEntryAttachment()));
+                    ps.setBytes(7, Base64.getEncoder().encode(newEntry.getEntryAttachment().getBytes(StandardCharsets.UTF_8)));
                 }
                 ps.setInt(8, newEntry.getEntryUserId());
                 return ps;
             }, keyHolder);
 
-            return new DatabaseEntry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntrySubcategoryId(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), Base64.getEncoder().encodeToString(entryCreationTimeBytes), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), newEntry.getEntryUserId());
+            return new DatabaseEntry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntrySubcategoryId(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), currentTimestamp.toString(), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), newEntry.getEntryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -288,44 +292,44 @@ public class EntryRepository {
             ps.setInt(1, updatedEntry.getEntrySubcategoryId());
 
             if (updatedEntry.getEntryName() != null) {
-                ps.setBytes(2, Base64.getDecoder().decode(updatedEntry.getEntryName()));
+                ps.setBytes(2, Base64.getEncoder().encode(updatedEntry.getEntryName().getBytes(StandardCharsets.UTF_8)));
             } else {
                 if (oldDatabaseEntry.getEntryName() == null) {
                     ps.setNull(2, Types.NULL);
                 } else {
-                    ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseEntry.getEntryName()));
+                    ps.setBytes(2, Base64.getEncoder().encode(oldDatabaseEntry.getEntryName().getBytes(StandardCharsets.UTF_8)));
                 }
             }
 
             if (updatedEntry.getEntryDescription() != null) {
-                ps.setBytes(3, Base64.getDecoder().decode(updatedEntry.getEntryDescription()));
+                ps.setBytes(3, Base64.getEncoder().encode(updatedEntry.getEntryDescription().getBytes(StandardCharsets.UTF_8)));
             } else {
                 if (oldDatabaseEntry.getEntryDescription() == null) {
                     ps.setNull(3, Types.NULL);
                 } else {
-                    ps.setBytes(3, Base64.getDecoder().decode(oldDatabaseEntry.getEntryDescription()));
+                    ps.setBytes(3, Base64.getEncoder().encode(oldDatabaseEntry.getEntryDescription().getBytes(StandardCharsets.UTF_8)));
                 }
             }
 
             if (updatedEntry.getEntryAmount() != null) {
-                ps.setBytes(4, Base64.getDecoder().decode(updatedEntry.getEntryAmount()));
+                ps.setBytes(4, Base64.getEncoder().encode(updatedEntry.getEntryAmount().getBytes(StandardCharsets.UTF_8)));
             } else {
-                ps.setBytes(4, Base64.getDecoder().decode(oldDatabaseEntry.getEntryAmount()));
+                ps.setBytes(4, Base64.getEncoder().encode(oldDatabaseEntry.getEntryAmount().getBytes(StandardCharsets.UTF_8)));
             }
 
             if (updatedEntry.getEntryTimeOfTransaction() != null) {
-                ps.setBytes(5, Base64.getDecoder().decode(updatedEntry.getEntryTimeOfTransaction()));
+                ps.setBytes(5, Base64.getEncoder().encode(updatedEntry.getEntryTimeOfTransaction().getBytes(StandardCharsets.UTF_8)));
             } else {
-                ps.setBytes(5, Base64.getDecoder().decode(oldDatabaseEntry.getEntryTimeOfTransaction()));
+                ps.setBytes(5, Base64.getEncoder().encode(oldDatabaseEntry.getEntryTimeOfTransaction().getBytes(StandardCharsets.UTF_8)));
             }
 
             if (updatedEntry.getEntryAttachment() != null) {
-                ps.setBytes(6, Base64.getDecoder().decode(updatedEntry.getEntryAttachment()));
+                ps.setBytes(6, Base64.getEncoder().encode(updatedEntry.getEntryAttachment().getBytes(StandardCharsets.UTF_8)));
             } else {
                 if (oldDatabaseEntry.getEntryAttachment() == null) {
                     ps.setNull(6, Types.NULL);
                 } else {
-                    ps.setBytes(6, Base64.getDecoder().decode(oldDatabaseEntry.getEntryAttachment()));
+                    ps.setBytes(6, Base64.getEncoder().encode(oldDatabaseEntry.getEntryAttachment().getBytes(StandardCharsets.UTF_8)));
                 }
             }
 

@@ -5,6 +5,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -35,8 +36,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 17.11.2023 (version 2.8)
+ * @version 2.9
+ * @since 12.01.2024 (version 2.9)
  */
 @Repository
 public class CategoryRepository {
@@ -82,14 +83,14 @@ public class CategoryRepository {
             List<DatabaseCategory> databaseCategories = new ArrayList<>();
             while (rs.next()) {
                 int categoryId = rs.getInt("pk_category_id");
-                byte[] categoryName = rs.getBytes("category_name");
-                byte[] categoryDescription = rs.getBytes("category_description");
+                byte[] encodedCategoryName = rs.getBytes("category_name");
+                byte[] encodedCategoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                if (categoryDescription == null) {
-                    databaseCategories.add(new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), null, categoryColourId, activeUserId));
+                if (encodedCategoryDescription == null) {
+                    databaseCategories.add(new DatabaseCategory(categoryId, new String(Base64.getDecoder().decode(encodedCategoryName), StandardCharsets.UTF_8), null, categoryColourId, activeUserId));
                 } else {
-                    databaseCategories.add(new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId));
+                    databaseCategories.add(new DatabaseCategory(categoryId, new String(Base64.getDecoder().decode(encodedCategoryName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedCategoryDescription), StandardCharsets.UTF_8), categoryColourId, activeUserId));
                 }
             }
             if (databaseCategories.isEmpty()) {
@@ -121,14 +122,14 @@ public class CategoryRepository {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                byte[] categoryName = rs.getBytes("category_name");
-                byte[] categoryDescription = rs.getBytes("category_description");
+                byte[] encodedCategoryName = rs.getBytes("category_name");
+                byte[] encodedCategoryDescription = rs.getBytes("category_description");
                 int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                if (categoryDescription == null) {
-                    return new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), null, categoryColourId, activeUserId);
+                if (encodedCategoryDescription == null) {
+                    return new DatabaseCategory(categoryId, new String(Base64.getDecoder().decode(encodedCategoryName), StandardCharsets.UTF_8), null, categoryColourId, activeUserId);
                 } else {
-                    return new DatabaseCategory(categoryId, Base64.getEncoder().encodeToString(categoryName), Base64.getEncoder().encodeToString(categoryDescription), categoryColourId, activeUserId);
+                    return new DatabaseCategory(categoryId, new String(Base64.getDecoder().decode(encodedCategoryName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedCategoryDescription), StandardCharsets.UTF_8), categoryColourId, activeUserId);
                 }
             }
             throw new ValidationException("Category with ID " + categoryId + " not found.");
@@ -151,11 +152,11 @@ public class CategoryRepository {
 
             UserRepository.jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_CATEGORY, new String[]{"pk_category_id"});
-                ps.setBytes(1, Base64.getDecoder().decode(newCategory.getCategoryName()));
+                ps.setBytes(1, Base64.getEncoder().encode(newCategory.getCategoryName().getBytes(StandardCharsets.UTF_8)));
                 if (newCategory.getCategoryDescription() == null) {
                     ps.setNull(2, Types.NULL);
                 } else {
-                    ps.setBytes(2, Base64.getDecoder().decode(newCategory.getCategoryDescription()));
+                    ps.setBytes(2, Base64.getEncoder().encode(newCategory.getCategoryDescription().getBytes(StandardCharsets.UTF_8)));
                 }
                 ps.setInt(3, newCategory.getCategoryColourId());
                 ps.setInt(4, newCategory.getCategoryUserId());
@@ -185,18 +186,18 @@ public class CategoryRepository {
             PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY);
 
             if (updatedCategory.getCategoryName() != null) {
-                ps.setBytes(1, Base64.getDecoder().decode(updatedCategory.getCategoryName()));
+                ps.setBytes(1, Base64.getEncoder().encode(updatedCategory.getCategoryName().getBytes(StandardCharsets.UTF_8)));
             } else {
-                ps.setBytes(1, Base64.getDecoder().decode(oldDatabaseCategory.getCategoryName()));
+                ps.setBytes(1, Base64.getEncoder().encode(oldDatabaseCategory.getCategoryName().getBytes(StandardCharsets.UTF_8)));
             }
 
             if (updatedCategory.getCategoryDescription() != null) {
-                ps.setBytes(2, Base64.getDecoder().decode(updatedCategory.getCategoryDescription()));
+                ps.setBytes(2, Base64.getEncoder().encode(updatedCategory.getCategoryDescription().getBytes(StandardCharsets.UTF_8)));
             } else {
                 if (oldDatabaseCategory.getCategoryDescription() == null) {
                     ps.setNull(2, Types.NULL);
                 } else {
-                    ps.setBytes(2, Base64.getDecoder().decode(oldDatabaseCategory.getCategoryDescription()));
+                    ps.setBytes(2, Base64.getEncoder().encode(oldDatabaseCategory.getCategoryDescription().getBytes(StandardCharsets.UTF_8)));
                 }
             }
 

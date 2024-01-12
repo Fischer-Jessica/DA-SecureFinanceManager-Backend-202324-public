@@ -7,6 +7,7 @@ import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,8 +32,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 11.01.2024 (version 2.3)
+ * @version 2.4
+ * @since 12.01.2024 (version 2.4)
  */
 @Repository
 public class EntryLabelRepository {
@@ -43,7 +44,7 @@ public class EntryLabelRepository {
             "WHERE entry_labels.fk_entry_id = ? AND entry_labels.fk_user_id = ? AND labels.fk_user_id = ?;";
 
     /** SQL query to retrieve entries for a specific label and user from the 'entries' and 'entry_labels' tables in the database. */
-    private static final String SELECT_ENTRIES_FOR_LABEL = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_subcategory_id, entries.fk_user_id " +
+    private static final String SELECT_ENTRIES_FOR_LABEL = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_subcategory_id " +
             "FROM entries " +
             "JOIN entry_labels ON entries.pk_entry_id = entry_labels.fk_entry_id " +
             "WHERE entry_labels.fk_label_id = ? AND entry_labels.fk_user_id = ? AND entries.fk_user_id = ?;";
@@ -80,14 +81,14 @@ public class EntryLabelRepository {
             List<DatabaseLabel> databaseLabels = new ArrayList<>();
             while (rs.next()) {
                 int labelId = rs.getInt("pk_label_id");
-                byte[] labelName = rs.getBytes("label_name");
-                byte[] labelDescription = rs.getBytes("label_description");
+                byte[] encodedLabelName = rs.getBytes("label_name");
+                byte[] encodedLabelDescription = rs.getBytes("label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                if (labelDescription == null) {
-                    databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), null, labelColourId, activeUserId));
+                if (encodedLabelDescription == null) {
+                    databaseLabels.add(new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), null, labelColourId, activeUserId));
                 } else {
-                    databaseLabels.add(new DatabaseLabel(labelId, Base64.getEncoder().encodeToString(labelName), Base64.getEncoder().encodeToString(labelDescription), labelColourId, activeUserId));
+                    databaseLabels.add(new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedLabelDescription), StandardCharsets.UTF_8), labelColourId, activeUserId));
                 }
             }
             if (databaseLabels.isEmpty()) {
@@ -122,32 +123,32 @@ public class EntryLabelRepository {
             List<DatabaseEntry> databaseLabels = new ArrayList<>();
             while (rs.next()) {
                 int entryId = rs.getInt("pk_entry_id");
-                byte[] entryName = rs.getBytes("entry_name");
-                byte[] entryDescription = rs.getBytes("entry_description");
-                byte[] entryAmount = rs.getBytes("entry_amount");
-                byte[] entryCreationTime = rs.getBytes("entry_creation_time");
-                byte[] entryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
-                byte[] entryAttachment = rs.getBytes("entry_attachment");
+                byte[] encodedEntryName = rs.getBytes("entry_name");
+                byte[] encodedEntryDescription = rs.getBytes("entry_description");
+                byte[] encodedEntryAmount = rs.getBytes("entry_amount");
+                byte[] encodedEntryCreationTime = rs.getBytes("entry_creation_time");
+                byte[] encodedEntryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
+                byte[] encodedEntryAttachment = rs.getBytes("entry_attachment");
                 int subcategoryId = rs.getInt("fk_subcategory_id");
-                int entryUserId = rs.getInt("fk_user_id");
 
                 String stringEntryName = null;
                 String stringEntryDescription = null;
                 String stringEntryAttachment = null;
 
-                if (entryName != null) {
-                    stringEntryName = Base64.getEncoder().encodeToString(entryName);
+                if (encodedEntryName != null) {
+                    stringEntryName = new String(Base64.getDecoder().decode(encodedEntryName), StandardCharsets.UTF_8);
                 }
-                if (entryDescription != null) {
-                    stringEntryDescription = Base64.getEncoder().encodeToString(entryDescription);
+                if (encodedEntryDescription != null) {
+                    stringEntryDescription = new String(Base64.getDecoder().decode(encodedEntryDescription), StandardCharsets.UTF_8);
                 }
-                if (entryAttachment != null) {
-                    stringEntryAttachment = Base64.getEncoder().encodeToString(entryAttachment);
+                if (encodedEntryAttachment != null) {
+                    stringEntryAttachment = new String(Base64.getDecoder().decode(encodedEntryAttachment), StandardCharsets.UTF_8);
                 }
 
                 databaseLabels.add(new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
-                        Base64.getEncoder().encodeToString(entryAmount), Base64.getEncoder().encodeToString(entryCreationTime),
-                        Base64.getEncoder().encodeToString(entryTimeOfTransaction), stringEntryAttachment, activeUserId));
+                        new String(Base64.getDecoder().decode(encodedEntryAmount), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryCreationTime), StandardCharsets.UTF_8),
+                        new String(Base64.getDecoder().decode(encodedEntryTimeOfTransaction), StandardCharsets.UTF_8), stringEntryAttachment, activeUserId));
             }
             if (databaseLabels.isEmpty()) {
                 throw new ValidationException("No entries found for an label with ID " + labelId);
