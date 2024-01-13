@@ -31,8 +31,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.2
- * @since 12.01.2024 (version 3.2)
+ * @version 3.3
+ * @since 13.01.2024 (version 3.3)
  */
 @Repository
 public class UserRepository {
@@ -192,6 +192,7 @@ public class UserRepository {
             if (updatedUser.getUsername() != null) {
                 ps.setString(1, updatedUser.getUsername());
                 username = updatedUser.getUsername();
+                userSingleton.updateUsername(oldDatabaseUser.getUserId(), updatedUser.getUsername());
             } else {
                 ps.setString(1, oldDatabaseUser.getUsername());
                 username = oldDatabaseUser.getUsername();
@@ -263,6 +264,7 @@ public class UserRepository {
             if (rowsAffected == 0) {
                 throw new ValidationException("User with username " + username + " not found.");
             }
+            userSingleton.removeUserById(userSingleton.getUserId(username));
             return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);

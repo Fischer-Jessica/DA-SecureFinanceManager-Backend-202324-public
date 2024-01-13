@@ -25,16 +25,23 @@ import java.util.Map;
  *
  * // Retrieve the user ID associated with a username
  * int userId = userSingleton.getUserId("exampleUser");
+ *
+ * // Update the username associated with a user ID
+ * userSingleton.updateUsername(123, "newUsername");
+ *
+ * // Remove a user entry based on the user ID
+ * userSingleton.removeUserById(123);
  * }</pre>
  *
  * <p>
- * The class provides methods to add a new user to the user map and retrieve the user ID associated
- * with a given username. If the username is not found in the map, a default value of -1 is returned.
+ * The class provides methods to add a new user to the user map, retrieve the user ID associated
+ * with a given username, update the username associated with a user ID, and remove a user entry based on the user ID.
+ * If the username is not found in the map, a default value of -1 is returned.
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 14.11.2023 (version 1.1)
+ * @version 1.2
+ * @since 13.01.2024 (version 1.2)
  */
 public class UserSingleton {
     /**
@@ -87,5 +94,30 @@ public class UserSingleton {
      */
     public int getUserId(String username) {
         return userMap.getOrDefault(username, -1);
+    }
+
+    /**
+     * Updates the username associated with the given user ID.
+     *
+     * @param userId    The user ID for which to update the username.
+     * @param newUsername The new username to associate with the user ID.
+     */
+    public void updateUsername(int userId, String newUsername) {
+        userMap.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(userId))
+                .findFirst()
+                .ifPresent(entry -> {
+                    userMap.remove(entry.getKey());
+                    userMap.put(newUsername, userId);
+                });
+    }
+
+    /**
+     * Removes a user entry from the user map based on the user ID.
+     *
+     * @param userId The user ID for which to remove the user entry.
+     */
+    public void removeUserById(int userId) {
+        userMap.entrySet().removeIf(entry -> entry.getValue().equals(userId));
     }
 }

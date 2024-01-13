@@ -9,15 +9,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
@@ -49,35 +44,36 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 1.4
- * @since 17.11.2023 (version 1.4)
+ * @version 1.5
+ * @since 13.01.2024 (version 1.5)
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
     /**
-     * Configures the user service that loads user information from the repository and uses it for authentication.
+     * Configures the user service that dynamically loads user information from the repository based on the
+     * incoming username and uses it for authentication.
      *
-     * @param encoder           The password encoder for encrypting user passwords.
-     * @param userRepository    The repository that stores user data.
-     * @return A user service that loads user details from the repository.
+     * @param encoder The password encoder for encrypting user passwords.
+     * @return A user service that loads user details from the repository dynamically based on the username.
      */
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder, UserRepository userRepository) throws ValidationException {
-        List<DatabaseUser> users = userRepository.getUsers();
-        List<UserDetails> userDetailsList = new ArrayList<>();
-
-        for (DatabaseUser apiUser : users) {
+    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+        return username -> {
+            DatabaseUser apiUser;
+            try {
+                apiUser = UserRepository.getUserObject(username);
+            } catch (ValidationException exception) {
+                throw new RuntimeException(exception);
+            }
             userSingleton.getInstance().addUser(apiUser.getUsername(), apiUser.getUserId());
-            UserDetails userDetails = User.withUsername(apiUser.getUsername())
+
+            return User.withUsername(apiUser.getUsername())
                     .password(encoder.encode(apiUser.getPassword()))
                     .roles("USER")
                     .build();
-            userDetailsList.add(userDetails);
-        }
-
-        return new InMemoryUserDetailsManager(userDetailsList);
+        };
     }
 
     /**
@@ -94,10 +90,10 @@ public class SecurityConfig {
                 .csrf().disable()
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/secure-finance-manager/swagger-ui/**").permitAll() // Erlaubt den Zugriff auf Swagger-UI ohne Authentifizierung
-                                .requestMatchers("/secure-finance-manager/colours/**").permitAll() // Erlaubt den Zugriff auf den Colour-Endpunkt ohne Authentifizierung
+                                .requestMatchers("/secure-finance-manager/swagger-ui/**").permitAll()
+                                .requestMatchers("/secure-finance-manager/colours/**").permitAll()
                                 .requestMatchers("/secure-finance-manager/users/**").permitAll()
-                                .requestMatchers("/secure-finance-manager/**").authenticated() // Authentifizierung erforderlich für andere Pfade
+                                .requestMatchers("/secure-finance-manager/**").authenticated()
                 )
                 .httpBasic();
         return http.build();
