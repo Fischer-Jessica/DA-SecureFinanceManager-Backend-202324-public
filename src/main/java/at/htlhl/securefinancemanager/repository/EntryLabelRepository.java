@@ -4,6 +4,8 @@ import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
 import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -32,11 +34,17 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.4
- * @since 12.01.2024 (version 2.4)
+ * @version 2.5
+ * @since 26.01.2024 (version 2.5)
  */
 @Repository
 public class EntryLabelRepository {
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     /** SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database. */
     private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
             "FROM labels " +
@@ -71,7 +79,7 @@ public class EntryLabelRepository {
     public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_LABELS_FOR_ENTRY);
             ps.setInt(1, entryId);
             ps.setInt(2, activeUserId);
@@ -113,7 +121,7 @@ public class EntryLabelRepository {
     public List<DatabaseEntry> getEntriesForLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES_FOR_LABEL);
             ps.setInt(1, labelId);
             ps.setInt(2, activeUserId);
@@ -177,11 +185,11 @@ public class EntryLabelRepository {
             new LabelRepository().getLabel(labelId, username);
             new EntryRepository().getEntryWithoutSubcategoryId(entryId, username);
 
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
-            UserRepository.jdbcTemplate.update(connection -> {
+            jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(ADD_LABEL_TO_ENTRY, new String[]{"pk_entry_label_id"});
                 ps.setInt(1, entryId);
                 ps.setInt(2, labelId);
@@ -211,7 +219,7 @@ public class EntryLabelRepository {
             new LabelRepository().getLabel(labelId, username);
             new EntryRepository().getEntryWithoutSubcategoryId(entryId, username);
 
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY);
             ps.setInt(1, entryId);

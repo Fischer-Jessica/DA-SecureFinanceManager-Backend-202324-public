@@ -3,8 +3,10 @@ package at.htlhl.securefinancemanager.config;
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import at.htlhl.securefinancemanager.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -44,13 +46,19 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 1.5
- * @since 13.01.2024 (version 1.5)
+ * @version 1.6
+ * @since 26.01.2024 (version 1.6)
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     /**
      * Configures the user service that dynamically loads user information from the repository based on the
      * incoming username and uses it for authentication.
@@ -63,7 +71,7 @@ public class SecurityConfig {
         return username -> {
             DatabaseUser apiUser;
             try {
-                apiUser = UserRepository.getUserObject(username);
+                apiUser = UserRepository.getUserObject(jdbcTemplate, username);
             } catch (ValidationException exception) {
                 throw new RuntimeException(exception);
             }

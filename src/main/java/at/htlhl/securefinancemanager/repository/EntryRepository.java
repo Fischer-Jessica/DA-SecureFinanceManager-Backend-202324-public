@@ -2,6 +2,8 @@ package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -23,11 +25,17 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 12.01.2024 (version 3.1)
+ * @version 3.2
+ * @since 26.01.2024 (version 3.2)
  */
 @Repository
 public class EntryRepository {
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     /** SQL query to retrieve entries from the 'entries' table in the database for a specific subcategory and user. */
     private static final String SELECT_ENTRIES = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment " +
             "FROM entries " +
@@ -67,7 +75,7 @@ public class EntryRepository {
     public List<DatabaseEntry> getEntries(int subcategoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES);
             ps.setInt(1, activeUserId);
             ps.setInt(2, subcategoryId);
@@ -126,7 +134,7 @@ public class EntryRepository {
     public DatabaseEntry getEntry(int subcategoryId, int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY);
             ps.setInt(1, entryId);
             ps.setInt(2, activeUserId);
@@ -183,7 +191,7 @@ public class EntryRepository {
     public DatabaseEntry getEntryWithoutSubcategoryId(int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY_WITHOUT_SUBCATEGORY);
             ps.setInt(1, entryId);
             ps.setInt(2, activeUserId);
@@ -235,14 +243,14 @@ public class EntryRepository {
      */
     public DatabaseEntry addEntry(DatabaseEntry newEntry) {
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
             byte[] encodedEntryCreationTimeBytes = Base64.getEncoder().encode(currentTimestamp.toString().getBytes(StandardCharsets.UTF_8));
 
-            UserRepository.jdbcTemplate.update(connection -> {
+            jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_ENTRY, new String[]{"pk_entry_id"});
                 ps.setInt(1, newEntry.getEntrySubcategoryId());
                 if (newEntry.getEntryName() == null) {
@@ -286,7 +294,7 @@ public class EntryRepository {
     public DatabaseEntry updateEntry(DatabaseEntry updatedEntry, String username) throws ValidationException {
         DatabaseEntry oldDatabaseEntry = getEntry(updatedEntry.getEntrySubcategoryId(), updatedEntry.getEntryId(), username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY);
 
             ps.setInt(1, updatedEntry.getEntrySubcategoryId());
@@ -357,7 +365,7 @@ public class EntryRepository {
      */
     public int deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_ENTRY);
             ps.setInt(1, entryId);

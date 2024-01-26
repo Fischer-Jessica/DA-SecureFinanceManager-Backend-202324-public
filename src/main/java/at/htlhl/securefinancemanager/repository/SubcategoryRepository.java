@@ -2,6 +2,8 @@ package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -23,11 +25,17 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.8
- * @since 12.01.2024 (version 2.8)
+ * @version 2.9
+ * @since 26.01.2024 (version 2.9)
  */
 @Repository
 public class SubcategoryRepository {
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     /** SQL query to select all subcategories for a specific category and user. */
     private static final String SELECT_SUBCATEGORIES = "SELECT pk_subcategory_id, subcategory_name, subcategory_description, fk_subcategory_colour_id " +
             "FROM subcategories " +
@@ -62,7 +70,7 @@ public class SubcategoryRepository {
     public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORIES);
             ps.setInt(1, activeUserId);
             ps.setInt(2, categoryId);
@@ -104,7 +112,7 @@ public class SubcategoryRepository {
     public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORY);
             ps.setInt(1, subcategoryId);
             ps.setInt(2, activeUserId);
@@ -136,11 +144,11 @@ public class SubcategoryRepository {
      */
     public DatabaseSubcategory addSubcategory(DatabaseSubcategory newSubcategory) {
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
-            UserRepository.jdbcTemplate.update(connection -> {
+            jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_SUBCATEGORY, new String[]{"pk_subcategory_id"});
                 ps.setInt(1, newSubcategory.getSubcategoryCategoryId());
                 ps.setBytes(2, Base64.getEncoder().encode(newSubcategory.getSubcategoryName().getBytes(StandardCharsets.UTF_8)));
@@ -173,7 +181,7 @@ public class SubcategoryRepository {
     public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) throws ValidationException {
         DatabaseSubcategory oldDatabaseSubcategory = getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY);
 
             ps.setInt(1, updatedSubcategory.getSubcategoryCategoryId());
@@ -223,7 +231,7 @@ public class SubcategoryRepository {
      */
     public int deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_SUBCATEGORY);
             ps.setInt(1, subcategoryId);

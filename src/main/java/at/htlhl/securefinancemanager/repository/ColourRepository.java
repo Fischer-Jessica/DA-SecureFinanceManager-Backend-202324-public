@@ -2,6 +2,8 @@ package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseColour;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -24,11 +26,17 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 12.01.2024 (version 1.8)
+ * @version 1.9
+ * @since 26.01.2024 (version 1.9)
  */
 @Repository
 public class ColourRepository {
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     /** SQL query to retrieve all colours from the 'colours' table in the database. */
     private static final String SELECT_COLOURS = "SELECT pk_colour_id, colour_name, colour_code " +
             "FROM colours;";
@@ -45,7 +53,7 @@ public class ColourRepository {
      * @throws ValidationException  If no colours are found.
      */
     public List<DatabaseColour> getColours() throws ValidationException {
-        List<DatabaseColour> databaseColours = UserRepository.jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
+        List<DatabaseColour> databaseColours = jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
             int colourId = rs.getInt("pk_colour_id");
             String colourName = rs.getString("colour_name");
             byte[] colourCode = rs.getBytes("colour_code");
@@ -66,7 +74,7 @@ public class ColourRepository {
      */
     public DatabaseColour getColour(int colourId) throws ValidationException {
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(ColourRepository.SELECT_COLOUR);
             ps.setInt(1, colourId);
             ResultSet rs = ps.executeQuery();

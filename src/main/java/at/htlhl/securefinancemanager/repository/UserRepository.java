@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Base64;
@@ -31,14 +30,16 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.3
- * @since 13.01.2024 (version 3.3)
+ * @version 3.4
+ * @since 26.01.2024 (version 3.4)
  */
 @Repository
 public class UserRepository {
-    /** JdbcTemplate which is used for executing SQL statements, in the other repositories too, but implementing the template at each usage would be unnecessary. */
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
     @Autowired
-    protected static JdbcTemplate jdbcTemplate = new JdbcTemplate();
+    private JdbcTemplate jdbcTemplate;
 
     /** SQL query to retrieve a user based on the username. */
     private static final String SELECT_USER = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
@@ -64,25 +65,16 @@ public class UserRepository {
             "WHERE pk_user_id = ?;";
 
     /**
-     * Constructs a new UserRepository object with the given DataSource.
-     *
-     * @param dataSource The DataSource object to be used by the repository.
-     */
-    @Autowired
-    public UserRepository(DataSource dataSource) {
-        UserRepository.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-
-    /**
      * Retrieves a User object based on the provided username.
      *
+     * @param jdbcTemplate The Spring JDBC template for executing SQL queries and updates.
      * @param activeUsername The username of the user to be retrieved.
      * @return The User object representing the user with the given username.
      * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
      *                              This exception may indicate that the userId is not found or that the userId associated
      *                              with the provided username does not match the expected owner of the user.
      */
-    public static DatabaseUser getUserObject(String activeUsername) throws ValidationException {
+    public static DatabaseUser getUserObject(JdbcTemplate jdbcTemplate, String activeUsername) throws ValidationException {
         DatabaseUser databaseUser = null;
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
@@ -106,7 +98,7 @@ public class UserRepository {
             throw new RuntimeException(exception);
         }
         if (databaseUser == null) {
-            throw new ValidationException("User with username" + activeUsername + "not found.");
+            throw new ValidationException("User with username " + activeUsername + " not found.");
         }
         return databaseUser;
     }
@@ -184,7 +176,7 @@ public class UserRepository {
      *                              with the provided username does not match the expected owner of the user.
      */
     public DatabaseUser updateUser(ApiUser updatedUser, String username) throws ValidationException {
-        DatabaseUser oldDatabaseUser = getUserObject(username);
+        DatabaseUser oldDatabaseUser = getUserObject(jdbcTemplate, username);
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_USER);
@@ -237,7 +229,7 @@ public class UserRepository {
             ps.setInt(6, oldDatabaseUser.getUserId());
             ps.executeUpdate();
             conn.close();
-            return getUserObject(username);
+            return getUserObject(jdbcTemplate, username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

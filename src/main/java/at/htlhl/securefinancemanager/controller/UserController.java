@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -53,8 +54,8 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 3.3
- * @since 05.01.2024 (version 3.3)
+ * @version 3.4
+ * @since 26.01.2024 (version 3.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -63,6 +64,12 @@ public class UserController {
     /** The UserRepository instance for accessing user data. */
     @Autowired
     UserRepository userRepository;
+
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     // GET /users *******************************************************************************************************
 
@@ -102,7 +109,7 @@ public class UserController {
      * @return ResponseEntity containing the user's information if authentication is successful.
      * Returns UNAUTHORIZED status with an error message if authentication fails.
      * @see UserDetails
-     * @see UserRepository#getUserObject(String)
+     * @see UserRepository#getUserObject(JdbcTemplate, String)
      */
     @GetMapping(value = "/user", headers = "API-Version=1")
     @ResponseStatus(HttpStatus.OK)
@@ -117,7 +124,7 @@ public class UserController {
     })
     public ResponseEntity<Object> getUserV1(@AuthenticationPrincipal UserDetails activeUser) {
         try {
-            return ResponseEntity.ok(UserRepository.getUserObject(activeUser.getUsername()));
+            return ResponseEntity.ok(UserRepository.getUserObject(jdbcTemplate, activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }

@@ -2,6 +2,8 @@ package at.htlhl.securefinancemanager.repository;
 
 import at.htlhl.securefinancemanager.exception.ValidationException;
 import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
@@ -36,11 +38,17 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 12.01.2024 (version 2.9)
+ * @version 3.0
+ * @since 26.01.2024 (version 3.0)
  */
 @Repository
 public class CategoryRepository {
+    /**
+     * Spring JDBC template for executing SQL queries and updates.
+     */
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     /** SQL query to retrieve a list of categories for the logged-in user from the 'categories' table in the database. */
     private static final String SELECT_CATEGORIES = "SELECT pk_category_id, category_name, category_description, fk_category_colour_id " +
             "FROM categories " +
@@ -75,7 +83,7 @@ public class CategoryRepository {
     public List<DatabaseCategory> getCategories(String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORIES);
             ps.setInt(1, activeUserId);
             ResultSet rs = ps.executeQuery();
@@ -115,7 +123,7 @@ public class CategoryRepository {
     public DatabaseCategory getCategory(int categoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORY);
             ps.setInt(1, activeUserId);
             ps.setInt(2, categoryId);
@@ -146,11 +154,11 @@ public class CategoryRepository {
      */
     public DatabaseCategory addCategory(DatabaseCategory newCategory) {
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
-            UserRepository.jdbcTemplate.update(connection -> {
+            jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_CATEGORY, new String[]{"pk_category_id"});
                 ps.setBytes(1, Base64.getEncoder().encode(newCategory.getCategoryName().getBytes(StandardCharsets.UTF_8)));
                 if (newCategory.getCategoryDescription() == null) {
@@ -182,7 +190,7 @@ public class CategoryRepository {
     public DatabaseCategory updateCategory(DatabaseCategory updatedCategory, String username) throws ValidationException {
         DatabaseCategory oldDatabaseCategory = getCategory(updatedCategory.getCategoryId(), username);
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY);
 
             if (updatedCategory.getCategoryName() != null) {
@@ -229,7 +237,7 @@ public class CategoryRepository {
      */
     public int deleteCategory(int categoryId, String username) throws ValidationException {
         try {
-            Connection conn = UserRepository.jdbcTemplate.getDataSource().getConnection();
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
 
             PreparedStatement ps = conn.prepareStatement(DELETE_CATEGORY);
             ps.setInt(1, categoryId);
