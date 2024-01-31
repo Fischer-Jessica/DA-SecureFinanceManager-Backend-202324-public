@@ -1,8 +1,6 @@
 package at.htlhl.securefinancemanager.config;
 
-import at.htlhl.securefinancemanager.exception.ValidationException;
-import at.htlhl.securefinancemanager.model.database.DatabaseUser;
-import at.htlhl.securefinancemanager.repository.UserRepository;
+import at.htlhl.securefinancemanager.model.UserSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,12 +9,14 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
+import java.util.Base64;
 
 /**
  * This configuration class defines security settings for the Secure Finance Manager application.
@@ -46,8 +46,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 26.01.2024 (version 1.6)
+ * @version 1.7
+ * @since 26.01.2024 (version 1.7)
  */
 @Configuration
 @EnableWebSecurity
@@ -69,18 +69,25 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
         return username -> {
-            DatabaseUser apiUser;
-            try {
-                apiUser = UserRepository.getUserObject(jdbcTemplate, username);
-            } catch (ValidationException exception) {
-                throw new RuntimeException(exception);
-            }
-            userSingleton.getInstance().addUser(apiUser.getUsername(), apiUser.getUserId());
+            String query = "SELECT username, password, pk_user_id FROM users WHERE username = ?";
+            UserDetails userDetails = jdbcTemplate.queryForObject(query, new Object[]{username}, (resultSet, i) -> {
+                String usernameFromDb = resultSet.getString("username");
+                String passwordFromDb = new String(Base64.getDecoder().decode(resultSet.getBytes("password")));
+                int userIdFromDb = resultSet.getInt("pk_user_id");
 
-            return User.withUsername(apiUser.getUsername())
-                    .password(encoder.encode(apiUser.getPassword()))
-                    .roles("USER")
-                    .build();
+                UserSingleton.getInstance().addUser(usernameFromDb, userIdFromDb);
+
+                return User.withUsername(usernameFromDb)
+                        .password(encoder.encode(passwordFromDb))
+                        .roles("USER")
+                        .build();
+            });
+
+            if (userDetails == null) {
+                throw new UsernameNotFoundException("User not found with username: " + username);
+            }
+
+            return userDetails;
         };
     }
 
