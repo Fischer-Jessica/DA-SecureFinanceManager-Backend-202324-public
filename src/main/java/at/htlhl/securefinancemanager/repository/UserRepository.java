@@ -6,11 +6,11 @@ import at.htlhl.securefinancemanager.model.database.DatabaseUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.4
- * @since 26.01.2024 (version 3.4)
+ * @version 3.5
+ * @since 02.02.2024 (version 3.5)
  */
 @Repository
 public class UserRepository {
@@ -41,38 +41,48 @@ public class UserRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /** SQL query to retrieve a user based on the username. */
+    /**
+     * SQL query to retrieve a user based on the username.
+     */
     private static final String SELECT_USER = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
             "FROM users " +
             "WHERE username = ?;";
 
-    /** SQL query to retrieve all users. */
+    /**
+     * SQL query to retrieve all users.
+     */
     private static final String SELECT_USERS = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
             "FROM users;";
 
-    /** SQL query to insert a new user into the database. */
+    /**
+     * SQL query to insert a new user into the database.
+     */
     private static final String INSERT_USER = "INSERT INTO users " +
             "(username, password, email_address, first_name, last_name) " +
             "VALUES (?, ?, ?, ?, ?);";
 
-    /** SQL query to update an existing user. */
+    /**
+     * SQL query to update an existing user.
+     */
     private static final String UPDATE_USER = "UPDATE users " +
             "SET username = ?, password = ?, email_address = ?, first_name = ?, last_name = ? " +
             "WHERE pk_user_id = ?;";
 
-    /** SQL query to delete a user from the repository. */
+    /**
+     * SQL query to delete a user from the repository.
+     */
     private static final String DELETE_USER = "DELETE FROM users " +
             "WHERE pk_user_id = ?;";
 
     /**
      * Retrieves a User object based on the provided username.
      *
-     * @param jdbcTemplate The Spring JDBC template for executing SQL queries and updates.
+     * @param jdbcTemplate   The Spring JDBC template for executing SQL queries and updates.
      * @param activeUsername The username of the user to be retrieved.
      * @return The User object representing the user with the given username.
-     * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the userId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the user.
+     * @throws ValidationException If the specified user does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the userId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the user.
      */
     public static DatabaseUser getUserObject(JdbcTemplate jdbcTemplate, String activeUsername) throws ValidationException {
         DatabaseUser databaseUser = null;
@@ -85,13 +95,13 @@ public class UserRepository {
             if (rs.next()) {
                 int userId = rs.getInt("pk_user_id");
                 String username = rs.getString("username");
-                byte[] encodedPassword = rs.getBytes("password");
+                String encodedPassword = rs.getString("password");
                 String eMailAddress = rs.getString("email_address");
                 String firstName = rs.getString("first_name");
                 String lastName = rs.getString("last_name");
 
                 conn.close();
-                databaseUser = new DatabaseUser(userId, username, new String(Base64.getDecoder().decode(encodedPassword), StandardCharsets.UTF_8), eMailAddress, firstName, lastName);
+                databaseUser = new DatabaseUser(userId, username, encodedPassword, eMailAddress, firstName, lastName);
             }
             conn.close();
         } catch (SQLException exception) {
@@ -112,11 +122,11 @@ public class UserRepository {
         List<DatabaseUser> users = jdbcTemplate.query(SELECT_USERS, (rs, rowNum) -> {
             int userId = rs.getInt("pk_user_id");
             String username = rs.getString("username");
-            byte[] encodedPassword = rs.getBytes("password");
+            String encodedPassword = rs.getString("password");
             String eMailAddress = rs.getString("email_address");
             String firstName = rs.getString("first_name");
             String lastName = rs.getString("last_name");
-            return new DatabaseUser(userId, username, new String(Base64.getDecoder().decode(encodedPassword), StandardCharsets.UTF_8), eMailAddress, firstName, lastName);
+            return new DatabaseUser(userId, username, encodedPassword, eMailAddress, firstName, lastName);
         });
         if (users.isEmpty()) {
             throw new ValidationException("No users found.");
@@ -131,6 +141,7 @@ public class UserRepository {
      * @return The newly created user.
      */
     public DatabaseUser addUser(ApiUser newApiUser) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
@@ -139,7 +150,7 @@ public class UserRepository {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_USER, new String[]{"pk_user_id"});
                 ps.setString(1, newApiUser.getUsername());
-                ps.setBytes(2, Base64.getEncoder().encode(newApiUser.getPassword().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(2, passwordEncoder.encode(newApiUser.getPassword()));
                 if (newApiUser.getEMailAddress() == null) {
                     ps.setNull(3, Types.NULL);
                 } else {
@@ -150,7 +161,7 @@ public class UserRepository {
                 } else {
                     ps.setString(4, newApiUser.getFirstName());
                 }
-                if(newApiUser.getLastName() == null) {
+                if (newApiUser.getLastName() == null) {
                     ps.setNull(5, Types.NULL);
                 } else {
                     ps.setString(5, newApiUser.getLastName());
@@ -159,7 +170,8 @@ public class UserRepository {
             }, keyHolder);
 
             userSingleton.addUser(newApiUser.getUsername(), Objects.requireNonNull(keyHolder.getKey()).intValue());
-            return new DatabaseUser(Objects.requireNonNull(keyHolder.getKey()).intValue(), newApiUser.getUsername(), newApiUser.getPassword(), newApiUser.getEMailAddress(), newApiUser.getFirstName(), newApiUser.getLastName());
+            return new DatabaseUser(Objects.requireNonNull(keyHolder.getKey()).intValue(), newApiUser.getUsername(),
+                    newApiUser.getPassword(), newApiUser.getEMailAddress(), newApiUser.getFirstName(), newApiUser.getLastName());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -169,14 +181,15 @@ public class UserRepository {
      * Updates an existing user with new data.
      *
      * @param updatedUser The updated User object.
-     * @param username The username of the user performing the update.
+     * @param username    The username of the user performing the update.
      * @return The updated user.
-     * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the userId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the user.
+     * @throws ValidationException If the specified user does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the userId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the user.
      */
     public DatabaseUser updateUser(ApiUser updatedUser, String username) throws ValidationException {
         DatabaseUser oldDatabaseUser = getUserObject(jdbcTemplate, username);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE_USER);
@@ -191,9 +204,9 @@ public class UserRepository {
             }
 
             if (updatedUser.getPassword() != null) {
-                ps.setBytes(2, Base64.getEncoder().encode(updatedUser.getPassword().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(2, passwordEncoder.encode(updatedUser.getPassword()));
             } else {
-                ps.setBytes(2, Base64.getEncoder().encode(oldDatabaseUser.getPassword().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(2, oldDatabaseUser.getPassword());
             }
 
             if (updatedUser.getEMailAddress() != null) {
@@ -209,7 +222,7 @@ public class UserRepository {
             if (updatedUser.getFirstName() != null) {
                 ps.setString(4, updatedUser.getFirstName());
             } else {
-                if(oldDatabaseUser.getFirstName() == null) {
+                if (oldDatabaseUser.getFirstName() == null) {
                     ps.setNull(4, Types.NULL);
                 } else {
                     ps.setString(4, oldDatabaseUser.getFirstName());
@@ -240,9 +253,9 @@ public class UserRepository {
      *
      * @param username The username of the user performing the deletion on themselves.
      * @return An Integer representing the number of deleted rows.
-     * @throws ValidationException  If the specified user does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the userId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the user.
+     * @throws ValidationException If the specified user does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the userId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the user.
      */
     public int deleteUser(String username) throws ValidationException {
         try {

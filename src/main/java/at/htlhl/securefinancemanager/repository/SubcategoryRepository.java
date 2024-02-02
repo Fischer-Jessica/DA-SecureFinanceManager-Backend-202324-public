@@ -7,13 +7,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.ENCRYPTION_KEY;
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -25,8 +24,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 26.01.2024 (version 2.9)
+ * @version 3.0
+ * @since 02.02.2024 (version 3.0)
  */
 @Repository
 public class SubcategoryRepository {
@@ -36,35 +35,50 @@ public class SubcategoryRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /** SQL query to select all subcategories for a specific category and user. */
-    private static final String SELECT_SUBCATEGORIES = "SELECT pk_subcategory_id, subcategory_name, subcategory_description, fk_subcategory_colour_id " +
+    /**
+     * SQL query to select all subcategories for a specific category and user.
+     */
+    private static final String SELECT_SUBCATEGORIES = "SELECT pk_subcategory_id, " +
+            "pgp_sym_decrypt(subcategory_name, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_name," +
+            "pgp_sym_decrypt(subcategory_description, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_description," +
+            "fk_subcategory_colour_id " +
             "FROM subcategories " +
             "WHERE fk_user_id = ? AND fk_category_id = ?;";
 
-    /** SQL query to select a specific subcategory for a specific category and user. */
-    private static final String SELECT_SUBCATEGORY = "SELECT subcategory_name, subcategory_description, fk_subcategory_colour_id " +
+    /**
+     * SQL query to select a specific subcategory for a specific category and user.
+     */
+    private static final String SELECT_SUBCATEGORY = "SELECT pgp_sym_decrypt(subcategory_name, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_name, " +
+            "pgp_sym_decrypt(subcategory_description, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_description," +
+            "fk_subcategory_colour_id " +
             "FROM subcategories " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
-    /** SQL query to insert a new subcategory for a specific category and user. */
+    /**
+     * SQL query to insert a new subcategory for a specific category and user.
+     */
     private static final String INSERT_SUBCATEGORY = "INSERT INTO subcategories " +
             "(fk_category_id, subcategory_name, subcategory_description, fk_subcategory_colour_id, fk_user_id) " +
-            "VALUES (?, ?, ?, ?, ?);";
+            "VALUES (?, pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), ?, ?);";
 
-    /** SQL query to update an existing subcategory for a specific category and user. */
+    /**
+     * SQL query to update an existing subcategory for a specific category and user.
+     */
     private static final String UPDATE_SUBCATEGORY = "UPDATE subcategories " +
-            "SET fk_category_id = ?, subcategory_name = ?, subcategory_description = ?, fk_subcategory_colour_id = ? " +
+            "SET fk_category_id = ?, subcategory_name = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), subcategory_description = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), fk_subcategory_colour_id = ? " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ?";
 
-    /** SQL query to delete a subcategory for a specific category and user. */
+    /**
+     * SQL query to delete a subcategory for a specific category and user.
+     */
     private static final String DELETE_SUBCATEGORY = "DELETE FROM subcategories " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
 
     /**
      * Retrieves a list of all subcategories for a specific category and user.
      *
-     * @param categoryId   The ID of the category.
-     * @param username     The username of the logged-in user.
+     * @param categoryId The ID of the category.
+     * @param username   The username of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
     public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) throws ValidationException {
@@ -79,15 +93,12 @@ public class SubcategoryRepository {
             List<DatabaseSubcategory> databaseSubcategories = new ArrayList<>();
             while (rs.next()) {
                 int subcategoryId = rs.getInt("pk_subcategory_id");
-                byte[] encodedSubcategoryName = rs.getBytes("subcategory_name");
-                byte[] encodedSubcategoryDescription = rs.getBytes("subcategory_description");
+                String decryptedSubcategoryName = rs.getString("decrypted_subcategory_name");
+                String decryptedSubcategoryDescription = rs.getString("decrypted_subcategory_description");
                 int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
 
-                if (encodedSubcategoryDescription == null) {
-                    databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, new String(Base64.getDecoder().decode(encodedSubcategoryName), StandardCharsets.UTF_8), null, subcategoryColourId, activeUserId));
-                } else {
-                    databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, new String(Base64.getDecoder().decode(encodedSubcategoryName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedSubcategoryDescription), StandardCharsets.UTF_8), subcategoryColourId, activeUserId));
-                }
+                databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, decryptedSubcategoryName,
+                        decryptedSubcategoryDescription, subcategoryColourId, activeUserId));
             }
             if (databaseSubcategories.isEmpty()) {
                 throw new ValidationException("No subcategories found for category with ID " + categoryId + ".");
@@ -105,9 +116,9 @@ public class SubcategoryRepository {
      * @param subcategoryId The ID of the subcategory.
      * @param username      The username of the logged-in user.
      * @return The requested subcategory.
-     * @throws ValidationException  If the specified subcategory does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the subcategoryId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the subcategory.
+     * @throws ValidationException If the specified subcategory does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the subcategoryId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the subcategory.
      */
     public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
@@ -120,15 +131,12 @@ public class SubcategoryRepository {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                byte[] encodedSubcategoryName = rs.getBytes("subcategory_name");
-                byte[] encodedSubcategoryDescription = rs.getBytes("subcategory_description");
+                String decryptedSubcategoryName = rs.getString("decrypted_subcategory_name");
+                String decryptedSubcategoryDescription = rs.getString("decrypted_subcategory_description");
                 int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
 
-                if (encodedSubcategoryDescription == null) {
-                    return new DatabaseSubcategory(subcategoryId, categoryId, new String(Base64.getDecoder().decode(encodedSubcategoryName), StandardCharsets.UTF_8), null, subcategoryColourId, activeUserId);
-                } else {
-                    return new DatabaseSubcategory(subcategoryId, categoryId, new String(Base64.getDecoder().decode(encodedSubcategoryName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedSubcategoryDescription), StandardCharsets.UTF_8), subcategoryColourId, activeUserId);
-                }
+                return new DatabaseSubcategory(subcategoryId, categoryId, decryptedSubcategoryName,
+                        decryptedSubcategoryDescription, subcategoryColourId, activeUserId);
             }
             throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
         } catch (SQLException e) {
@@ -151,18 +159,21 @@ public class SubcategoryRepository {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_SUBCATEGORY, new String[]{"pk_subcategory_id"});
                 ps.setInt(1, newSubcategory.getSubcategoryCategoryId());
-                ps.setBytes(2, Base64.getEncoder().encode(newSubcategory.getSubcategoryName().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(2, newSubcategory.getSubcategoryName());
                 if (newSubcategory.getSubcategoryDescription() == null) {
                     ps.setNull(3, Types.NULL);
                 } else {
-                    ps.setBytes(3, Base64.getEncoder().encode(newSubcategory.getSubcategoryDescription().getBytes(StandardCharsets.UTF_8)));
+                    ps.setString(3, newSubcategory.getSubcategoryDescription());
                 }
                 ps.setInt(4, newSubcategory.getSubcategoryColourId());
                 ps.setInt(5, newSubcategory.getSubcategoryUserId());
                 return ps;
             }, keyHolder);
 
-            return new DatabaseSubcategory(Objects.requireNonNull(keyHolder.getKey()).intValue(), newSubcategory.getSubcategoryCategoryId(), newSubcategory.getSubcategoryName(), newSubcategory.getSubcategoryDescription(), newSubcategory.getSubcategoryColourId(), newSubcategory.getSubcategoryUserId());
+            return new DatabaseSubcategory(Objects.requireNonNull(keyHolder.getKey()).intValue(),
+                    newSubcategory.getSubcategoryCategoryId(), newSubcategory.getSubcategoryName(),
+                    newSubcategory.getSubcategoryDescription(), newSubcategory.getSubcategoryColourId(),
+                    newSubcategory.getSubcategoryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -174,9 +185,9 @@ public class SubcategoryRepository {
      * @param updatedSubcategory The updated subcategory data.
      * @param username           The username of the logged-in user.
      * @return The updated subcategory.
-     * @throws ValidationException  If the specified subcategory does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the subcategoryId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the subcategory.
+     * @throws ValidationException If the specified subcategory does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the subcategoryId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the subcategory.
      */
     public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) throws ValidationException {
         DatabaseSubcategory oldDatabaseSubcategory = getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
@@ -187,18 +198,18 @@ public class SubcategoryRepository {
             ps.setInt(1, updatedSubcategory.getSubcategoryCategoryId());
 
             if (updatedSubcategory.getSubcategoryName() != null) {
-                ps.setBytes(2, Base64.getEncoder().encode(updatedSubcategory.getSubcategoryName().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(2, updatedSubcategory.getSubcategoryName());
             } else {
-                ps.setBytes(2, Base64.getEncoder().encode(oldDatabaseSubcategory.getSubcategoryName().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(2, oldDatabaseSubcategory.getSubcategoryName());
             }
 
             if (updatedSubcategory.getSubcategoryDescription() != null) {
-                ps.setBytes(3, Base64.getEncoder().encode(updatedSubcategory.getSubcategoryDescription().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(3, updatedSubcategory.getSubcategoryDescription());
             } else {
                 if (oldDatabaseSubcategory.getSubcategoryDescription() == null) {
                     ps.setNull(3, Types.NULL);
                 } else {
-                    ps.setBytes(3, Base64.getEncoder().encode(oldDatabaseSubcategory.getSubcategoryDescription().getBytes(StandardCharsets.UTF_8)));
+                    ps.setString(3, oldDatabaseSubcategory.getSubcategoryDescription());
                 }
             }
 
@@ -225,9 +236,9 @@ public class SubcategoryRepository {
      * @param subcategoryId The ID of the subcategory to delete.
      * @param username      The username of the logged-in user.
      * @return An Integer representing the number of deleted rows.
-     * @throws ValidationException  If the specified subcategory does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the subcategoryId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the subcategory.
+     * @throws ValidationException If the specified subcategory does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the subcategoryId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the subcategory.
      */
     public int deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         try {

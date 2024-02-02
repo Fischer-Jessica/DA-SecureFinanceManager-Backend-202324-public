@@ -16,8 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import java.util.Base64;
-
 /**
  * This configuration class defines security settings for the Secure Finance Manager application.
  * It includes configuration for user details retrieval from the repository, password encryption,
@@ -46,8 +44,8 @@ import java.util.Base64;
  * </p>
  *
  * @author Fischer
- * @version 1.7
- * @since 26.01.2024 (version 1.7)
+ * @version 1.8
+ * @since 02.02.2024 (version 1.8)
  */
 @Configuration
 @EnableWebSecurity
@@ -63,22 +61,21 @@ public class SecurityConfig {
      * Configures the user service that dynamically loads user information from the repository based on the
      * incoming username and uses it for authentication.
      *
-     * @param encoder The password encoder for encrypting user passwords.
      * @return A user service that loads user details from the repository dynamically based on the username.
      */
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+    public UserDetailsService userDetailsService() {
         return username -> {
             String query = "SELECT username, password, pk_user_id FROM users WHERE username = ?";
             UserDetails userDetails = jdbcTemplate.queryForObject(query, new Object[]{username}, (resultSet, i) -> {
                 String usernameFromDb = resultSet.getString("username");
-                String passwordFromDb = new String(Base64.getDecoder().decode(resultSet.getBytes("password")));
+                String passwordFromDb = resultSet.getString("password");
                 int userIdFromDb = resultSet.getInt("pk_user_id");
 
                 UserSingleton.getInstance().addUser(usernameFromDb, userIdFromDb);
 
                 return User.withUsername(usernameFromDb)
-                        .password(encoder.encode(passwordFromDb))
+                        .password(passwordFromDb)
                         .roles("USER")
                         .build();
             });

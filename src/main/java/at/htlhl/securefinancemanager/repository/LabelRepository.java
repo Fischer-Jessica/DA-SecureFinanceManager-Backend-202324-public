@@ -7,13 +7,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.ENCRYPTION_KEY;
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -25,8 +24,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.9
- * @since 26.01.2024 (version 2.9)
+ * @version 3.0
+ * @since 02.02.2024 (version 3.0)
  */
 @Repository
 public class LabelRepository {
@@ -36,27 +35,42 @@ public class LabelRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /** SQL query to select all labels for a given user. */
-    private static final String SELECT_LABELS = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
+    /**
+     * SQL query to select all labels for a given user.
+     */
+    private static final String SELECT_LABELS = "SELECT pk_label_id, " +
+            "pgp_sym_decrypt(label_name, '" + ENCRYPTION_KEY + "') AS decrypted_label_name," +
+            "pgp_sym_decrypt(label_description, '" + ENCRYPTION_KEY + "') AS decrypted_label_description," +
+            "fk_label_colour_id " +
             "FROM labels " +
             "WHERE fk_user_id = ?;";
 
-    /** SQL query to select a specific label for a given user and label ID. */
-    private static final String SELECT_LABEL = "SELECT label_name, label_description, fk_label_colour_id " +
+    /**
+     * SQL query to select a specific label for a given user and label ID.
+     */
+    private static final String SELECT_LABEL = "SELECT pgp_sym_decrypt(label_name, '" + ENCRYPTION_KEY + "') AS decrypted_label_name," +
+            "pgp_sym_decrypt(label_description, '" + ENCRYPTION_KEY + "') AS decrypted_label_description," +
+            "fk_label_colour_id " +
             "FROM labels " +
             "WHERE fk_user_id = ? AND pk_label_id = ?;";
 
-    /** SQL query to insert a new label for the logged-in user. */
+    /**
+     * SQL query to insert a new label for the logged-in user.
+     */
     private static final String INSERT_LABEL = "INSERT INTO labels " +
             "(label_name, label_description, fk_label_colour_id, fk_user_id) " +
-            "VALUES (?, ?, ?, ?);";
+            "VALUES (pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), ?, ?);";
 
-    /** SQL query to update an existing label for the logged-in user. */
+    /**
+     * SQL query to update an existing label for the logged-in user.
+     */
     private static final String UPDATE_LABEL = "UPDATE labels " +
-            "SET label_name = ?, label_description = ?, fk_label_colour_id = ? " +
+            "SET label_name = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), label_description = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), fk_label_colour_id = ? " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
-    /** SQL query to delete a label for the logged-in user. */
+    /**
+     * SQL query to delete a label for the logged-in user.
+     */
     private static final String DELETE_LABEL = "DELETE FROM labels " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
@@ -77,15 +91,11 @@ public class LabelRepository {
             List<DatabaseLabel> databaseLabels = new ArrayList<>();
             while (rs.next()) {
                 int labelId = rs.getInt("pk_label_id");
-                byte[] encodedLabelName = rs.getBytes("label_name");
-                byte[] encodedLabelDescription = rs.getBytes("label_description");
+                String decryptedLabelName = rs.getString("decrypted_label_name");
+                String decryptedLabelDescription = rs.getString("decrypted_label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                if (encodedLabelDescription == null) {
-                    databaseLabels.add(new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), null, labelColourId, activeUserId));
-                } else {
-                    databaseLabels.add(new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedLabelDescription), StandardCharsets.UTF_8), labelColourId, activeUserId));
-                }
+                databaseLabels.add(new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId));
             }
             if (databaseLabels.isEmpty()) {
                 throw new ValidationException("No labels found for the authenticated user.");
@@ -99,12 +109,12 @@ public class LabelRepository {
     /**
      * Retrieves a specific label for the logged-in user.
      *
-     * @param labelId The ID of the label to retrieve.
+     * @param labelId  The ID of the label to retrieve.
      * @param username The username of the logged-in user.
      * @return The requested Label object.
-     * @throws ValidationException  If the specified label does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the labelId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the label.
+     * @throws ValidationException If the specified label does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the labelId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the label.
      */
     public DatabaseLabel getLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
@@ -116,15 +126,11 @@ public class LabelRepository {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                byte[] encodedLabelName = rs.getBytes("label_name");
-                byte[] encodedLabelDescription = rs.getBytes("label_description");
+                String decryptedLabelName = rs.getString("decrypted_label_name");
+                String decryptedLabelDescription = rs.getString("decrypted_label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                if (encodedLabelDescription == null) {
-                    return new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), null, labelColourId, activeUserId);
-                } else {
-                    return new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedLabelDescription), StandardCharsets.UTF_8), labelColourId, activeUserId);
-                }
+                return new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId);
             }
             throw new ValidationException("Label with ID " + labelId + " not found.");
         } catch (SQLException e) {
@@ -146,18 +152,19 @@ public class LabelRepository {
 
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_LABEL, new String[]{"pk_label_id"});
-                ps.setBytes(1, Base64.getEncoder().encode(newLabel.getLabelName().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(1, newLabel.getLabelName());
                 if (newLabel.getLabelDescription() == null) {
                     ps.setNull(2, Types.NULL);
                 } else {
-                    ps.setBytes(2, Base64.getEncoder().encode(newLabel.getLabelDescription().getBytes(StandardCharsets.UTF_8)));
+                    ps.setString(2, newLabel.getLabelDescription());
                 }
                 ps.setInt(3, newLabel.getLabelColourId());
                 ps.setInt(4, newLabel.getLabelUserId());
                 return ps;
             }, keyHolder);
 
-            return new DatabaseLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), newLabel.getLabelName(), newLabel.getLabelDescription(), newLabel.getLabelColourId(), newLabel.getLabelUserId());
+            return new DatabaseLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), newLabel.getLabelName(),
+                    newLabel.getLabelDescription(), newLabel.getLabelColourId(), newLabel.getLabelUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -167,11 +174,11 @@ public class LabelRepository {
      * Updates an existing label for the logged-in user.
      *
      * @param updatedLabel The updated Label object.
-     * @param username The username of the logged-in user.
+     * @param username     The username of the logged-in user.
      * @return The updated Label object.
-     * @throws ValidationException  If the specified label does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the labelId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the label.
+     * @throws ValidationException If the specified label does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the labelId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the label.
      */
     public DatabaseLabel updateLabel(DatabaseLabel updatedLabel, String username) throws ValidationException {
         DatabaseLabel oldDatabaseLabel = getLabel(updatedLabel.getLabelId(), username);
@@ -180,18 +187,18 @@ public class LabelRepository {
             PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL);
 
             if (updatedLabel.getLabelName() != null) {
-                ps.setBytes(1, Base64.getEncoder().encode(updatedLabel.getLabelName().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(1, updatedLabel.getLabelName());
             } else {
-                ps.setBytes(1, Base64.getEncoder().encode(oldDatabaseLabel.getLabelName().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(1, oldDatabaseLabel.getLabelName());
             }
 
             if (updatedLabel.getLabelDescription() != null) {
-                ps.setBytes(2, Base64.getEncoder().encode(updatedLabel.getLabelDescription().getBytes(StandardCharsets.UTF_8)));
+                ps.setString(2, updatedLabel.getLabelDescription());
             } else {
                 if (oldDatabaseLabel.getLabelDescription() == null) {
                     ps.setNull(2, Types.NULL);
                 } else {
-                    ps.setBytes(2, Base64.getEncoder().encode(oldDatabaseLabel.getLabelDescription().getBytes(StandardCharsets.UTF_8)));
+                    ps.setString(2, oldDatabaseLabel.getLabelDescription());
                 }
             }
 
@@ -214,12 +221,12 @@ public class LabelRepository {
     /**
      * Deletes a label for the logged-in user.
      *
-     * @param labelId The ID of the label to delete.
+     * @param labelId  The ID of the label to delete.
      * @param username The username of the logged-in user.
      * @return An Integer representing the number of deleted rows.
-     * @throws ValidationException  If the specified label does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the labelId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the label.
+     * @throws ValidationException If the specified label does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the labelId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the label.
      */
     public int deleteLabel(int labelId, String username) throws ValidationException {
         try {

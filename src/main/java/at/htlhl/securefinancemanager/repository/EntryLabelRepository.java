@@ -9,16 +9,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.ENCRYPTION_KEY;
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -34,8 +33,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.5
- * @since 26.01.2024 (version 2.5)
+ * @version 2.6
+ * @since 02.02.2024 (version 2.6)
  */
 @Repository
 public class EntryLabelRepository {
@@ -45,36 +44,66 @@ public class EntryLabelRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /** SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database. */
-    private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, label_name, label_description, fk_label_colour_id " +
+    /**
+     * Repository for managing label-related data in the database.
+     */
+    @Autowired
+    private LabelRepository labelRepository;
+
+    /**
+     * Repository for managing entry-related data in the database.
+     */
+    @Autowired
+    private EntryRepository entryRepository;
+
+    /**
+     * SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database.
+     */
+    private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, " +
+            "pgp_sym_decrypt(label_name, '" + ENCRYPTION_KEY + "') AS decrypted_label_name," +
+            "pgp_sym_decrypt(label_description, '" + ENCRYPTION_KEY + "') AS decrypted_label_description," +
+            "fk_label_colour_id " +
             "FROM labels " +
             "JOIN entry_labels ON labels.pk_label_id = entry_labels.fk_label_id " +
             "WHERE entry_labels.fk_entry_id = ? AND entry_labels.fk_user_id = ? AND labels.fk_user_id = ?;";
 
-    /** SQL query to retrieve entries for a specific label and user from the 'entries' and 'entry_labels' tables in the database. */
-    private static final String SELECT_ENTRIES_FOR_LABEL = "SELECT pk_entry_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_subcategory_id " +
+    /**
+     * SQL query to retrieve entries for a specific label and user from the 'entries' and 'entry_labels' tables in the database.
+     */
+    private static final String SELECT_ENTRIES_FOR_LABEL = "SELECT pk_entry_id, " +
+            "pgp_sym_decrypt(entry_name, '" + ENCRYPTION_KEY + "') AS decrypted_entry_name, " +
+            "pgp_sym_decrypt(entry_description, '" + ENCRYPTION_KEY + "') AS decrypted_entry_description, " +
+            "pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "') AS decrypted_entry_amount, " +
+            "pgp_sym_decrypt(entry_creation_time, '" + ENCRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
+            "pgp_sym_decrypt(entry_time_of_transaction, '" + ENCRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
+            "pgp_sym_decrypt(entry_attachment, '" + ENCRYPTION_KEY + "') AS decrypted_entry_attachment, " +
+            "fk_subcategory_id " +
             "FROM entries " +
             "JOIN entry_labels ON entries.pk_entry_id = entry_labels.fk_entry_id " +
             "WHERE entry_labels.fk_label_id = ? AND entry_labels.fk_user_id = ? AND entries.fk_user_id = ?;";
 
-    /** SQL query to add a label to an entry in the 'entry_labels' table in the database. */
+    /**
+     * SQL query to add a label to an entry in the 'entry_labels' table in the database.
+     */
     private static final String ADD_LABEL_TO_ENTRY = "INSERT INTO entry_labels " +
             "(fk_entry_id, fk_label_id, fk_user_id) " +
             "VALUES (?, ?, ?);";
 
-    /** SQL query to remove a label from an entry in the 'entry_labels' table in the database. */
+    /**
+     * SQL query to remove a label from an entry in the 'entry_labels' table in the database.
+     */
     private static final String REMOVE_LABEL_FROM_ENTRY = "DELETE FROM entry_labels " +
             "WHERE fk_entry_id = ? AND fk_label_id = ? AND fk_user_id = ?;";
 
     /**
      * Retrieves a list of labels associated with a specific entry and user from the 'labels' and 'entry_labels' tables in the database.
      *
-     * @param entryId   The ID of the entry to retrieve labels for.
-     * @param username  The username of the logged-in user.
+     * @param entryId  The ID of the entry to retrieve labels for.
+     * @param username The username of the logged-in user.
      * @return A list of Label objects representing the labels associated with the entry and user.
-     * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the entryId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the entry.
+     * @throws ValidationException If the specified entryLabel does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the entryId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the entry.
      */
     public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
@@ -89,15 +118,11 @@ public class EntryLabelRepository {
             List<DatabaseLabel> databaseLabels = new ArrayList<>();
             while (rs.next()) {
                 int labelId = rs.getInt("pk_label_id");
-                byte[] encodedLabelName = rs.getBytes("label_name");
-                byte[] encodedLabelDescription = rs.getBytes("label_description");
+                String decryptedLabelName = rs.getString("decrypted_label_name");
+                String decryptedLabelDescription = rs.getString("decrypted_label_description");
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
-                if (encodedLabelDescription == null) {
-                    databaseLabels.add(new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), null, labelColourId, activeUserId));
-                } else {
-                    databaseLabels.add(new DatabaseLabel(labelId, new String(Base64.getDecoder().decode(encodedLabelName), StandardCharsets.UTF_8), new String(Base64.getDecoder().decode(encodedLabelDescription), StandardCharsets.UTF_8), labelColourId, activeUserId));
-                }
+                databaseLabels.add(new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId));
             }
             if (databaseLabels.isEmpty()) {
                 throw new ValidationException("No labels found for an entry with ID " + entryId);
@@ -111,12 +136,12 @@ public class EntryLabelRepository {
     /**
      * Retrieves a list of entries associated with a specific label and user from the 'entries' and 'entry_labels' tables in the database.
      *
-     * @param labelId   The ID of the label to retrieve entries for.
-     * @param username  The username of the logged-in user.
+     * @param labelId  The ID of the label to retrieve entries for.
+     * @param username The username of the logged-in user.
      * @return A list of Label objects representing the entries associated with the label and user.
-     * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the labelId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the label.
+     * @throws ValidationException If the specified entryLabel does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the labelId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the label.
      */
     public List<DatabaseEntry> getEntriesForLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
@@ -131,32 +156,16 @@ public class EntryLabelRepository {
             List<DatabaseEntry> databaseLabels = new ArrayList<>();
             while (rs.next()) {
                 int entryId = rs.getInt("pk_entry_id");
-                byte[] encodedEntryName = rs.getBytes("entry_name");
-                byte[] encodedEntryDescription = rs.getBytes("entry_description");
-                byte[] encodedEntryAmount = rs.getBytes("entry_amount");
-                byte[] encodedEntryCreationTime = rs.getBytes("entry_creation_time");
-                byte[] encodedEntryTimeOfTransaction = rs.getBytes("entry_time_of_transaction");
-                byte[] encodedEntryAttachment = rs.getBytes("entry_attachment");
+                String decryptedEntryName = rs.getString("decrypted_entry_name");
+                String decryptedEntryDescription = rs.getString("decrypted_entry_description");
+                String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
+                String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
+                String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
+                String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
                 int subcategoryId = rs.getInt("fk_subcategory_id");
 
-                String stringEntryName = null;
-                String stringEntryDescription = null;
-                String stringEntryAttachment = null;
-
-                if (encodedEntryName != null) {
-                    stringEntryName = new String(Base64.getDecoder().decode(encodedEntryName), StandardCharsets.UTF_8);
-                }
-                if (encodedEntryDescription != null) {
-                    stringEntryDescription = new String(Base64.getDecoder().decode(encodedEntryDescription), StandardCharsets.UTF_8);
-                }
-                if (encodedEntryAttachment != null) {
-                    stringEntryAttachment = new String(Base64.getDecoder().decode(encodedEntryAttachment), StandardCharsets.UTF_8);
-                }
-
-                databaseLabels.add(new DatabaseEntry(entryId, subcategoryId, stringEntryName, stringEntryDescription,
-                        new String(Base64.getDecoder().decode(encodedEntryAmount), StandardCharsets.UTF_8),
-                        new String(Base64.getDecoder().decode(encodedEntryCreationTime), StandardCharsets.UTF_8),
-                        new String(Base64.getDecoder().decode(encodedEntryTimeOfTransaction), StandardCharsets.UTF_8), stringEntryAttachment, activeUserId));
+                databaseLabels.add(new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
+                        decryptedEntryAmount, decryptedEntryCreationTime, decryptedEntryTimeOfTransaction, decryptedEntryAttachment, activeUserId));
             }
             if (databaseLabels.isEmpty()) {
                 throw new ValidationException("No entries found for an label with ID " + labelId);
@@ -170,20 +179,20 @@ public class EntryLabelRepository {
     /**
      * Adds a label to an entry in the 'entry_labels' table in the database.
      *
-     * @param entryId   The ID of the entry to add the label to.
-     * @param labelId   The ID of the label to add.
-     * @param username  The username of the logged-in user.
+     * @param entryId  The ID of the entry to add the label to.
+     * @param labelId  The ID of the label to add.
+     * @param username The username of the logged-in user.
      * @return The newly created entryLabel.
-     * @throws ValidationException  If the specified entry or label does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the entryId or the labelId is not found or that the
-     *                              userId associated with the provided username does not match the expected owner of the
-     *                              entry or the label.
+     * @throws ValidationException If the specified entry or label does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the entryId or the labelId is not found or that the
+     *                             userId associated with the provided username does not match the expected owner of the
+     *                             entry or the label.
      */
     public DatabaseEntryLabel addLabelToEntry(int entryId, int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
-            new LabelRepository().getLabel(labelId, username);
-            new EntryRepository().getEntryWithoutSubcategoryId(entryId, username);
+            labelRepository.getLabel(labelId, username);
+            entryRepository.getEntryWithoutSubcategoryId(entryId, username);
 
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
@@ -206,18 +215,18 @@ public class EntryLabelRepository {
     /**
      * Removes a label from an entry in the 'entry_labels' table in the database.
      *
-     * @param entryId   The ID of the entry to remove the label from.
-     * @param labelId   The ID of the label to remove.
-     * @param username  The username of the logged-in user.
+     * @param entryId  The ID of the entry to remove the label from.
+     * @param labelId  The ID of the label to remove.
+     * @param username The username of the logged-in user.
      * @return An Integer representing the number of deleted rows.
-     * @throws ValidationException  If the specified entryLabel does not exist or if the provided username is invalid.
-     *                              This exception may indicate that the entryId or the labelId is not found or that the userId associated
-     *                              with the provided username does not match the expected owner of the entry and the label.
+     * @throws ValidationException If the specified entryLabel does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the entryId or the labelId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the entry and the label.
      */
     public int removeLabelFromEntry(int entryId, int labelId, String username) throws ValidationException {
         try {
-            new LabelRepository().getLabel(labelId, username);
-            new EntryRepository().getEntryWithoutSubcategoryId(entryId, username);
+            labelRepository.getLabel(labelId, username);
+            entryRepository.getEntryWithoutSubcategoryId(entryId, username);
 
             Connection conn = jdbcTemplate.getDataSource().getConnection();
 
