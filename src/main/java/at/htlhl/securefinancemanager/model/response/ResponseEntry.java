@@ -27,20 +27,22 @@ import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 17.11.2023 (version 1.0)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.1
+ * @since 02.02.2024 (version 1.1)
  * @see DatabaseEntry
  */
 public class ResponseEntry extends DatabaseEntry {
-    /** The unique identifier for the mobile entry. */
+    /**
+     * The unique identifier for the mobile entry.
+     */
     private int mobileEntryId;
 
     /**
      * Constructs a new ResponseEntry object with the specified properties.
      *
-     * @param databaseEntry       The DatabaseEntry object.
-     * @param mobileEntryId       The unique identifier for the mobile entry.
+     * @param databaseEntry The DatabaseEntry object.
+     * @param mobileEntryId The unique identifier for the mobile entry.
      */
     public ResponseEntry(DatabaseEntry databaseEntry, int mobileEntryId) {
         super(databaseEntry.getEntryId(), databaseEntry.getEntrySubcategoryId(), databaseEntry.getEntryName(), databaseEntry.getEntryDescription(), databaseEntry.getEntryAmount(), databaseEntry.getEntryTimeOfTransaction(), databaseEntry.getEntryAttachment(), databaseEntry.getEntryCreationTime(), databaseEntry.getEntryUserId());

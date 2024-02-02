@@ -40,8 +40,9 @@ import java.util.Map;
  * </p>
  *
  * @author Fischer
+ * @fullName Fischer, Jessica Christina
  * @version 1.2
- * @since 13.01.2024 (version 1.2)
+ * @since 02.02.2024 (version 1.3)
  */
 public class UserSingleton {
     /**
@@ -99,17 +100,14 @@ public class UserSingleton {
     /**
      * Updates the username associated with the given user ID.
      *
-     * @param userId    The user ID for which to update the username.
+     * @param userId      The user ID for which to update the username.
      * @param newUsername The new username to associate with the user ID.
      */
     public void updateUsername(int userId, String newUsername) {
-        userMap.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(userId))
-                .findFirst()
-                .ifPresent(entry -> {
-                    userMap.remove(entry.getKey());
-                    userMap.put(newUsername, userId);
-                });
+        userMap.entrySet().stream().filter(entry -> entry.getValue().equals(userId)).findFirst().ifPresent(entry -> {
+            userMap.remove(entry.getKey());
+            userMap.put(newUsername, userId);
+        });
     }
 
     /**

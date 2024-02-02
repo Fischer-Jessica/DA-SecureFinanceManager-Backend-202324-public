@@ -28,35 +28,46 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 16.11.2023 (version 2.0)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.1
+ * @since 02.02.2024 (version 2.1)
  */
 public class ApiEntry {
-    /** The name of the entry. */
+    /**
+     * The name of the entry.
+     */
     private String entryName;
 
-    /** The description of the entry. */
+    /**
+     * The description of the entry.
+     */
     private String entryDescription;
 
-    /** The amount of the entry. */
+    /**
+     * The amount of the entry.
+     */
     @NotBlank
     private String entryAmount;
 
-    /** The time of the transaction of the entry. */
+    /**
+     * The time of the transaction of the entry.
+     */
     @NotBlank
     private String entryTimeOfTransaction;
 
-    /** The attachment of the entry. */
+    /**
+     * The attachment of the entry.
+     */
     private String entryAttachment;
 
     /**
      * Constructs a new Entry object with the specified properties.
      *
-     * @param entryName                 The name of the entry.
-     * @param entryDescription          The description of the entry.
-     * @param entryAmount               The amount of the entry.
-     * @param entryTimeOfTransaction    The time of the transaction in the entry.
-     * @param entryAttachment           The attachment of the entry.
+     * @param entryName              The name of the entry.
+     * @param entryDescription       The description of the entry.
+     * @param entryAmount            The amount of the entry.
+     * @param entryTimeOfTransaction The time of the transaction in the entry.
+     * @param entryAttachment        The attachment of the entry.
      */
     public ApiEntry(String entryName, String entryDescription, String entryAmount, String entryTimeOfTransaction, String entryAttachment) {
         this.entryName = entryName;

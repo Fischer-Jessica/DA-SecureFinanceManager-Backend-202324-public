@@ -28,21 +28,27 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 16.11.2023 (version 1.8)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.9
+ * @since 02.02.2024 (version 1.9)
  * @see ApiSubcategory
  */
 public class DatabaseSubcategory extends ApiSubcategory {
-    /** The unique identifier for this Subcategory. It is generated automatically by the database. */
+    /**
+     * The unique identifier for this Subcategory. It is generated automatically by the database.
+     */
     @NotBlank
     private int subcategoryId;
 
-    /** The ID of the category associated with the Subcategory. */
+    /**
+     * The ID of the category associated with the Subcategory.
+     */
     @NotBlank
     private int subcategoryCategoryId;
 
-    /** The ID of the user associated with the Subcategory. */
+    /**
+     * The ID of the user associated with the Subcategory.
+     */
     @NotBlank
     private int subcategoryUserId;
 
@@ -66,9 +72,9 @@ public class DatabaseSubcategory extends ApiSubcategory {
     /**
      * Constructs a new DatabaseSubcategory object from an ApiSubcategory object and user ID.
      *
-     * @param categoryId             The ID of the category associated with the subcategory.
-     * @param apiSubcategory         The ApiSubcategory object.
-     * @param subcategoryUserId      The ID of the associated user.
+     * @param categoryId        The ID of the category associated with the subcategory.
+     * @param apiSubcategory    The ApiSubcategory object.
+     * @param subcategoryUserId The ID of the associated user.
      */
     public DatabaseSubcategory(int categoryId, ApiSubcategory apiSubcategory, int subcategoryUserId) {
         super(apiSubcategory.getSubcategoryName(), apiSubcategory.getSubcategoryDescription(), apiSubcategory.getSubcategoryColourId());
@@ -79,10 +85,10 @@ public class DatabaseSubcategory extends ApiSubcategory {
     /**
      * Constructs a new DatabaseSubcategory object from an ApiSubcategory object, subcategory ID, category ID, and user ID.
      *
-     * @param subcategoryId          The unique identifier for the subcategory.
-     * @param categoryId             The ID of the category associated with the subcategory.
-     * @param apiSubcategory         The ApiSubcategory object.
-     * @param subcategoryUserId      The ID of the associated user.
+     * @param subcategoryId     The unique identifier for the subcategory.
+     * @param categoryId        The ID of the category associated with the subcategory.
+     * @param apiSubcategory    The ApiSubcategory object.
+     * @param subcategoryUserId The ID of the associated user.
      */
     public DatabaseSubcategory(int subcategoryId, int categoryId, ApiSubcategory apiSubcategory, int subcategoryUserId) {
         super(apiSubcategory.getSubcategoryName(), apiSubcategory.getSubcategoryDescription(), apiSubcategory.getSubcategoryColourId());

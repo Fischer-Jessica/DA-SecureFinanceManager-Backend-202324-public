@@ -24,28 +24,35 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 16.11.2023 (version 2.1)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.2
+ * @since 02.02.2024 (version 2.2)
  */
 public class ApiLabel {
 
-    /** The name of the label. */
+    /**
+     * The name of the label.
+     */
     @NotBlank
     private String labelName;
 
-    /** The description of the label. */
+    /**
+     * The description of the label.
+     */
     private String labelDescription;
 
-    /** The ID of the associated colour. */
+    /**
+     * The ID of the associated colour.
+     */
     @NotBlank
     private int labelColourId;
 
     /**
      * Constructs a new Label object with the specified properties.
      *
-     * @param labelName             The name of the label.
-     * @param labelDescription      The description of the label.
-     * @param labelColourId         The ID of the associated colour.
+     * @param labelName        The name of the label.
+     * @param labelDescription The description of the label.
+     * @param labelColourId    The ID of the associated colour.
      */
     public ApiLabel(String labelName, String labelDescription, int labelColourId) {
         this.labelName = labelName;

@@ -28,27 +28,34 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 16.11.2023 (version 1.9)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.0
+ * @since 02.02.2024 (version 2.0)
  */
 public class ApiSubcategory {
-    /** The name of the subcategory. */
+    /**
+     * The name of the subcategory.
+     */
     @NotBlank
     private String subcategoryName;
 
-    /** The description of the subcategory. */
+    /**
+     * The description of the subcategory.
+     */
     private String subcategoryDescription;
 
-    /** The ID of the associated colour. */
+    /**
+     * The ID of the associated colour.
+     */
     @NotBlank
     private int subcategoryColourId;
 
     /**
      * Constructs a new Subcategory object with the specified properties.
      *
-     * @param subcategoryName               The name of the subcategory.
-     * @param subcategoryDescription        The description of the subcategory.
-     * @param subcategoryColourId           The ID of the associated colour.
+     * @param subcategoryName        The name of the subcategory.
+     * @param subcategoryDescription The description of the subcategory.
+     * @param subcategoryColourId    The ID of the associated colour.
      */
     public ApiSubcategory(String subcategoryName, String subcategoryDescription, int subcategoryColourId) {
         this.subcategoryName = subcategoryName;

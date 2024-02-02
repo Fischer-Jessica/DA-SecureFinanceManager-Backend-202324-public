@@ -30,8 +30,9 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.5
- * @since 02.02.2024 (version 3.5)
+ * @fullName Fischer, Jessica Christina
+ * @version 3.6
+ * @since 02.02.2024 (version 3.6)
  */
 @Repository
 public class UserRepository {

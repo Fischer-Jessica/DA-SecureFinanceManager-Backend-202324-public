@@ -28,9 +28,9 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 16.11.2023 (version 1.9)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 2.0
+ * @since 02.02.2024 (version 2.0)
  * @see ApiEntry
  */
 public class DatabaseEntry extends ApiEntry {
@@ -49,26 +49,30 @@ public class DatabaseEntry extends ApiEntry {
     @NotBlank
     private String entryCreationTime;
 
-    /** The ID of the subcategory associated with the Entry. */
+    /**
+     * The ID of the subcategory associated with the Entry.
+     */
     @NotBlank
     private int entrySubcategoryId;
 
-    /** The ID of the user associated with the Entry. */
+    /**
+     * The ID of the user associated with the Entry.
+     */
     @NotBlank
     private int entryUserId;
 
     /**
      * Constructs a new DatabaseEntry object with the specified ID, subcategory ID, entry name, entry description, entry amount, time of transaction, attachment, creation time, and user ID.
      *
-     * @param entryId               The ID of the entry.
-     * @param entrySubcategoryId    The ID of the associated subcategory.
-     * @param entryName             The name of the entry.
-     * @param entryDescription      The description of the entry.
-     * @param entryAmount           The amount of the entry.
+     * @param entryId                The ID of the entry.
+     * @param entrySubcategoryId     The ID of the associated subcategory.
+     * @param entryName              The name of the entry.
+     * @param entryDescription       The description of the entry.
+     * @param entryAmount            The amount of the entry.
      * @param entryTimeOfTransaction The time of the transaction in the entry.
-     * @param entryAttachment       The attachment of the entry.
-     * @param entryCreationTime     The creation time of the entry.
-     * @param entryUserId           The ID of the associated user.
+     * @param entryAttachment        The attachment of the entry.
+     * @param entryCreationTime      The creation time of the entry.
+     * @param entryUserId            The ID of the associated user.
      */
     public DatabaseEntry(int entryId, int entrySubcategoryId, String entryName, String entryDescription, String entryAmount, String entryTimeOfTransaction, String entryAttachment, String entryCreationTime, int entryUserId) {
         super(entryName, entryDescription, entryAmount, entryTimeOfTransaction, entryAttachment);
@@ -81,9 +85,9 @@ public class DatabaseEntry extends ApiEntry {
     /**
      * Constructs a new DatabaseEntry object with the specified subcategory ID, ApiEntry object, and user ID.
      *
-     * @param entrySubcategoryId    The ID of the associated subcategory.
-     * @param apiEntry              The ApiEntry object representing the entry.
-     * @param entryUserId           The ID of the associated user.
+     * @param entrySubcategoryId The ID of the associated subcategory.
+     * @param apiEntry           The ApiEntry object representing the entry.
+     * @param entryUserId        The ID of the associated user.
      */
     public DatabaseEntry(int entrySubcategoryId, ApiEntry apiEntry, int entryUserId) {
         super(apiEntry.getEntryName(), apiEntry.getEntryDescription(), apiEntry.getEntryAmount(), apiEntry.getEntryTimeOfTransaction(), apiEntry.getEntryAttachment());
@@ -94,10 +98,10 @@ public class DatabaseEntry extends ApiEntry {
     /**
      * Constructs a new DatabaseEntry object with the specified ID, subcategory ID, ApiEntry object, and user ID.
      *
-     * @param entryId               The ID of the entry.
-     * @param entrySubcategoryId    The ID of the associated subcategory.
-     * @param apiEntry              The ApiEntry object representing the entry.
-     * @param entryUserId           The ID of the associated user.
+     * @param entryId            The ID of the entry.
+     * @param entrySubcategoryId The ID of the associated subcategory.
+     * @param apiEntry           The ApiEntry object representing the entry.
+     * @param entryUserId        The ID of the associated user.
      */
     public DatabaseEntry(int entryId, int entrySubcategoryId, ApiEntry apiEntry, int entryUserId) {
         super(apiEntry.getEntryName(), apiEntry.getEntryDescription(), apiEntry.getEntryAmount(), apiEntry.getEntryTimeOfTransaction(), apiEntry.getEntryAttachment());

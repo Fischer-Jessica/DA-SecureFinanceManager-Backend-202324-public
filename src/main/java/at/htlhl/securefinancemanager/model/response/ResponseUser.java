@@ -27,20 +27,22 @@ import at.htlhl.securefinancemanager.model.database.DatabaseUser;
  * </p>
  *
  * @author Fischer
- * @version 1.1
- * @since 05.01.2024 (version 1.1)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.2
+ * @since 02.02.2024 (version 1.2)
  * @see DatabaseUser
  */
 public class ResponseUser extends DatabaseUser {
-    /** The unique identifier for the mobile user. */
+    /**
+     * The unique identifier for the mobile user.
+     */
     private int mobileUserId;
 
     /**
      * Constructs a new ResponseUser object with the specified properties.
      *
-     * @param databaseUser       The DatabaseUser object.
-     * @param mobileUserId       The unique identifier for the mobile user.
+     * @param databaseUser The DatabaseUser object.
+     * @param mobileUserId The unique identifier for the mobile user.
      */
     public ResponseUser(DatabaseUser databaseUser, int mobileUserId) {
         super(databaseUser.getUserId(), databaseUser.getUsername(), databaseUser.getPassword(), databaseUser.getEMailAddress(), databaseUser.getFirstName(), databaseUser.getLastName());

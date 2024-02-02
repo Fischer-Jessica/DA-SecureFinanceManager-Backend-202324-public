@@ -30,8 +30,9 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.6
- * @since 16.11.2023 (version 1.6)
+ * @fullName Fischer, Jessica Christina
+ * @version 1.7
+ * @since 02.02.2024 (version 1.7)
  */
 public class DatabaseEntryLabel {
     /**
@@ -65,10 +66,10 @@ public class DatabaseEntryLabel {
     /**
      * Constructs a new DatabaseEntryLabel object with the specified entry label ID, entry ID, label ID, and user ID.
      *
-     * @param entryLabelId  The unique identifier for this EntryLabel.
-     * @param entryId       The ID of the associated entry.
-     * @param labelId       The ID of the associated label.
-     * @param userId        The ID of the associated user.
+     * @param entryLabelId The unique identifier for this EntryLabel.
+     * @param entryId      The ID of the associated entry.
+     * @param labelId      The ID of the associated label.
+     * @param userId       The ID of the associated user.
      */
     public DatabaseEntryLabel(int entryLabelId, int entryId, int labelId, int userId) {
         this.entryLabelId = entryLabelId;

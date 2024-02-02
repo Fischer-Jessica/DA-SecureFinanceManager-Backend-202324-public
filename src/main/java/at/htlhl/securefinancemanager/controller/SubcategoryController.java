@@ -47,14 +47,17 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.6
- * @since 05.01.2024 (version 3.6)
+ * @fullName Fischer, Jessica Christina
+ * @version 3.7
+ * @since 02.02.2024 (version 3.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("secure-finance-manager/categories")
 public class SubcategoryController {
-    /** The SubcategoryRepository instance for accessing subcategory data. */
+    /**
+     * The SubcategoryRepository instance for accessing subcategory data.
+     */
     @Autowired
     SubcategoryRepository subcategoryRepository;
 
@@ -63,8 +66,8 @@ public class SubcategoryController {
     /**
      * Returns a list of all subcategories from a specific category.
      *
-     * @param categoryId    The ID of the category.
-     * @param userDetails   The details of the logged-in user.
+     * @param categoryId  The ID of the category.
+     * @param userDetails The details of the logged-in user.
      * @return A list of subcategories for the specified category.
      */
     @GetMapping(value = "/{categoryId}/subcategories", headers = "API-Version=1")
@@ -73,12 +76,12 @@ public class SubcategoryController {
     @Operation(summary = "returns all subcategories of one category", description = "Returns a list of all subcategories with the specified categoryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all subcategories of the given category",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
-                    content = { @Content(mediaType = "text/plain") }),
+                    content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user or there are no subcategories in this category",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getSubcategoriesV1(@Parameter(description = "The categoryId added to the URL to retrieve the subordinated subcategories.") @PathVariable int categoryId,
                                                      @AuthenticationPrincipal UserDetails userDetails) {
@@ -110,12 +113,12 @@ public class SubcategoryController {
     @Operation(summary = "returns one subcategory of one category", description = "Returns the subcategory with the specified subcategoryId from the URL and the specified categoryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the requested subcategory from the given category",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0",
-                    content = { @Content(mediaType = "text/plain") }),
+                    content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested subcategory of the given category does not exist or is not found for the authenticated user",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getSubcategoryV1(@Parameter(description = "The categoryId added to the URL to retrieve the associated subcategory.") @PathVariable int categoryId,
                                                    @Parameter(description = "The subcategoryId added to the URL to retrieve the subordinated subcategory.") @PathVariable int subcategoryId,
@@ -139,9 +142,9 @@ public class SubcategoryController {
     /**
      * Adds a new subcategory to a specific category.
      *
-     * @param categoryId            The ID of the category, in which the subcategory will be created.
-     * @param newApiSubcategory     The new subcategory to be added.
-     * @param userDetails           The details of the logged-in user.
+     * @param categoryId        The ID of the category, in which the subcategory will be created.
+     * @param newApiSubcategory The new subcategory to be added.
+     * @param userDetails       The details of the logged-in user.
      * @return The newly created subcategory.
      */
     @PostMapping(value = "/{categoryId}/subcategories", headers = "API-Version=1")
@@ -151,12 +154,12 @@ public class SubcategoryController {
             description = "Creates a new subcategory within the specified categoryId from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given subcategory within the given category",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the given categoryId or the subcategoryColourId is less than or equal to 0 or the categoryName is empty",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
-    public ResponseEntity<Object> addSubcategoryV1(@Parameter(description = "The categoryId added to the URL to create the new subcategory within it.")@PathVariable int categoryId,
+    public ResponseEntity<Object> addSubcategoryV1(@Parameter(description = "The categoryId added to the URL to create the new subcategory within it.") @PathVariable int categoryId,
                                                    @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                                            description = "The new subcategory-Object.",
                                                            required = true,
@@ -183,9 +186,9 @@ public class SubcategoryController {
     /**
      * Adds a new subcategories to a specific categories.
      *
-     * @param categoryIds            The IDs of the categories, in which the subcategories will be created.
-     * @param newApiSubcategories   The new subcategories to be added.
-     * @param userDetails           The details of the logged-in user.
+     * @param categoryIds         The IDs of the categories, in which the subcategories will be created.
+     * @param newApiSubcategories The new subcategories to be added.
+     * @param userDetails         The details of the logged-in user.
      * @return A List of the newly created subcategories.
      */
     @PostMapping(value = "/{categoryIds}/subcategories", headers = "API-Version=2")
@@ -195,12 +198,12 @@ public class SubcategoryController {
             description = "Creates new subcategories within the specified categoryIds from the URL for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given subcategories within the given categories",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds and newApiSubcategories are not equal or a given categoryId or a subcategoryColourId is less than or equal to 0 or a categoryName is empty",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
-    public ResponseEntity<Object> addSubcategoriesV2(@Parameter(description = "The categoryId added to the URL to create the new entries within them. The categoryId and the newApiSubcategories need to be added in the same order.")@PathVariable List<Integer> categoryIds,
+    public ResponseEntity<Object> addSubcategoriesV2(@Parameter(description = "The categoryId added to the URL to create the new entries within them. The categoryId and the newApiSubcategories need to be added in the same order.") @PathVariable List<Integer> categoryIds,
                                                      @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                                              description = "List of new subcategories. As it is a List, the objects need to be enclosed in [].",
                                                              required = true,
@@ -235,9 +238,9 @@ public class SubcategoryController {
     /**
      * Adds a new subcategories to a specific categories.
      *
-     * @param categoryIds            The IDs of the categories, in which the subcategories will be created.
-     * @param newApiSubcategories   The new subcategories to be added.
-     * @param userDetails           The details of the logged-in user.
+     * @param categoryIds         The IDs of the categories, in which the subcategories will be created.
+     * @param newApiSubcategories The new subcategories to be added.
+     * @param userDetails         The details of the logged-in user.
      * @return A List of the newly created subcategories.
      */
     @PostMapping(value = "/{categoryIds}/subcategories", headers = "API-Version=3")
@@ -247,10 +250,10 @@ public class SubcategoryController {
             description = "Creates new subcategories within the specified categoryIds from the URL for the authenticated user. It requires a Basic-Auth-Header. This version for mobile applications also requires a List of mobileSubcategoryIds added to the URL.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "successfully created the given subcategories within the given categories",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds, mobileSubcategoryIds and newApiSubcategories are not equal or a given categoryId or a mobileSubcategoryId or a subcategoryColourId is less than or equal to 0 or a categoryName is empty",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addSubcategoriesV3(@Parameter(description = "The categoryIds added to the URL to create the new subcategories within them. The categoryId and the newApiSubcategories need to be added in the same order.") @PathVariable List<Integer> categoryIds,
                                                      @Parameter(description = "List of mobileSubcategoryIds from mobile applications to be added to the URL. The mobileSubcategoryIds and newApiSubcategories must be in the same order.") @RequestParam List<Integer> mobileSubcategoryIds,
@@ -291,10 +294,10 @@ public class SubcategoryController {
     /**
      * Updates an existing subcategory from a specific category.
      *
-     * @param categoryId                The ID of the category.
-     * @param subcategoryId             The ID of the subcategory to update.
-     * @param updatedApiSubcategory     The updated subcategory data.
-     * @param userDetails               The details of the logged-in user.
+     * @param categoryId            The ID of the category.
+     * @param subcategoryId         The ID of the subcategory to update.
+     * @param updatedApiSubcategory The updated subcategory data.
+     * @param userDetails           The details of the logged-in user.
      * @return The updated subcategory.
      */
     @PatchMapping(value = "/{categoryId}/subcategories/{subcategoryId}", headers = "API-Version=1")
@@ -304,12 +307,12 @@ public class SubcategoryController {
             description = "Updates an existing subcategory, whose id is given in the URL as well as its superior categoryId, for the authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given subcategory from the given category",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0 or the categoryColourId is less than 0",
-                    content = { @Content(mediaType = "text/plain") }),
+                    content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateSubcategoryV1(@Parameter(description = "The id of the superior category, added to the URL") @PathVariable int categoryId,
                                                       @Parameter(description = "The id of the subcategory to be updated, added to the URL.") @PathVariable int subcategoryId,
@@ -341,10 +344,10 @@ public class SubcategoryController {
     /**
      * Updates existing subcategories from a specific categories.
      *
-     * @param categoryIds               The IDs of the categories.
-     * @param subcategoryIds            The IDs of the subcategories to update.
-     * @param updatedApiSubcategories   The updated subcategories.
-     * @param userDetails               The details of the logged-in user.
+     * @param categoryIds             The IDs of the categories.
+     * @param subcategoryIds          The IDs of the subcategories to update.
+     * @param updatedApiSubcategories The updated subcategories.
+     * @param userDetails             The details of the logged-in user.
      * @return A List of the updated subcategories.
      */
     @PatchMapping(value = "/{categoryIds}/subcategories/{subcategoryIds}", headers = "API-Version=2")
@@ -355,12 +358,12 @@ public class SubcategoryController {
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the given subcategories from the given categories",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseSubcategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds, subcategoryIds and updatedApiSubcategories are not equal or a categoryId or a subcategoryId is less than or equal to 0 or a categoryColourId is less than 0",
-                    content = { @Content(mediaType = "text/plain") }),
+                    content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given subcategory with the given categoryId does not exist or is not found for the authenticated user",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateSubcategoriesV2(@Parameter(description = "List of the superior categoryIds. They need to be added to the URL in the same order as the updatedApiSubcategories") @PathVariable List<Integer> categoryIds,
                                                         @Parameter(description = "List of subcategoryIds to be updated. They need to be added to the URL in the same order as the updatedApiSubcategories.") @PathVariable List<Integer> subcategoryIds,
@@ -401,9 +404,9 @@ public class SubcategoryController {
     /**
      * Deletes a subcategory from a specific category.
      *
-     * @param categoryId       The ID of the category.
-     * @param subcategoryId    The ID of the subcategory to delete.
-     * @param userDetails      The details of the logged-in user.
+     * @param categoryId    The ID of the category.
+     * @param subcategoryId The ID of the subcategory to delete.
+     * @param userDetails   The details of the logged-in user.
      * @return An Integer representing the number of deleted rows.
      */
     @DeleteMapping(value = "/{categoryId}/subcategories/{subcategoryId}", headers = "API-Version=1")
@@ -414,12 +417,12 @@ public class SubcategoryController {
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given subcategory from the given category",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Integer.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class))}),
             @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0",
-                    content = { @Content(mediaType = "text/plain") }),
+                    content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteSubcategoryV1(@Parameter(description = "The id of the superior category, added to the URL.") @PathVariable int categoryId,
                                                       @Parameter(description = "The id of the subcategory to be deleted, added to the URL.") @PathVariable int subcategoryId,
@@ -441,9 +444,9 @@ public class SubcategoryController {
     /**
      * Deletes subcategories from specific categories.
      *
-     * @param categoryIds      The IDs of the categories.
-     * @param subcategoryIds   The IDs of the subcategories to delete.
-     * @param userDetails      The details of the logged-in user.
+     * @param categoryIds    The IDs of the categories.
+     * @param subcategoryIds The IDs of the subcategories to delete.
+     * @param userDetails    The details of the logged-in user.
      * @return An Integer List representing the number of deleted rows.
      */
     @DeleteMapping(value = "/{categoryIds}/subcategories/{subcategoryIds}", headers = "API-Version=2")
@@ -454,12 +457,12 @@ public class SubcategoryController {
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the given subcategories from the given categories",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Integer.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds and subcategoryIds are not equal or a categoryId or a subcategoryId is less than or equal to 0",
-                    content = { @Content(mediaType = "text/plain") }),
+                    content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given subcategory with the given categoryId does not exist or is not found for the authenticated user",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteSubcategoriesV2(@Parameter(description = "List of superior categoryIds. They need to be added to the URL in the same order as the subcategoryIds.") @PathVariable List<Integer> categoryIds,
                                                         @Parameter(description = "List of subcategoryIds to be deleted. They need to be added to the URL.") @PathVariable List<Integer> subcategoryIds,

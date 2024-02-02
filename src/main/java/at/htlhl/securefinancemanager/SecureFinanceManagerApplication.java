@@ -13,8 +13,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * </p>
  *
  * @author Fischer
- * @version 1.3
- * @since 02.02.2024 (version 1.3)
+ * @fullName Fischer, Jessica Christina
+ * @version 1.4
+ * @since 02.02.2024 (version 1.4)
  */
 @SpringBootApplication
 public class SecureFinanceManagerApplication {

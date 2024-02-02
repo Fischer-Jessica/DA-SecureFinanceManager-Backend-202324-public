@@ -25,8 +25,9 @@ import javax.sql.DataSource;
  * </p>
  *
  * @author Fischer
- * @version 0.0
- * @since 26.01.2024 (version 0.0)
+ * @fullName Fischer, Jessica Christina
+ * @version 0.1
+ * @since 02.02.2024 (version 0.1)
  */
 @Configuration
 @ComponentScan("at.htlhl.securefinancemanager")

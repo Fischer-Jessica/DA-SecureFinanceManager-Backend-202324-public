@@ -37,28 +37,32 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 16.11.2023 (version 2.0)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 2.1
+ * @since 02.02.2024 (version 2.1)
  * @see ApiCategory
  */
 public class DatabaseCategory extends ApiCategory {
-    /** The ID of the category. */
+    /**
+     * The ID of the category.
+     */
     @NotBlank
     private int categoryId;
 
-    /** The ID of the user associated with the category. */
+    /**
+     * The ID of the user associated with the category.
+     */
     @NotBlank
     private int categoryUserId;
 
     /**
      * Constructs a new DatabaseCategory object with the specified properties.
      *
-     * @param categoryId            The ID of the category.
-     * @param categoryName          The name of the category.
-     * @param categoryDescription   The description of the category.
-     * @param categoryColourId      The ID of the associated color.
-     * @param categoryUserId        The ID of the user associated with the category.
+     * @param categoryId          The ID of the category.
+     * @param categoryName        The name of the category.
+     * @param categoryDescription The description of the category.
+     * @param categoryColourId    The ID of the associated color.
+     * @param categoryUserId      The ID of the user associated with the category.
      */
     public DatabaseCategory(int categoryId, String categoryName, String categoryDescription, int categoryColourId, int categoryUserId) {
         super(categoryName, categoryDescription, categoryColourId);
@@ -69,8 +73,8 @@ public class DatabaseCategory extends ApiCategory {
     /**
      * Constructs a new DatabaseCategory object based on an {@link ApiCategory} instance and a user ID.
      *
-     * @param apiCategory       The ApiCategory instance.
-     * @param categoryUserId    The ID of the user associated with the category.
+     * @param apiCategory    The ApiCategory instance.
+     * @param categoryUserId The ID of the user associated with the category.
      */
     public DatabaseCategory(ApiCategory apiCategory, int categoryUserId) {
         super(apiCategory.getCategoryName(), apiCategory.getCategoryDescription(), apiCategory.getCategoryColourId());
@@ -80,9 +84,9 @@ public class DatabaseCategory extends ApiCategory {
     /**
      * Constructs a new DatabaseCategory object with the specified category ID, an {@link ApiCategory} instance, and a user ID.
      *
-     * @param categoryId            The ID of the category.
-     * @param apiCategory           The ApiCategory instance.
-     * @param categoryUserId        The ID of the user associated with the category.
+     * @param categoryId     The ID of the category.
+     * @param apiCategory    The ApiCategory instance.
+     * @param categoryUserId The ID of the user associated with the category.
      */
     public DatabaseCategory(int categoryId, ApiCategory apiCategory, int categoryUserId) {
         super(apiCategory.getCategoryName(), apiCategory.getCategoryDescription(), apiCategory.getCategoryColourId());

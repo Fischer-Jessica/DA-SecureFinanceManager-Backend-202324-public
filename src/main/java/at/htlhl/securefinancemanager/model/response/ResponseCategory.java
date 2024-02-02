@@ -27,20 +27,22 @@ import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 17.11.2023 (version 1.0)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.1
+ * @since 02.02.2024 (version 1.1)
  * @see DatabaseCategory
  */
 public class ResponseCategory extends DatabaseCategory {
-    /** The unique identifier for the mobile category. */
+    /**
+     * The unique identifier for the mobile category.
+     */
     private int mobileCategoryId;
 
     /**
      * Constructs a new ResponseCategory object with the specified properties.
      *
-     * @param databaseCategory       The DatabaseCategory object.
-     * @param mobileCategoryId       The unique identifier for the mobile category.
+     * @param databaseCategory The DatabaseCategory object.
+     * @param mobileCategoryId The unique identifier for the mobile category.
      */
     public ResponseCategory(DatabaseCategory databaseCategory, int mobileCategoryId) {
         super(databaseCategory.getCategoryId(), databaseCategory.getCategoryName(), databaseCategory.getCategoryDescription(), databaseCategory.getCategoryColourId(), databaseCategory.getCategoryUserId());

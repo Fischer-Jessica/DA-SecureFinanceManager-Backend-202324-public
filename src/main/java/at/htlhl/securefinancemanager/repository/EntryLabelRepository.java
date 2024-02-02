@@ -33,8 +33,9 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 2.6
- * @since 02.02.2024 (version 2.6)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.7
+ * @since 02.02.2024 (version 2.7)
  */
 @Repository
 public class EntryLabelRepository {

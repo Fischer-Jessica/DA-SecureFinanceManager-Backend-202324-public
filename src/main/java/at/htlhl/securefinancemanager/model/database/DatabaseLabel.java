@@ -28,28 +28,32 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 2.0
- * @since 16.11.2023 (version 2.0)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 2.1
+ * @since 02.02.2024 (version 2.1)
  * @see ApiLabel
  */
 public class DatabaseLabel extends ApiLabel {
-    /** The unique identifier for this Label. It is generated automatically by the database. */
+    /**
+     * The unique identifier for this Label. It is generated automatically by the database.
+     */
     @NotBlank
     private int labelId;
 
-    /** The ID of the user associated with the Label. */
+    /**
+     * The ID of the user associated with the Label.
+     */
     @NotBlank
     private int labelUserId;
 
     /**
      * Constructs a new DatabaseLabel object with the specified properties.
      *
-     * @param labelId        The unique identifier for the label.
-     * @param labelName      The name of the label.
+     * @param labelId          The unique identifier for the label.
+     * @param labelName        The name of the label.
      * @param labelDescription The description of the label.
-     * @param labelColourId  The ID of the associated colour.
-     * @param labelUserId    The ID of the associated user.
+     * @param labelColourId    The ID of the associated colour.
+     * @param labelUserId      The ID of the associated user.
      */
     public DatabaseLabel(int labelId, String labelName, String labelDescription, int labelColourId, int labelUserId) {
         super(labelName, labelDescription, labelColourId);
@@ -60,8 +64,8 @@ public class DatabaseLabel extends ApiLabel {
     /**
      * Constructs a new DatabaseLabel object from an ApiLabel object and user ID.
      *
-     * @param apiLabel       The ApiLabel object.
-     * @param labelUserId    The ID of the associated user.
+     * @param apiLabel    The ApiLabel object.
+     * @param labelUserId The ID of the associated user.
      */
     public DatabaseLabel(ApiLabel apiLabel, int labelUserId) {
         super(apiLabel.getLabelName(), apiLabel.getLabelDescription(), apiLabel.getLabelColourId());
@@ -71,9 +75,9 @@ public class DatabaseLabel extends ApiLabel {
     /**
      * Constructs a new DatabaseLabel object from an ApiLabel object, label ID, and user ID.
      *
-     * @param labelId        The unique identifier for the label.
-     * @param apiLabel       The ApiLabel object.
-     * @param labelUserId    The ID of the associated user.
+     * @param labelId     The unique identifier for the label.
+     * @param apiLabel    The ApiLabel object.
+     * @param labelUserId The ID of the associated user.
      */
     public DatabaseLabel(int labelId, ApiLabel apiLabel, int labelUserId) {
         super(apiLabel.getLabelName(), apiLabel.getLabelDescription(), apiLabel.getLabelColourId());

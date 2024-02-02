@@ -28,28 +28,33 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 16.11.2023 (version 1.8)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.9
+ * @since 02.02.2024 (version 1.9)
  * @see ApiUser
  */
 public class DatabaseUser extends ApiUser {
-    /** The unique identifier for this User. It is generated automatically by the database. */
+    /**
+     * The unique identifier for this User. It is generated automatically by the database.
+     */
     @NotBlank
     private int userId;
 
-    /** Default constructor. */
-    public DatabaseUser() {}
+    /**
+     * Default constructor.
+     */
+    public DatabaseUser() {
+    }
 
     /**
      * Constructs a new DatabaseUser object with the specified properties.
      *
-     * @param userId        The unique identifier for the user.
-     * @param username      The username of the user.
-     * @param password      The password of the user.
-     * @param eMailAddress  The email address of the user.
-     * @param firstName     The first name of the user.
-     * @param lastName      The last name of the user.
+     * @param userId       The unique identifier for the user.
+     * @param username     The username of the user.
+     * @param password     The password of the user.
+     * @param eMailAddress The email address of the user.
+     * @param firstName    The first name of the user.
+     * @param lastName     The last name of the user.
      */
     public DatabaseUser(int userId, String username, String password, String eMailAddress, String firstName, String lastName) {
         super(username, password, eMailAddress, firstName, lastName);

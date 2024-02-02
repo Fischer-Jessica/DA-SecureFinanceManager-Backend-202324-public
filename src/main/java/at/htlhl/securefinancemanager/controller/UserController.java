@@ -54,14 +54,17 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 3.4
- * @since 26.01.2024 (version 3.4)
+ * @fullName Fischer, Jessica Christina
+ * @version 3.5
+ * @since 02.02.2024 (version 3.5)
  */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("secure-finance-manager")
 public class UserController {
-    /** The UserRepository instance for accessing user data. */
+    /**
+     * The UserRepository instance for accessing user data.
+     */
     @Autowired
     UserRepository userRepository;
 
@@ -70,32 +73,6 @@ public class UserController {
      */
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    // GET /users *******************************************************************************************************
-
-    /**
-     * Returns a list of all users.
-     *
-     * @return A list of all users.
-     */
-    // TODO: This will be restricted or removed in the final product.
-    @GetMapping(value = "/users", headers = "API-Version=1")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "returns all users", description = "This endpoint will be removed in the final product. It returns a list of all users.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successfully returned all users",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseUser.class)) }),
-            @ApiResponse(responseCode = "404", description = "no users found",
-                    content = { @Content(mediaType = "text/plain") })
-    })
-    public ResponseEntity<Object> getUsersV1() {
-        try {
-            return ResponseEntity.ok(userRepository.getUsers());
-        } catch (ValidationException exception) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
-        }
-    }
 
     // GET /user ********************************************************************************************************
 
@@ -117,10 +94,10 @@ public class UserController {
     @Operation(summary = "returns the currently authenticated user", description = "This endpoint returns information about the currently authenticated user. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the authenticated user",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseUser.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getUserV1(@AuthenticationPrincipal UserDetails activeUser) {
         try {
@@ -135,7 +112,7 @@ public class UserController {
     /**
      * Adds a new user.
      *
-     * @param newApiUser    The User object representing the new user to be added.
+     * @param newApiUser The User object representing the new user to be added.
      * @return The newly created user.
      */
     @PostMapping(value = "/users", headers = "API-Version=1")
@@ -143,10 +120,10 @@ public class UserController {
     @Operation(summary = "creates a new user", description = "This endpoint creates a new user. It does not require a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "created a new user",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseUser.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "400", description = "the username or the password is missing",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addUserV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "The new User-Object.",
@@ -155,7 +132,7 @@ public class UserController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiUser.class)
             )
-    )@RequestBody ApiUser newApiUser) {
+    ) @RequestBody ApiUser newApiUser) {
         try {
             if (newApiUser.getUsername() == null || newApiUser.getUsername().isBlank()) {
                 throw new MissingRequiredParameter("username is required");
@@ -171,7 +148,7 @@ public class UserController {
     /**
      * Adds new users.
      *
-     * @param newApiUsers   The users representing the new users to be added.
+     * @param newApiUsers The users representing the new users to be added.
      * @return A List of the newly created users.
      */
     @PostMapping(value = "/users", headers = "API-Version=2")
@@ -179,19 +156,19 @@ public class UserController {
     @Operation(summary = "creates new users", description = "This endpoint creates new users. It does not require a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "created the new users",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseUser.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "400", description = "a username or a password is missing",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
-    public ResponseEntity<Object> addUsersV2( @io.swagger.v3.oas.annotations.parameters.RequestBody(
+    public ResponseEntity<Object> addUsersV2(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "List of new Users. As it is a List, the objects need to be enclosed in [].",
             required = true,
             content = @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiUser.class)
             )
-    )@RequestBody List<ApiUser> newApiUsers) {
+    ) @RequestBody List<ApiUser> newApiUsers) {
         try {
             List<DatabaseUser> createdUsers = new ArrayList<>();
             for (ApiUser newApiUser : newApiUsers) {
@@ -211,8 +188,8 @@ public class UserController {
     /**
      * Adds new users.
      *
-     * @param mobileUserId  The ID of the user in the mobile application.
-     * @param newApiUsers   The users representing the new users to be added.
+     * @param mobileUserId The ID of the user in the mobile application.
+     * @param newApiUsers  The users representing the new users to be added.
      * @return A List of the newly created users.
      */
     @PostMapping(value = "/users", headers = "API-Version=3")
@@ -221,12 +198,12 @@ public class UserController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "created the new users",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseUser.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "400", description = "a mobileUserId is less than or equal to 0 or a username or a password is missing",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
-    public ResponseEntity<Object> addUsersV3(@Parameter(description = "List of mobileUserIds from mobile applications to be added to the URL. The mobileUserIds and newApiUsers must be in the same order.")@RequestParam List<Integer> mobileUserId,
+    public ResponseEntity<Object> addUsersV3(@Parameter(description = "List of mobileUserIds from mobile applications to be added to the URL. The mobileUserIds and newApiUsers must be in the same order.") @RequestParam List<Integer> mobileUserId,
                                              @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                                      description = "List of new users. As it is a List, the objects need to be enclosed in [].",
                                                      required = true,
@@ -262,8 +239,8 @@ public class UserController {
     /**
      * Updates an existing user.
      *
-     * @param updatedApiUser    The User object containing the updated user information.
-     * @param activeUser        The UserDetails object representing the currently authenticated user.
+     * @param updatedApiUser The User object containing the updated user information.
+     * @param activeUser     The UserDetails object representing the currently authenticated user.
      * @return The updated User object.
      */
     @PatchMapping(value = "/users", headers = "API-Version=1")
@@ -272,10 +249,10 @@ public class UserController {
     @Operation(summary = "updates an existing user which is authenticated at the moment", description = "Updates an existing user, which is authenticated. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully updated the authenticated user",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseCategory.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseCategory.class))}),
             @ApiResponse(responseCode = "404", description = "the authenticated user is not found",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateUserV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "The updated user-Object.",
@@ -284,7 +261,7 @@ public class UserController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiUser.class)
             )
-    )@RequestBody ApiUser updatedApiUser,
+    ) @RequestBody ApiUser updatedApiUser,
                                                @AuthenticationPrincipal UserDetails activeUser) {
         try {
             return ResponseEntity.ok(userRepository.updateUser(updatedApiUser, activeUser.getUsername()));
@@ -307,10 +284,10 @@ public class UserController {
     @Operation(summary = "deletes an user which is authenticated at the moment", description = "Deletes an existing user, which is authenticated. It requires a Basic-Auth-Header.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully deleted the authenticated user",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Integer.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Integer.class))}),
             @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteUserV1(@AuthenticationPrincipal UserDetails activeUser) {
         try {

@@ -27,20 +27,22 @@ import at.htlhl.securefinancemanager.model.database.DatabaseSubcategory;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 17.11.2023 (version 1.0)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.1
+ * @since 02.02.2024 (version 1.1)
  * @see DatabaseSubcategory
  */
 public class ResponseSubcategory extends DatabaseSubcategory {
-    /** The unique identifier for the mobile subcategory. */
+    /**
+     * The unique identifier for the mobile subcategory.
+     */
     private int mobileSubcategoryId;
 
     /**
      * Constructs a new ResponseSubcategory object with the specified properties.
      *
-     * @param databaseSubcategory       The DatabaseSubcategory object.
-     * @param mobileSubcategoryId       The unique identifier for the mobile subcategory.
+     * @param databaseSubcategory The DatabaseSubcategory object.
+     * @param mobileSubcategoryId The unique identifier for the mobile subcategory.
      */
     public ResponseSubcategory(DatabaseSubcategory databaseSubcategory, int mobileSubcategoryId) {
         super(databaseSubcategory.getSubcategoryId(), databaseSubcategory.getSubcategoryCategoryId(), databaseSubcategory.getSubcategoryName(), databaseSubcategory.getSubcategoryDescription(), databaseSubcategory.getSubcategoryColourId(), databaseSubcategory.getSubcategoryUserId());

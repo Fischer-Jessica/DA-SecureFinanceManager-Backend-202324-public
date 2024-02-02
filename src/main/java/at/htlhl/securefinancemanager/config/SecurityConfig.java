@@ -44,8 +44,9 @@ import org.springframework.security.web.SecurityFilterChain;
  * </p>
  *
  * @author Fischer
- * @version 1.8
- * @since 02.02.2024 (version 1.8)
+ * @fullName Fischer, Jessica Christina
+ * @version 1.9
+ * @since 02.02.2024 (version 1.9)
  */
 @Configuration
 @EnableWebSecurity

@@ -23,27 +23,34 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 2.1
- * @since 16.11.2023 (version 2.1)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.2
+ * @since 02.02.2024 (version 2.2)
  */
 public class ApiCategory {
-    /** The name of the category. */
+    /**
+     * The name of the category.
+     */
     @NotBlank
     private String categoryName;
 
-    /** The description of the category. */
+    /**
+     * The description of the category.
+     */
     private String categoryDescription;
 
-    /** The ID of the associated color. */
+    /**
+     * The ID of the associated color.
+     */
     @NotBlank
     private int categoryColourId;
 
     /**
      * Parameterized constructor.
      *
-     * @param categoryName          The name of the category.
-     * @param categoryDescription   The description of the category.
-     * @param categoryColourId      The ID of the associated color.
+     * @param categoryName        The name of the category.
+     * @param categoryDescription The description of the category.
+     * @param categoryColourId    The ID of the associated color.
      */
     public ApiCategory(String categoryName, String categoryDescription, int categoryColourId) {
         this.categoryName = categoryName;

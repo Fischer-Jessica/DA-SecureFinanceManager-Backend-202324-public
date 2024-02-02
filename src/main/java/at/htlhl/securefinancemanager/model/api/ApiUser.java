@@ -27,39 +27,52 @@ import jakarta.validation.constraints.NotBlank;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 16.11.2023 (version 1.9)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.0
+ * @since 02.02.2024 (version 2.0)
  */
 public class ApiUser {
-    /** The username of the user. */
+    /**
+     * The username of the user.
+     */
     @NotBlank
     private String username;
 
-    /** The password of the user. */
+    /**
+     * The password of the user.
+     */
     @NotBlank
     private String password;
 
-    /** The email address of the user. */
+    /**
+     * The email address of the user.
+     */
     private String eMailAddress;
 
-    /** The first name of the user. */
+    /**
+     * The first name of the user.
+     */
     private String firstName;
 
-    /** The last name of the user. */
+    /**
+     * The last name of the user.
+     */
     private String lastName;
 
-    /** Default constructor. */
+    /**
+     * Default constructor.
+     */
     public ApiUser() {
     }
 
     /**
      * Constructs a new User instance with the specified details.
      *
-     * @param username      The username of the user.
-     * @param password      The password of the user.
-     * @param eMailAddress  The email address of the user.
-     * @param firstName     The first name of the user.
-     * @param lastName      The last name of the user.
+     * @param username     The username of the user.
+     * @param password     The password of the user.
+     * @param eMailAddress The email address of the user.
+     * @param firstName    The first name of the user.
+     * @param lastName     The last name of the user.
      */
     public ApiUser(String username, String password, String eMailAddress, String firstName, String lastName) {
         this.username = username;

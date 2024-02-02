@@ -23,8 +23,9 @@ package at.htlhl.securefinancemanager.exception;
  * </pre>
  *
  * @author Fischer
- * @version 1.0
- * @since 14.11.2023
+ * @fullName Fischer, Jessica Christina
+ * @version 1.1
+ * @since 02.02.2024 (version 1.1)
  */
 public class ValidationException extends Exception {
     /**

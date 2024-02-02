@@ -38,14 +38,17 @@ import org.springframework.web.bind.annotation.*;
  * </p>
  *
  * @author Fischer
- * @version 2.3
- * @since 05.01.2024 (version 2.3)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.4
+ * @since 02.02.2024 (version 2.4)
  */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("secure-finance-manager")
 public class ColourController {
-    /** The ColourRepository instance for accessing colour data. */
+    /**
+     * The ColourRepository instance for accessing colour data.
+     */
     @Autowired
     ColourRepository colourRepository;
 
@@ -62,10 +65,10 @@ public class ColourController {
             description = "Returns a list of all colours in the database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned all colours",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseColour.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseColour.class))}),
             @ApiResponse(responseCode = "404", description = "no colours found",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getColoursV1() {
         try {
@@ -89,12 +92,12 @@ public class ColourController {
             description = "Returns the requested colour from the database.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successfully returned the requested colour",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseColour.class)) }),
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseColour.class))}),
             @ApiResponse(responseCode = "400", description = "the colourId is less than or equal to 0",
-                    content = { @Content(mediaType = "text/plain") }),
+                    content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested colour does not exist",
-                    content = { @Content(mediaType = "text/plain") })
+                    content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getColourV1(@Parameter(description = "The colourId added to the Url to retrieve the associated colour.") @PathVariable int colourId) {
         try {

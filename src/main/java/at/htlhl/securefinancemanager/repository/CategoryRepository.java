@@ -37,8 +37,9 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  * </p>
  *
  * @author Fischer
- * @version 3.1
- * @since 02.02.2024 (version 3.1)
+ * @fullName Fischer, Jessica Christina
+ * @version 3.2
+ * @since 02.02.2024 (version 3.2)
  */
 @Repository
 public class CategoryRepository {
@@ -51,40 +52,27 @@ public class CategoryRepository {
     /**
      * SQL query to retrieve a list of categories for the logged-in user from the 'categories' table in the database.
      */
-    private static final String SELECT_CATEGORIES = "SELECT pk_category_id, " +
-            "pgp_sym_decrypt(category_name, '" + ENCRYPTION_KEY + "') AS decrypted_category_name," +
-            "pgp_sym_decrypt(category_description, '" + ENCRYPTION_KEY + "') AS decrypted_category_description," +
-            "fk_category_colour_id " +
-            "FROM categories " +
-            "WHERE fk_user_id = ?;";
+    private static final String SELECT_CATEGORIES = "SELECT pk_category_id, " + "pgp_sym_decrypt(category_name, '" + ENCRYPTION_KEY + "') AS decrypted_category_name," + "pgp_sym_decrypt(category_description, '" + ENCRYPTION_KEY + "') AS decrypted_category_description," + "fk_category_colour_id " + "FROM categories " + "WHERE fk_user_id = ?;";
 
     /**
      * SQL query to retrieve a specific category for the logged-in user from the 'categories' table in the database.
      */
-    private static final String SELECT_CATEGORY = "SELECT pgp_sym_decrypt(category_name, '" + ENCRYPTION_KEY + "') AS decrypted_category_name, " +
-            "pgp_sym_decrypt(category_description, '" + ENCRYPTION_KEY + "') AS decrypted_category_description, fk_category_colour_id " +
-            "FROM categories " +
-            "WHERE fk_user_id = ? AND pk_category_id = ?;";
+    private static final String SELECT_CATEGORY = "SELECT pgp_sym_decrypt(category_name, '" + ENCRYPTION_KEY + "') AS decrypted_category_name, " + "pgp_sym_decrypt(category_description, '" + ENCRYPTION_KEY + "') AS decrypted_category_description, fk_category_colour_id " + "FROM categories " + "WHERE fk_user_id = ? AND pk_category_id = ?;";
 
     /**
      * SQL query to insert a new category for the logged-in user into the 'categories' table in the database.
      */
-    private static final String INSERT_CATEGORY = "INSERT INTO categories " +
-            "(category_name, category_description, fk_category_colour_id, fk_user_id) " +
-            "VALUES (pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), ?, ?);";
+    private static final String INSERT_CATEGORY = "INSERT INTO categories " + "(category_name, category_description, fk_category_colour_id, fk_user_id) " + "VALUES (pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), ?, ?);";
 
     /**
      * SQL query to update an existing category for the logged-in user in the 'categories' table in the database.
      */
-    private static final String UPDATE_CATEGORY = "UPDATE categories " +
-            "SET category_name = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), category_description = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), fk_category_colour_id = ? " +
-            "WHERE pk_category_id = ? AND fk_user_id = ?;";
+    private static final String UPDATE_CATEGORY = "UPDATE categories " + "SET category_name = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), category_description = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), fk_category_colour_id = ? " + "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
     /**
      * SQL query to delete a category for the logged-in user from the 'categories' table in the database.
      */
-    private static final String DELETE_CATEGORY = "DELETE FROM categories " +
-            "WHERE pk_category_id = ? AND fk_user_id = ?;";
+    private static final String DELETE_CATEGORY = "DELETE FROM categories " + "WHERE pk_category_id = ? AND fk_user_id = ?;";
 
     /**
      * Retrieves a list of categories for the logged-in user.

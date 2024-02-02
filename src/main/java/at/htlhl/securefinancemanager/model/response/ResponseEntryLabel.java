@@ -27,20 +27,22 @@ import at.htlhl.securefinancemanager.model.database.DatabaseEntryLabel;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 17.11.2023 (version 1.0)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.1
+ * @since 02.02.2024 (version 1.1)
  * @see DatabaseEntryLabel
  */
 public class ResponseEntryLabel extends DatabaseEntryLabel {
-    /** The unique identifier for the mobile entry label. */
+    /**
+     * The unique identifier for the mobile entry label.
+     */
     private int mobileEntryLabelId;
 
     /**
      * Constructs a new ResponseEntryLabel object with the specified properties.
      *
-     * @param databaseEntryLabel       The DatabaseEntryLabel object.
-     * @param mobileEntryLabelId       The unique identifier for the mobile entry label.
+     * @param databaseEntryLabel The DatabaseEntryLabel object.
+     * @param mobileEntryLabelId The unique identifier for the mobile entry label.
      */
     public ResponseEntryLabel(DatabaseEntryLabel databaseEntryLabel, int mobileEntryLabelId) {
         super(databaseEntryLabel.getEntryLabelId(), databaseEntryLabel.getEntryId(), databaseEntryLabel.getLabelId(), databaseEntryLabel.getUserId());

@@ -26,8 +26,9 @@ import java.util.List;
  * </p>
  *
  * @author Fischer
- * @version 1.9
- * @since 26.01.2024 (version 1.9)
+ * @fullName Fischer, Jessica Christina
+ * @version 2.0
+ * @since 02.02.2024 (version 2.0)
  */
 @Repository
 public class ColourRepository {
@@ -37,11 +38,15 @@ public class ColourRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /** SQL query to retrieve all colours from the 'colours' table in the database. */
+    /**
+     * SQL query to retrieve all colours from the 'colours' table in the database.
+     */
     private static final String SELECT_COLOURS = "SELECT pk_colour_id, colour_name, colour_code " +
             "FROM colours;";
 
-    /**  SQL query to retrieve a specific colour from the 'colours' table in the database. */
+    /**
+     * SQL query to retrieve a specific colour from the 'colours' table in the database.
+     */
     private static final String SELECT_COLOUR = "SELECT pk_colour_id, colour_name, colour_code " +
             "FROM colours " +
             "WHERE pk_colour_id = ?;";
@@ -50,7 +55,7 @@ public class ColourRepository {
      * Retrieves a list of all colours.
      *
      * @return A list of Colour objects representing the colours.
-     * @throws ValidationException  If no colours are found.
+     * @throws ValidationException If no colours are found.
      */
     public List<DatabaseColour> getColours() throws ValidationException {
         List<DatabaseColour> databaseColours = jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
@@ -70,7 +75,7 @@ public class ColourRepository {
      *
      * @param colourId The ID of the colour to retrieve.
      * @return The requested Colour object.
-     * @throws ValidationException  If the specified colour does not exist.
+     * @throws ValidationException If the specified colour does not exist.
      */
     public DatabaseColour getColour(int colourId) throws ValidationException {
         try {

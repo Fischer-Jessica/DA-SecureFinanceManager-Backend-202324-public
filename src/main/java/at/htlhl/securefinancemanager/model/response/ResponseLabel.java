@@ -27,20 +27,22 @@ import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
  * </p>
  *
  * @author Fischer
- * @version 1.0
- * @since 17.11.2023 (version 1.0)
- *
+ * @fullName Fischer, Jessica Christina
+ * @version 1.1
+ * @since 02.02.2024 (version 1.1)
  * @see DatabaseLabel
  */
 public class ResponseLabel extends DatabaseLabel {
-    /** The unique identifier for the mobile label. */
+    /**
+     * The unique identifier for the mobile label.
+     */
     private int mobileLabelId;
 
     /**
      * Constructs a new ResponseLabel object with the specified properties.
      *
-     * @param databaseLabel       The DatabaseLabel object.
-     * @param mobileLabelId       The unique identifier for the mobile label.
+     * @param databaseLabel The DatabaseLabel object.
+     * @param mobileLabelId The unique identifier for the mobile label.
      */
     public ResponseLabel(DatabaseLabel databaseLabel, int mobileLabelId) {
         super(databaseLabel.getLabelId(), databaseLabel.getLabelName(), databaseLabel.getLabelDescription(), databaseLabel.getLabelColourId(), databaseLabel.getLabelUserId());
