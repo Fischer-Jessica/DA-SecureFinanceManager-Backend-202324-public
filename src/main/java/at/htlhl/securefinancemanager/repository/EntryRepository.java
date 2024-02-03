@@ -25,8 +25,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.4
- * @since 02.02.2024 (version 3.4)
+ * @version 3.5
+ * @since 03.02.2024 (version 3.5)
  */
 @Repository
 public class EntryRepository {
@@ -124,8 +124,8 @@ public class EntryRepository {
                 String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
 
                 databaseEntries.add(new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryCreationTime, decryptedEntryTimeOfTransaction,
-                        decryptedEntryAttachment, activeUserId));
+                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
+                        decryptedEntryCreationTime, activeUserId));
             }
             if (databaseEntries.isEmpty()) {
                 throw new ValidationException("No entries found for the subcategoryId " + subcategoryId + " for the authenticated user.");
@@ -167,8 +167,8 @@ public class EntryRepository {
                 String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
 
                 databaseEntry = new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryCreationTime, decryptedEntryTimeOfTransaction,
-                        decryptedEntryAttachment, activeUserId);
+                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
+                        decryptedEntryCreationTime, activeUserId);
             }
             if (databaseEntry == null) {
                 throw new ValidationException("Entry with ID " + entryId + " and subcategoryId " + subcategoryId + " not found.");
@@ -209,8 +209,8 @@ public class EntryRepository {
                 int subcategoryId = rs.getInt("fk_subcategory_id");
 
                 databaseEntry = new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryCreationTime, decryptedEntryTimeOfTransaction,
-                        decryptedEntryAttachment, activeUserId);
+                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
+                        decryptedEntryCreationTime, activeUserId);
             }
             if (databaseEntry == null) {
                 throw new ValidationException("Entry with ID " + entryId + " not found.");
