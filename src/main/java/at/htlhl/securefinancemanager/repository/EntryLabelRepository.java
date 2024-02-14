@@ -34,8 +34,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 2.7
- * @since 02.02.2024 (version 2.7)
+ * @version 2.8
+ * @since 14.02.2024 (version 2.8)
  */
 @Repository
 public class EntryLabelRepository {
@@ -166,7 +166,7 @@ public class EntryLabelRepository {
                 int subcategoryId = rs.getInt("fk_subcategory_id");
 
                 databaseLabels.add(new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryCreationTime, decryptedEntryTimeOfTransaction, decryptedEntryAttachment, activeUserId));
+                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment, decryptedEntryCreationTime, activeUserId));
             }
             if (databaseLabels.isEmpty()) {
                 throw new ValidationException("No entries found for an label with ID " + labelId);

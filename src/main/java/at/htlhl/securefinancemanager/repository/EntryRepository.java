@@ -25,8 +25,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.5
- * @since 03.02.2024 (version 3.5)
+ * @version 3.6
+ * @since 14.02.2024 (version 3.6)
  */
 @Repository
 public class EntryRepository {
@@ -260,7 +260,7 @@ public class EntryRepository {
                 return ps;
             }, keyHolder);
 
-            return new DatabaseEntry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntrySubcategoryId(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), currentTimestamp.toString(), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), newEntry.getEntryUserId());
+            return new DatabaseEntry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntrySubcategoryId(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), currentTimestamp.toString(), newEntry.getEntryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
