@@ -13,7 +13,7 @@ CREATE TABLE colours (
 CREATE TABLE users (
 	pk_user_id SERIAL PRIMARY KEY,
 	username TEXT UNIQUE NOT NULL,
-	password bytea NOT NULL,
+	password VARCHAR(100) NOT NULL,
 	email_address TEXT UNIQUE,
 	first_name TEXT,
 	last_name TEXT
