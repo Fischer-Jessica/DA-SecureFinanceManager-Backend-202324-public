@@ -48,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.8
- * @since 02.02.2024 (version 3.8)
+ * @version 3.9
+ * @since 24.02.2024 (version 3.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -60,8 +60,6 @@ public class LabelController {
      */
     @Autowired
     LabelRepository labelRepository;
-
-    // GET /labels *******************************************************************************************************
 
     /**
      * Returns a list of all labels for the logged-in user.
@@ -88,8 +86,6 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // GET /labels/{labelId} *********************************************************************************************
 
     /**
      * Returns a specific label for the logged-in user.
@@ -125,8 +121,6 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // POST /labels ******************************************************************************************************
 
     /**
      * Adds a new label for the logged-in user.
@@ -261,8 +255,6 @@ public class LabelController {
         }
     }
 
-    // PATCH /labels/{labelIds} ******************************************************************************************
-
     /**
      * Updates an existing label for the logged-in user.
      *
@@ -361,8 +353,6 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // DELETE /labels/{labelIds} *****************************************************************************************
 
     /**
      * Deletes a label for the logged-in user.

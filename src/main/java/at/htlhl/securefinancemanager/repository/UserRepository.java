@@ -11,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.util.List;
 import java.util.Objects;
 
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
@@ -31,8 +30,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.6
- * @since 02.02.2024 (version 3.6)
+ * @version 3.7
+ * @since 25.02.2024 (version 3.7)
  */
 @Repository
 public class UserRepository {
@@ -50,10 +49,18 @@ public class UserRepository {
             "WHERE username = ?;";
 
     /**
-     * SQL query to retrieve all users.
+     * SQL query to check if a username is already in use.
      */
-    private static final String SELECT_USERS = "SELECT pk_user_id, username, password, email_address, first_name, last_name " +
-            "FROM users;";
+    private static final String SELECT_USERNAME = "SELECT username " +
+            "FROM users " +
+            "WHERE username = ?;";
+
+    /**
+     * SQL query to check if an email address is already in use.
+     */
+    private static final String SELECT_E_MAIL_ADDRESS = "SELECT email_address " +
+            "FROM users " +
+            "WHERE email_address = ?;";
 
     /**
      * SQL query to insert a new user into the database.
@@ -115,24 +122,49 @@ public class UserRepository {
     }
 
     /**
-     * Retrieves a list of all users.
+     * Checks if the provided username already exists in the database.
      *
-     * @return A list of User objects representing all users.
+     * @param username The username to be checked for existence.
+     * @return true if the username already exists, false otherwise.
      */
-    public List<DatabaseUser> getUsers() throws ValidationException {
-        List<DatabaseUser> users = jdbcTemplate.query(SELECT_USERS, (rs, rowNum) -> {
-            int userId = rs.getInt("pk_user_id");
-            String username = rs.getString("username");
-            String encodedPassword = rs.getString("password");
-            String eMailAddress = rs.getString("email_address");
-            String firstName = rs.getString("first_name");
-            String lastName = rs.getString("last_name");
-            return new DatabaseUser(userId, username, encodedPassword, eMailAddress, firstName, lastName);
-        });
-        if (users.isEmpty()) {
-            throw new ValidationException("No users found.");
+    public boolean checkUsername(String username) {
+        try {
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_USERNAME);
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                conn.close();
+                return true;
+            }
+            conn.close();
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
         }
-        return users;
+        return false;
+    }
+
+    /**
+     * Checks if the provided email address already exists in the database.
+     *
+     * @param eMailAddress The email address to be checked for existence.
+     * @return true if the email address already exists, false otherwise.
+     */
+    public boolean checkEMailAddress(String eMailAddress) {
+        try {
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_E_MAIL_ADDRESS);
+            ps.setString(1, eMailAddress);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                conn.close();
+                return true;
+            }
+            conn.close();
+        } catch (SQLException exception) {
+            throw new RuntimeException(exception);
+        }
+        return false;
     }
 
     /**

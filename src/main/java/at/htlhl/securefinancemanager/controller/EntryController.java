@@ -49,8 +49,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 4.0
- * @since 02.02.2024 (version 4.0)
+ * @version 4.1
+ * @since 24.02.2024 (version 4.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -61,8 +61,6 @@ public class EntryController {
      */
     @Autowired
     EntryRepository entryRepository;
-
-    // GET /{subcategoryId}/entries *************************************************************************************
 
     /**
      * Retrieves a list of all entries from a specific subcategory.
@@ -98,8 +96,6 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // GET /{subcategoryId}/entries/{entryId} ***************************************************************************
 
     /**
      * Retrieves a specific entry from a specific subcategory.
@@ -139,8 +135,6 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // POST /{subcategoryIds}/entries ***********************************************************************************
 
     /**
      * Creates a new entry in a specific subcategory.
@@ -292,8 +286,6 @@ public class EntryController {
         }
     }
 
-    // PATCH /{subcategoryId}/entries/{entryIds} ************************************************************************
-
     /**
      * Updates an existing entry in a specific subcategory.
      *
@@ -396,8 +388,6 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // DELETE /{subcategoryIds}/entries/{entryIds} **********************************************************************
 
     /**
      * Deletes an entry from a specific subcategory.

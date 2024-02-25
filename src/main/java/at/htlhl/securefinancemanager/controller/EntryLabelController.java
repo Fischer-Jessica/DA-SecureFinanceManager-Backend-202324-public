@@ -47,8 +47,8 @@ import java.util.List;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.0
- * @since 02.02.2024 (version 3.0)
+ * @version 3.1
+ * @since 24.02.2024 (version 3.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -59,8 +59,6 @@ public class EntryLabelController {
      */
     @Autowired
     EntryLabelRepository entryLabelRepository;
-
-    // GET /labels *******************************************************************************************************
 
     /**
      * Retrieves a list of labels associated with a specific entry.
@@ -171,8 +169,6 @@ public class EntryLabelController {
         }
     }
 
-    // POST /labels/{labelIds} *******************************************************************************************
-
     /**
      * Adds a label to a specific entry.
      *
@@ -255,8 +251,6 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // DELETE /labels/{labelIds} *****************************************************************************************
 
     /**
      * Removes a label from a specific entry.

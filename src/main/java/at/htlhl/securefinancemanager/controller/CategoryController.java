@@ -49,8 +49,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.8
- * @since 02.02.2024 (version 3.8)
+ * @version 3.9
+ * @since 24.02.2024 (version 3.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -61,8 +61,6 @@ public class CategoryController {
      */
     @Autowired
     CategoryRepository categoryRepository;
-
-    // GET /categories **************************************************************************************************
 
     /**
      * Returns a list of all categories of the logged-in user.
@@ -89,8 +87,6 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // GET /categories/{categoryId} *************************************************************************************
 
     /**
      * Returns a specific category for the logged-in user.
@@ -126,8 +122,6 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // POST /categories *************************************************************************************************
 
     /**
      * Creates a new category for the logged-in user.
@@ -267,8 +261,6 @@ public class CategoryController {
         }
     }
 
-    // PATCH /categories/{categoryIds} **********************************************************************************
-
     /**
      * Updates an existing category for the logged-in user.
      *
@@ -368,8 +360,6 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // DELETE /categories/{categoryIds} *********************************************************************************
 
     /**
      * Deletes a category for the logged-in user.

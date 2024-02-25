@@ -48,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.7
- * @since 02.02.2024 (version 3.7)
+ * @version 3.8
+ * @since 24.02.2024 (version 3.8)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -60,8 +60,6 @@ public class SubcategoryController {
      */
     @Autowired
     SubcategoryRepository subcategoryRepository;
-
-    // GET /{categoryId}/subcategories *******************************+**************************************************
 
     /**
      * Returns a list of all subcategories from a specific category.
@@ -96,8 +94,6 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // GET /{categoryId}/subcategories/{subcategoryId} ******************************************************************
 
     /**
      * Returns a specific subcategory from a specific category.
@@ -136,8 +132,6 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // POST /{categoryIds}/subcategories ********************************************************************************
 
     /**
      * Adds a new subcategory to a specific category.
@@ -289,8 +283,6 @@ public class SubcategoryController {
         }
     }
 
-    // PUT /{categoryIds}/subcategories/{subcategoryIds} ****************************************************************
-
     /**
      * Updates an existing subcategory from a specific category.
      *
@@ -398,8 +390,6 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // DELETE /{categoryIds}/subcategories/{subcategoryIds} *************************************************************
 
     /**
      * Deletes a subcategory from a specific category.

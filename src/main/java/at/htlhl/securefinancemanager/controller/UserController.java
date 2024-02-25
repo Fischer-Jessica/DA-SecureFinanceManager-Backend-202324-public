@@ -55,8 +55,8 @@ import java.util.List;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.5
- * @since 02.02.2024 (version 3.5)
+ * @version 3.6
+ * @since 25.02.2024 (version 3.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -73,8 +73,6 @@ public class UserController {
      */
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    // GET /user ********************************************************************************************************
 
     /**
      * Retrieves information about the currently authenticated user upon successful login.
@@ -107,8 +105,6 @@ public class UserController {
         }
     }
 
-    // GET /users *******************************************************************************************************
-
     /**
      * Adds a new user.
      *
@@ -123,6 +119,8 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "400", description = "the username or the password is missing",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "409", description = "the username or the email address already exists",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addUserV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -139,9 +137,25 @@ public class UserController {
             } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
                 throw new MissingRequiredParameter("password is required");
             }
+
+            boolean isUsernameExists = userRepository.checkUsername(newApiUser.getUsername());
+
+            boolean isEmailExists = newApiUser.getEMailAddress() != null && !newApiUser.getEMailAddress().isBlank() &&
+                    userRepository.checkEMailAddress(newApiUser.getEMailAddress());
+
+            if (isUsernameExists && isEmailExists) {
+                throw new ValidationException("Both username and email address already exist.");
+            } else if (isUsernameExists) {
+                throw new ValidationException("Username already exists.");
+            } else if (isEmailExists) {
+                throw new ValidationException("Email address already exists.");
+            }
+
             return ResponseEntity.ok(userRepository.addUser(newApiUser));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getLocalizedMessage());
         }
     }
 
@@ -159,6 +173,8 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "400", description = "a username or a password is missing",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "409", description = "the username or the email address already exists",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addUsersV2(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -177,11 +193,27 @@ public class UserController {
                 } else if (newApiUser.getPassword() == null || newApiUser.getPassword().isBlank()) {
                     throw new MissingRequiredParameter("password is required");
                 }
+
+                boolean isUsernameExists = userRepository.checkUsername(newApiUser.getUsername());
+
+                boolean isEmailExists = newApiUser.getEMailAddress() != null && !newApiUser.getEMailAddress().isBlank() &&
+                        userRepository.checkEMailAddress(newApiUser.getEMailAddress());
+
+                if (isUsernameExists && isEmailExists) {
+                    throw new ValidationException("Both username and email address already exist.");
+                } else if (isUsernameExists) {
+                    throw new ValidationException("Username already exists.");
+                } else if (isEmailExists) {
+                    throw new ValidationException("Email address already exists.");
+                }
+
                 createdUsers.add(userRepository.addUser(newApiUser));
             }
             return ResponseEntity.ok(createdUsers);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getLocalizedMessage());
         }
     }
 
@@ -201,6 +233,8 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "400", description = "a mobileUserId is less than or equal to 0 or a username or a password is missing",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "409", description = "the username or the email address already exists",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addUsersV3(@Parameter(description = "List of mobileUserIds from mobile applications to be added to the URL. The mobileUserIds and newApiUsers must be in the same order.") @RequestParam List<Integer> mobileUserId,
@@ -225,16 +259,30 @@ public class UserController {
                 } else if (mobileUserId.get(i) <= 0) {
                     throw new MissingRequiredParameter("mobileUserId cannot be less than or equal to 0");
                 }
+
+                boolean isUsernameExists = userRepository.checkUsername(newApiUsers.get(i).getUsername());
+
+                boolean isEmailExists = newApiUsers.get(i).getEMailAddress() != null && !newApiUsers.get(i).getEMailAddress().isBlank() &&
+                        userRepository.checkEMailAddress(newApiUsers.get(i).getEMailAddress());
+
+                if (isUsernameExists && isEmailExists) {
+                    throw new ValidationException("Both username and email address already exist.");
+                } else if (isUsernameExists) {
+                    throw new ValidationException("Username already exists.");
+                } else if (isEmailExists) {
+                    throw new ValidationException("Email address already exists.");
+                }
+
                 createdUsers.add(new ResponseUser(userRepository.addUser(newApiUsers.get(i)), mobileUserId.get(i)));
                 System.out.println(createdUsers.get(i).getMobileUserId());
             }
             return ResponseEntity.ok(createdUsers);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getLocalizedMessage());
         }
     }
-
-    // GET /users *******************************************************************************************************
 
     /**
      * Updates an existing user.
@@ -269,8 +317,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
         }
     }
-
-    // DELETE /users ****************************************************************************************************
 
     /**
      * Deletes a user.

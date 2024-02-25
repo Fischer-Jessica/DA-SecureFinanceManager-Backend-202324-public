@@ -39,8 +39,8 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 2.4
- * @since 02.02.2024 (version 2.4)
+ * @version 2.6
+ * @since 24.02.2024 (version 2.6)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -51,8 +51,6 @@ public class ColourController {
      */
     @Autowired
     ColourRepository colourRepository;
-
-    // GET /colours *******************************+********************************************************************
 
     /**
      * Returns a list of all colours.
@@ -77,8 +75,6 @@ public class ColourController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
         }
     }
-
-    // GET /colours/{colourId} ******************************************************************************************
 
     /**
      * Returns a specific colour.
