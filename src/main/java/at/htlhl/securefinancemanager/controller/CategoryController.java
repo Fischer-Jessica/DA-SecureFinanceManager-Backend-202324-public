@@ -49,8 +49,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.9
- * @since 24.02.2024 (version 3.9)
+ * @version 4.0
+ * @since 08.03.2024 (version 4.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -116,6 +116,41 @@ public class CategoryController {
                 throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
             }
             return ResponseEntity.ok(categoryRepository.getCategory(categoryId, userDetails.getUsername()));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Returns the sum of all transactions of the requested category for the logged-in user.
+     *
+     * @param categoryId  The ID of the category to retrieve the sum of transactions.
+     * @param userDetails The UserDetails object containing information about the logged-in user.
+     * @return The sum of transactions for the requested category.
+     */
+    @GetMapping(value = "/categories/{categoryId}/sum", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "returns the sum of all transactions of the requested category",
+            description = "Returns the sum of all transactions of the category with the specified categoryId for the authenticated user. Requires a Basic-Auth-Header.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the sum of transactions for the requested category",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Double.class))}),
+            @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")})
+    })
+    public ResponseEntity<Object> getCategorySumV1(@Parameter(description = "The categoryId added to the URL to retrieve the sum of all transactions of the associated category.") @PathVariable int categoryId,
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (categoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId cannot be less than or equal to 0");
+            }
+            return ResponseEntity.ok(categoryRepository.getValueOfCategory(categoryId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

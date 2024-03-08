@@ -38,8 +38,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.2
- * @since 02.02.2024 (version 3.2)
+ * @version 3.3
+ * @since 08.03.2024 (version 3.3)
  */
 @Repository
 public class CategoryRepository {
@@ -48,6 +48,12 @@ public class CategoryRepository {
      */
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    /**
+     * Autowired instance of SubcategoryRepository for accessing subcategory-related data.
+     */
+    @Autowired
+    private SubcategoryRepository subcategoryRepository;
 
     /**
      * SQL query to retrieve a list of categories for the logged-in user from the 'categories' table in the database.
@@ -138,6 +144,33 @@ public class CategoryRepository {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Calculates the total value of entries within all subcategories of a specific category for a logged-in user.
+     * This method retrieves the total value by summing up the values of all subcategories within the specified category.
+     *
+     * @param categoryId The ID of the category for which to calculate the total value.
+     * @param username   The username of the logged-in user.
+     * @return The total value of entries within all subcategories of the specified category, as a float.
+     * @throws ValidationException If the provided category ID is invalid or if the provided username is invalid.
+     *                             This exception may indicate that the category does not exist or that the provided username
+     *                             does not have permission to access the category.
+     */
+    public float getValueOfCategory(int categoryId, String username) throws ValidationException {
+        try {
+            return (float) subcategoryRepository.getSubcategories(categoryId, username).stream().mapToDouble(subcategory -> {
+                try {
+                    return subcategoryRepository.getValueOfSubcategory(categoryId, subcategory.getSubcategoryId(), username);
+                } catch (ValidationException e) {
+                    throw new RuntimeException(e);
+                }
+            }).sum();
+        } catch (ValidationException exception) {
+            // If the Validation-Error occurs it means, that no subcategories are found for the category. Thereby the sum of them is 0.
+            return 0;
+        }
+    }
+
 
     /**
      * Adds a new category for the logged-in user.

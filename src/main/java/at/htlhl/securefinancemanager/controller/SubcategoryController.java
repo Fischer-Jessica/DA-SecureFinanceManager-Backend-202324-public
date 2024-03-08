@@ -48,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.8
- * @since 24.02.2024 (version 3.8)
+ * @version 3.9
+ * @since 08.03.2024 (version 3.9)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -126,6 +126,43 @@ public class SubcategoryController {
                 throw new MissingRequiredParameter("subcategoryId cannot be less than or equal to 0");
             }
             return ResponseEntity.ok(subcategoryRepository.getSubcategory(categoryId, subcategoryId, userDetails.getUsername()));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Returns the sum of all transactions of the specified subcategory for the logged-in user.
+     *
+     * @param categoryId    The ID of the category containing the subcategory.
+     * @param subcategoryId The ID of the subcategory to retrieve the sum of transactions.
+     * @param userDetails   The UserDetails object containing information about the logged-in user.
+     * @return The sum of transactions for the specified subcategory.
+     */
+    @GetMapping(value = "/{categoryId}/subcategories/{subcategoryId}/sum", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "returns the sum of all transactions of the specified subcategory",
+            description = "Returns the sum of all transactions of the specified subcategory with the specified subcategoryId and under the category with the specified categoryId for the authenticated user. Requires a Basic-Auth-Header.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the sum of transactions for the specified subcategory",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Double.class))}),
+            @ApiResponse(responseCode = "400", description = "the categoryId or subcategoryId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "404", description = "the specified subcategory does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")})
+    })
+    public ResponseEntity<Object> getSubcategorySumV1(@Parameter(description = "The categoryId added to the URL to retrieve the sum of all transactions of the specified subcategory.") @PathVariable int categoryId,
+                                                      @Parameter(description = "The subcategoryId added to the URL to retrieve the sum of all transactions of the associated subcategory.") @PathVariable int subcategoryId,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (categoryId <= 0 || subcategoryId <= 0) {
+                throw new MissingRequiredParameter("categoryId and subcategoryId cannot be less than or equal to 0");
+            }
+            return ResponseEntity.ok(subcategoryRepository.getValueOfSubcategory(categoryId, subcategoryId, userDetails.getUsername()));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

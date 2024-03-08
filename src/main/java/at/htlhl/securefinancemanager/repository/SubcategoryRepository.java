@@ -25,8 +25,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.1
- * @since 02.02.2024 (version 3.1)
+ * @version 3.2
+ * @since 08.03.2024 (version 3.2)
  */
 @Repository
 public class SubcategoryRepository {
@@ -54,6 +54,15 @@ public class SubcategoryRepository {
             "fk_subcategory_colour_id " +
             "FROM subcategories " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
+
+    /**
+     * SQL query to retrieve the total decrypted amount from entries within a specific subcategory for a logged-in user.
+     * The decrypted amount is calculated by decrypting the 'entry_amount' field using the provided encryption key,
+     * and then summing up the numeric values.
+     */
+    private static final String SELECT_TOTAL_AMOUNT_OF_SUBCATEGORY = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "')::numeric) AS total_decrypted_amount " +
+            "FROM entries " +
+            "WHERE fk_subcategory_id = ? AND fk_user_id = ?;";
 
     /**
      * SQL query to insert a new subcategory for a specific category and user.
@@ -138,6 +147,36 @@ public class SubcategoryRepository {
 
                 return new DatabaseSubcategory(subcategoryId, categoryId, decryptedSubcategoryName,
                         decryptedSubcategoryDescription, subcategoryColourId, activeUserId);
+            }
+            throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Retrieves the total amount from a specific subcategory for a logged-in user.
+     *
+     * @param subcategoryId The ID of the subcategory.
+     * @param username      The username of the logged-in user.
+     * @return The total amount from the specified subcategory.
+     * @throws ValidationException If the specified subcategory does not exist or if the provided username is invalid.
+     *                             This exception may indicate that the subcategoryId is not found or that the userId associated
+     *                             with the provided username does not match the expected owner of the subcategory.
+     */
+    public float getValueOfSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
+        getSubcategory(categoryId, subcategoryId, username);
+        int activeUserId = userSingleton.getUserId(username);
+
+        try {
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_TOTAL_AMOUNT_OF_SUBCATEGORY);
+            ps.setInt(1, subcategoryId);
+            ps.setInt(2, activeUserId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getFloat("total_decrypted_amount");
             }
             throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
         } catch (SQLException e) {
