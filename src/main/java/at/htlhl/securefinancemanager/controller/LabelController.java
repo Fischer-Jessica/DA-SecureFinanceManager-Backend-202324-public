@@ -48,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.9
- * @since 24.02.2024 (version 3.9)
+ * @version 4.0
+ * @since 09.02.2024 (version 4.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -115,6 +115,42 @@ public class LabelController {
                 throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
             }
             return ResponseEntity.ok(labelRepository.getLabel(labelId, userDetails.getUsername()));
+        } catch (MissingRequiredParameter exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (ValidationException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Retrieves the sum of all transactions for entries associated with the specified label for the authenticated user.
+     *
+     * @param labelId     The ID of the label for which to retrieve the sum of transactions.
+     * @param userDetails The UserDetails object containing information about the authenticated user.
+     * @return The sum of transactions for entries associated with the specified label for the authenticated user.
+     */
+    @GetMapping(value = "labels/{labelId}/sum", headers = "API-Version=1")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @Operation(summary = "returns the sum of all transactions for entries with a specific label",
+            description = "Returns the sum of all transactions for entries associated with the specified label ID for the authenticated user. Requires a Basic-Auth-Header.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successfully returned the sum of transactions for entries with the specified label",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Double.class))}),
+            @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "404", description = "the specified label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")})
+    })
+    public ResponseEntity<Object> getLabelSumV1(@Parameter(description = "The labelId added to the URL to retrieve the sum of all transactions for entries with the specified label.") @PathVariable int labelId,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            if (labelId <= 0) {
+                throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
+            }
+            float totalSum = labelRepository.getLabelSum(labelId, userDetails.getUsername());
+            return ResponseEntity.ok(totalSum);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {

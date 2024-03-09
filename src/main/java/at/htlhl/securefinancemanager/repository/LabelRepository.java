@@ -25,8 +25,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.1
- * @since 02.02.2024 (version 3.1)
+ * @version 3.2
+ * @since 09.02.2024 (version 3.2)
  */
 @Repository
 public class LabelRepository {
@@ -54,6 +54,14 @@ public class LabelRepository {
             "fk_label_colour_id " +
             "FROM labels " +
             "WHERE fk_user_id = ? AND pk_label_id = ?;";
+
+    /**
+     * Retrieves the sum of all transactions for entries associated with the specified label for the given user.
+     */
+    private static final String SELECT_LABEL_SUM = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "')::numeric) AS total_sum " +
+            "FROM entries " +
+            "JOIN entry_labels ON entries.pk_entry_id = entry_labels.fk_entry_id " +
+            "WHERE entry_labels.fk_label_id = ? AND entry_labels.fk_user_id = ? AND entries.fk_user_id = ?;";
 
     /**
      * SQL query to insert a new label for the logged-in user.
@@ -132,6 +140,34 @@ public class LabelRepository {
                 int labelColourId = rs.getInt("fk_label_colour_id");
 
                 return new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId);
+            }
+            throw new ValidationException("Label with ID " + labelId + " not found.");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Retrieves the sum of all transactions associated with the specified label for the given user.
+     *
+     * @param labelId  The ID of the label for which to retrieve the sum of transactions.
+     * @param username The username of the user for whom to retrieve the sum of transactions.
+     * @return The sum of transactions associated with the specified label for the given user.
+     * @throws ValidationException If the label with the specified ID is not found.
+     */
+    public float getLabelSum(int labelId, String username) throws ValidationException {
+        int activeUserId = userSingleton.getUserId(username);
+        try {
+            Connection conn = jdbcTemplate.getDataSource().getConnection();
+            PreparedStatement ps = conn.prepareStatement(SELECT_LABEL_SUM);
+            ps.setInt(1, labelId);
+            ps.setInt(2, activeUserId);
+            ps.setInt(3, activeUserId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                System.out.println(rs.getFloat("total_sum"));
+                return rs.getFloat("total_sum");
             }
             throw new ValidationException("Label with ID " + labelId + " not found.");
         } catch (SQLException e) {
