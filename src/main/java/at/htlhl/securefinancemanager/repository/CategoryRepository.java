@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -158,13 +160,15 @@ public class CategoryRepository {
      */
     public float getValueOfCategory(int categoryId, String username) throws ValidationException {
         try {
-            return (float) subcategoryRepository.getSubcategories(categoryId, username).stream().mapToDouble(subcategory -> {
+            double categorySum = subcategoryRepository.getSubcategories(categoryId, username).stream().mapToDouble(subcategory -> {
                 try {
                     return subcategoryRepository.getValueOfSubcategory(categoryId, subcategory.getSubcategoryId(), username);
                 } catch (ValidationException e) {
                     throw new RuntimeException(e);
                 }
             }).sum();
+            BigDecimal roundedSum = BigDecimal.valueOf(categorySum).setScale(2, RoundingMode.HALF_UP);
+            return roundedSum.floatValue();
         } catch (ValidationException exception) {
             // If the Validation-Error occurs it means, that no subcategories are found for the category. Thereby the sum of them is 0.
             return 0;

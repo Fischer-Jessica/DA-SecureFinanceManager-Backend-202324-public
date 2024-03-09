@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -176,7 +178,10 @@ public class SubcategoryRepository {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return rs.getFloat("total_decrypted_amount");
+                BigDecimal totalSum = BigDecimal.valueOf(rs.getFloat("total_decrypted_amount"));
+                totalSum = totalSum.setScale(2, RoundingMode.HALF_UP);
+                System.out.println(totalSum.floatValue());
+                return totalSum.floatValue();
             }
             throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
         } catch (SQLException e) {

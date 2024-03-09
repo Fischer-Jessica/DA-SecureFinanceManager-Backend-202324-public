@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +60,7 @@ public class LabelRepository {
     /**
      * Retrieves the sum of all transactions for entries associated with the specified label for the given user.
      */
-    private static final String SELECT_LABEL_SUM = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "')::numeric) AS total_sum " +
+    private static final String SELECT_LABEL_SUM = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "')::numeric) AS total_decrypted_amount " +
             "FROM entries " +
             "JOIN entry_labels ON entries.pk_entry_id = entry_labels.fk_entry_id " +
             "WHERE entry_labels.fk_label_id = ? AND entry_labels.fk_user_id = ? AND entries.fk_user_id = ?;";
@@ -166,8 +168,9 @@ public class LabelRepository {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                System.out.println(rs.getFloat("total_sum"));
-                return rs.getFloat("total_sum");
+                BigDecimal totalSum = BigDecimal.valueOf(rs.getFloat("total_decrypted_amount"));
+                totalSum = totalSum.setScale(2, RoundingMode.HALF_UP);
+                return totalSum.floatValue();
             }
             throw new ValidationException("Label with ID " + labelId + " not found.");
         } catch (SQLException e) {
