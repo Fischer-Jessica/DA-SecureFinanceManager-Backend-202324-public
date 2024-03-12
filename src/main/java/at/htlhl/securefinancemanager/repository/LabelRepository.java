@@ -157,7 +157,7 @@ public class LabelRepository {
      * @return The sum of transactions associated with the specified label for the given user.
      * @throws ValidationException If the label with the specified ID is not found.
      */
-    public float getLabelSum(int labelId, String username) throws ValidationException {
+    public float getValueOfLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
         try {
             Connection conn = jdbcTemplate.getDataSource().getConnection();

@@ -274,7 +274,6 @@ public class UserController {
                 }
 
                 createdUsers.add(new ResponseUser(userRepository.addUser(newApiUsers.get(i)), mobileUserId.get(i)));
-                System.out.println(createdUsers.get(i).getMobileUserId());
             }
             return ResponseEntity.ok(createdUsers);
         } catch (MissingRequiredParameter exception) {

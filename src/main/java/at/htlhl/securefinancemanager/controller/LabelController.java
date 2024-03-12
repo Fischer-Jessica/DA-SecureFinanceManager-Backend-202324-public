@@ -149,7 +149,7 @@ public class LabelController {
             if (labelId <= 0) {
                 throw new MissingRequiredParameter("labelId cannot be less than or equal to 0");
             }
-            float totalSum = labelRepository.getLabelSum(labelId, userDetails.getUsername());
+            float totalSum = labelRepository.getValueOfLabel(labelId, userDetails.getUsername());
             return ResponseEntity.ok(totalSum);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());

@@ -180,7 +180,6 @@ public class SubcategoryRepository {
             if (rs.next()) {
                 BigDecimal totalSum = BigDecimal.valueOf(rs.getFloat("total_decrypted_amount"));
                 totalSum = totalSum.setScale(2, RoundingMode.HALF_UP);
-                System.out.println(totalSum.floatValue());
                 return totalSum.floatValue();
             }
             throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
