@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.ENCRYPTION_KEY;
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.DATABASE_ENCRYPTION_DECRYPTION_KEY;
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -25,8 +25,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.6
- * @since 14.02.2024 (version 3.6)
+ * @version 3.7
+ * @since 21.03.2024 (version 3.7)
  */
 @Repository
 public class EntryRepository {
@@ -40,12 +40,12 @@ public class EntryRepository {
      * SQL query to retrieve entries from the 'entries' table in the database for a specific subcategory and user.
      */
     private static final String SELECT_ENTRIES = "SELECT pk_entry_id, " +
-            "pgp_sym_decrypt(entry_name, '" + ENCRYPTION_KEY + "') AS decrypted_entry_name, " +
-            "pgp_sym_decrypt(entry_description, '" + ENCRYPTION_KEY + "') AS decrypted_entry_description, " +
-            "pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "') AS decrypted_entry_amount, " +
-            "pgp_sym_decrypt(entry_creation_time, '" + ENCRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
-            "pgp_sym_decrypt(entry_time_of_transaction, '" + ENCRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
-            "pgp_sym_decrypt(entry_attachment, '" + ENCRYPTION_KEY + "') AS decrypted_entry_attachment " +
+            "pgp_sym_decrypt(entry_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_name, " +
+            "pgp_sym_decrypt(entry_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_description, " +
+            "pgp_sym_decrypt(entry_amount, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_amount, " +
+            "pgp_sym_decrypt(entry_creation_time, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
+            "pgp_sym_decrypt(entry_time_of_transaction, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
+            "pgp_sym_decrypt(entry_attachment, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_attachment " +
             "FROM entries " +
             "WHERE fk_user_id = ? AND fk_subcategory_id = ?;";
 
@@ -53,12 +53,12 @@ public class EntryRepository {
      * SQL query to retrieve a specific entry from the 'entries' table in the database for a specific subcategory and user.
      */
     private static final String SELECT_ENTRY = "SELECT " +
-            "pgp_sym_decrypt(entry_name, '" + ENCRYPTION_KEY + "') AS decrypted_entry_name, " +
-            "pgp_sym_decrypt(entry_description, '" + ENCRYPTION_KEY + "') AS decrypted_entry_description, " +
-            "pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "') AS decrypted_entry_amount, " +
-            "pgp_sym_decrypt(entry_creation_time, '" + ENCRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
-            "pgp_sym_decrypt(entry_time_of_transaction, '" + ENCRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
-            "pgp_sym_decrypt(entry_attachment, '" + ENCRYPTION_KEY + "') AS decrypted_entry_attachment " +
+            "pgp_sym_decrypt(entry_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_name, " +
+            "pgp_sym_decrypt(entry_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_description, " +
+            "pgp_sym_decrypt(entry_amount, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_amount, " +
+            "pgp_sym_decrypt(entry_creation_time, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
+            "pgp_sym_decrypt(entry_time_of_transaction, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
+            "pgp_sym_decrypt(entry_attachment, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_attachment " +
             "FROM entries " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
@@ -66,12 +66,12 @@ public class EntryRepository {
      * SQL query to retrieve a specific entry from the 'entries' table int the database for a specific user.
      */
     private static final String SELECT_ENTRY_WITHOUT_SUBCATEGORY = "SELECT " +
-            "pgp_sym_decrypt(entry_name, '" + ENCRYPTION_KEY + "') AS decrypted_entry_name, " +
-            "pgp_sym_decrypt(entry_description, '" + ENCRYPTION_KEY + "') AS decrypted_entry_description, " +
-            "pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "') AS decrypted_entry_amount, " +
-            "pgp_sym_decrypt(entry_creation_time, '" + ENCRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
-            "pgp_sym_decrypt(entry_time_of_transaction, '" + ENCRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
-            "pgp_sym_decrypt(entry_attachment, '" + ENCRYPTION_KEY + "') AS decrypted_entry_attachment, " +
+            "pgp_sym_decrypt(entry_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_name, " +
+            "pgp_sym_decrypt(entry_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_description, " +
+            "pgp_sym_decrypt(entry_amount, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_amount, " +
+            "pgp_sym_decrypt(entry_creation_time, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
+            "pgp_sym_decrypt(entry_time_of_transaction, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
+            "pgp_sym_decrypt(entry_attachment, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_attachment, " +
             "fk_subcategory_id " +
             "FROM entries " +
             "WHERE pk_entry_id = ? AND fk_user_id = ?;";
@@ -81,13 +81,13 @@ public class EntryRepository {
      */
     private static final String INSERT_ENTRY = "INSERT INTO entries " +
             "(fk_subcategory_id, entry_name, entry_description, entry_amount, entry_creation_time, entry_time_of_transaction, entry_attachment, fk_user_id) " +
-            "VALUES (?, pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), ?);";
+            "VALUES (?, pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), ?);";
 
     /**
      * SQL query to update an existing entry in the 'entries' table in the database.
      */
     private static final String UPDATE_ENTRY = "UPDATE entries " +
-            "SET fk_subcategory_id = ?, entry_name = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), entry_description = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), entry_amount = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), entry_time_of_transaction = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), entry_attachment = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "') " +
+            "SET fk_subcategory_id = ?, entry_name = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), entry_description = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), entry_amount = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), entry_time_of_transaction = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), entry_attachment = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') " +
             "WHERE pk_entry_id = ? AND fk_user_id = ? AND fk_subcategory_id = ?;";
 
     /**

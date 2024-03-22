@@ -26,8 +26,8 @@ import javax.sql.DataSource;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 0.1
- * @since 02.02.2024 (version 0.1)
+ * @version 1
+ * @since 21.03.2024 (version 1)
  */
 @Configuration
 @ComponentScan("at.htlhl.securefinancemanager")
@@ -42,9 +42,9 @@ public class SpringJdbcConfig {
     public DataSource postgresqlDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/secure_finance_manager?characterEncoding=UTF-8");
-        dataSource.setUsername("backend");
-        dataSource.setPassword("B@ckend_F!n@nceM@n@ger");
+        dataSource.setUrl("jdbc:postgresql://TheIpAddressOfYourDatabase:5432/secure_finance_manager?characterEncoding=UTF-8");
+        dataSource.setUsername("TheUsernameOfYourDatabaseUser");
+        dataSource.setPassword("ThePasswordOfYourDatabaseUser");
 
         return dataSource;
     }

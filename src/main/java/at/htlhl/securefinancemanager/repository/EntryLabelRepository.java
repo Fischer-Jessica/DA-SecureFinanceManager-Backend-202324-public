@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.ENCRYPTION_KEY;
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.DATABASE_ENCRYPTION_DECRYPTION_KEY;
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -34,8 +34,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 2.8
- * @since 14.02.2024 (version 2.8)
+ * @version 2.9
+ * @since 21.03.2024 (version 2.9)
  */
 @Repository
 public class EntryLabelRepository {
@@ -61,8 +61,8 @@ public class EntryLabelRepository {
      * SQL query to retrieve labels for a specific entry and user from the 'labels' and 'entry_labels' tables in the database.
      */
     private static final String SELECT_LABELS_FOR_ENTRY = "SELECT pk_label_id, " +
-            "pgp_sym_decrypt(label_name, '" + ENCRYPTION_KEY + "') AS decrypted_label_name," +
-            "pgp_sym_decrypt(label_description, '" + ENCRYPTION_KEY + "') AS decrypted_label_description," +
+            "pgp_sym_decrypt(label_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_label_name," +
+            "pgp_sym_decrypt(label_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_label_description," +
             "fk_label_colour_id " +
             "FROM labels " +
             "JOIN entry_labels ON labels.pk_label_id = entry_labels.fk_label_id " +
@@ -72,12 +72,12 @@ public class EntryLabelRepository {
      * SQL query to retrieve entries for a specific label and user from the 'entries' and 'entry_labels' tables in the database.
      */
     private static final String SELECT_ENTRIES_FOR_LABEL = "SELECT pk_entry_id, " +
-            "pgp_sym_decrypt(entry_name, '" + ENCRYPTION_KEY + "') AS decrypted_entry_name, " +
-            "pgp_sym_decrypt(entry_description, '" + ENCRYPTION_KEY + "') AS decrypted_entry_description, " +
-            "pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "') AS decrypted_entry_amount, " +
-            "pgp_sym_decrypt(entry_creation_time, '" + ENCRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
-            "pgp_sym_decrypt(entry_time_of_transaction, '" + ENCRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
-            "pgp_sym_decrypt(entry_attachment, '" + ENCRYPTION_KEY + "') AS decrypted_entry_attachment, " +
+            "pgp_sym_decrypt(entry_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_name, " +
+            "pgp_sym_decrypt(entry_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_description, " +
+            "pgp_sym_decrypt(entry_amount, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_amount, " +
+            "pgp_sym_decrypt(entry_creation_time, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_creation_time, " +
+            "pgp_sym_decrypt(entry_time_of_transaction, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_time_of_transaction, " +
+            "pgp_sym_decrypt(entry_attachment, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_entry_attachment, " +
             "fk_subcategory_id " +
             "FROM entries " +
             "JOIN entry_labels ON entries.pk_entry_id = entry_labels.fk_entry_id " +

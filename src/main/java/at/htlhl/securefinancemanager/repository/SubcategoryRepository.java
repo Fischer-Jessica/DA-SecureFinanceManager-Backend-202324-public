@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.ENCRYPTION_KEY;
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.DATABASE_ENCRYPTION_DECRYPTION_KEY;
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -27,8 +27,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.2
- * @since 08.03.2024 (version 3.2)
+ * @version 3.3
+ * @since 21.03.2024 (version 3.3)
  */
 @Repository
 public class SubcategoryRepository {
@@ -42,8 +42,8 @@ public class SubcategoryRepository {
      * SQL query to select all subcategories for a specific category and user.
      */
     private static final String SELECT_SUBCATEGORIES = "SELECT pk_subcategory_id, " +
-            "pgp_sym_decrypt(subcategory_name, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_name," +
-            "pgp_sym_decrypt(subcategory_description, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_description," +
+            "pgp_sym_decrypt(subcategory_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_subcategory_name," +
+            "pgp_sym_decrypt(subcategory_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_subcategory_description," +
             "fk_subcategory_colour_id " +
             "FROM subcategories " +
             "WHERE fk_user_id = ? AND fk_category_id = ?;";
@@ -51,8 +51,8 @@ public class SubcategoryRepository {
     /**
      * SQL query to select a specific subcategory for a specific category and user.
      */
-    private static final String SELECT_SUBCATEGORY = "SELECT pgp_sym_decrypt(subcategory_name, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_name, " +
-            "pgp_sym_decrypt(subcategory_description, '" + ENCRYPTION_KEY + "') AS decrypted_subcategory_description," +
+    private static final String SELECT_SUBCATEGORY = "SELECT pgp_sym_decrypt(subcategory_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_subcategory_name, " +
+            "pgp_sym_decrypt(subcategory_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_subcategory_description," +
             "fk_subcategory_colour_id " +
             "FROM subcategories " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ? AND fk_category_id = ?;";
@@ -62,7 +62,7 @@ public class SubcategoryRepository {
      * The decrypted amount is calculated by decrypting the 'entry_amount' field using the provided encryption key,
      * and then summing up the numeric values.
      */
-    private static final String SELECT_TOTAL_AMOUNT_OF_SUBCATEGORY = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "')::numeric) AS total_decrypted_amount " +
+    private static final String SELECT_TOTAL_AMOUNT_OF_SUBCATEGORY = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "')::numeric) AS total_decrypted_amount " +
             "FROM entries " +
             "WHERE fk_subcategory_id = ? AND fk_user_id = ?;";
 
@@ -71,13 +71,13 @@ public class SubcategoryRepository {
      */
     private static final String INSERT_SUBCATEGORY = "INSERT INTO subcategories " +
             "(fk_category_id, subcategory_name, subcategory_description, fk_subcategory_colour_id, fk_user_id) " +
-            "VALUES (?, pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), ?, ?);";
+            "VALUES (?, pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), ?, ?);";
 
     /**
      * SQL query to update an existing subcategory for a specific category and user.
      */
     private static final String UPDATE_SUBCATEGORY = "UPDATE subcategories " +
-            "SET fk_category_id = ?, subcategory_name = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), subcategory_description = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), fk_subcategory_colour_id = ? " +
+            "SET fk_category_id = ?, subcategory_name = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), subcategory_description = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), fk_subcategory_colour_id = ? " +
             "WHERE pk_subcategory_id = ? AND fk_user_id = ?";
 
     /**

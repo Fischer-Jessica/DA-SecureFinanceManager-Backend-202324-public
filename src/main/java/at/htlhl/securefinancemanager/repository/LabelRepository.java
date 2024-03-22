@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.ENCRYPTION_KEY;
+import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.DATABASE_ENCRYPTION_DECRYPTION_KEY;
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
 
 /**
@@ -27,8 +27,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.2
- * @since 09.02.2024 (version 3.2)
+ * @version 3.3
+ * @since 21.03.2024 (version 3.3)
  */
 @Repository
 public class LabelRepository {
@@ -42,8 +42,8 @@ public class LabelRepository {
      * SQL query to select all labels for a given user.
      */
     private static final String SELECT_LABELS = "SELECT pk_label_id, " +
-            "pgp_sym_decrypt(label_name, '" + ENCRYPTION_KEY + "') AS decrypted_label_name," +
-            "pgp_sym_decrypt(label_description, '" + ENCRYPTION_KEY + "') AS decrypted_label_description," +
+            "pgp_sym_decrypt(label_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_label_name," +
+            "pgp_sym_decrypt(label_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_label_description," +
             "fk_label_colour_id " +
             "FROM labels " +
             "WHERE fk_user_id = ?;";
@@ -51,8 +51,8 @@ public class LabelRepository {
     /**
      * SQL query to select a specific label for a given user and label ID.
      */
-    private static final String SELECT_LABEL = "SELECT pgp_sym_decrypt(label_name, '" + ENCRYPTION_KEY + "') AS decrypted_label_name," +
-            "pgp_sym_decrypt(label_description, '" + ENCRYPTION_KEY + "') AS decrypted_label_description," +
+    private static final String SELECT_LABEL = "SELECT pgp_sym_decrypt(label_name, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_label_name," +
+            "pgp_sym_decrypt(label_description, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "') AS decrypted_label_description," +
             "fk_label_colour_id " +
             "FROM labels " +
             "WHERE fk_user_id = ? AND pk_label_id = ?;";
@@ -60,7 +60,7 @@ public class LabelRepository {
     /**
      * Retrieves the sum of all transactions for entries associated with the specified label for the given user.
      */
-    private static final String SELECT_LABEL_SUM = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + ENCRYPTION_KEY + "')::numeric) AS total_decrypted_amount " +
+    private static final String SELECT_LABEL_SUM = "SELECT SUM(pgp_sym_decrypt(entry_amount, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "')::numeric) AS total_decrypted_amount " +
             "FROM entries " +
             "JOIN entry_labels ON entries.pk_entry_id = entry_labels.fk_entry_id " +
             "WHERE entry_labels.fk_label_id = ? AND entry_labels.fk_user_id = ? AND entries.fk_user_id = ?;";
@@ -70,13 +70,13 @@ public class LabelRepository {
      */
     private static final String INSERT_LABEL = "INSERT INTO labels " +
             "(label_name, label_description, fk_label_colour_id, fk_user_id) " +
-            "VALUES (pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), ?, ?);";
+            "VALUES (pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), ?, ?);";
 
     /**
      * SQL query to update an existing label for the logged-in user.
      */
     private static final String UPDATE_LABEL = "UPDATE labels " +
-            "SET label_name = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), label_description = pgp_sym_encrypt(?, '" + ENCRYPTION_KEY + "'), fk_label_colour_id = ? " +
+            "SET label_name = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), label_description = pgp_sym_encrypt(?, '" + DATABASE_ENCRYPTION_DECRYPTION_KEY + "'), fk_label_colour_id = ? " +
             "WHERE pk_label_id = ? AND fk_user_id = ?;";
 
     /**

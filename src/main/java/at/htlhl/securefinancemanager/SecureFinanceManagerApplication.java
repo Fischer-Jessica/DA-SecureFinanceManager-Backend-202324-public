@@ -28,7 +28,7 @@ public class SecureFinanceManagerApplication {
      * This static final variable holds the encryption key used for encrypting and decrypting sensitive data.
      * It should be kept secure and not exposed to unauthorized users.
      */
-    public static final String ENCRYPTION_KEY = "f8904d463a99e915887d5b00748d519f1628fc8f609fb28d8864b7ae4286c9fc";
+    public static final String DATABASE_ENCRYPTION_DECRYPTION_KEY = "TheEncryptionDecryptionKeyYouWantToUseInYourDatabase";
 
     /**
      * The main method that starts the Secure Finance Manager application.
