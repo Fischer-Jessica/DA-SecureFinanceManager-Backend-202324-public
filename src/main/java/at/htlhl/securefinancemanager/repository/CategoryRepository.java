@@ -40,8 +40,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.4
- * @since 21.03.2024 (version 3.4)
+ * @version 3.5
+ * @since 31.03.2024 (version 3.5)
  */
 @Repository
 public class CategoryRepository {
@@ -91,28 +91,31 @@ public class CategoryRepository {
      */
     public List<DatabaseCategory> getCategories(String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORIES);
+
+        List<DatabaseCategory> databaseCategories = new ArrayList<>();
+
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORIES)) {
+
             ps.setInt(1, activeUserId);
-            ResultSet rs = ps.executeQuery();
 
-            List<DatabaseCategory> databaseCategories = new ArrayList<>();
-            while (rs.next()) {
-                int categoryId = rs.getInt("pk_category_id");
-                String decryptedCategoryName = rs.getString("decrypted_category_name");
-                String decryptedCategoryDescription = rs.getString("decrypted_category_description");
-                int categoryColourId = rs.getInt("fk_category_colour_id");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int categoryId = rs.getInt("pk_category_id");
+                    String decryptedCategoryName = rs.getString("decrypted_category_name");
+                    String decryptedCategoryDescription = rs.getString("decrypted_category_description");
+                    int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                databaseCategories.add(new DatabaseCategory(categoryId, decryptedCategoryName, decryptedCategoryDescription, categoryColourId, activeUserId));
+                    databaseCategories.add(new DatabaseCategory(categoryId, decryptedCategoryName, decryptedCategoryDescription, categoryColourId, activeUserId));
+                }
+                if (databaseCategories.isEmpty()) {
+                    throw new ValidationException("No categories found for the authenticated user.");
+                }
             }
-            if (databaseCategories.isEmpty()) {
-                throw new ValidationException("No categories found for the authenticated user.");
-            }
-            return databaseCategories;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return databaseCategories;
     }
 
     /**
@@ -127,21 +130,23 @@ public class CategoryRepository {
      */
     public DatabaseCategory getCategory(int categoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORY);
+
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_CATEGORY)) {
+
             ps.setInt(1, activeUserId);
             ps.setInt(2, categoryId);
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                String decryptedCategoryName = rs.getString("decrypted_category_name");
-                String decryptedCategoryDescription = rs.getString("decrypted_category_description");
-                int categoryColourId = rs.getInt("fk_category_colour_id");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String decryptedCategoryName = rs.getString("decrypted_category_name");
+                    String decryptedCategoryDescription = rs.getString("decrypted_category_description");
+                    int categoryColourId = rs.getInt("fk_category_colour_id");
 
-                return new DatabaseCategory(categoryId, decryptedCategoryName, decryptedCategoryDescription, categoryColourId, activeUserId);
+                    return new DatabaseCategory(categoryId, decryptedCategoryName, decryptedCategoryDescription, categoryColourId, activeUserId);
+                }
+                throw new ValidationException("Category with ID " + categoryId + " not found.");
             }
-            throw new ValidationException("Category with ID " + categoryId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -170,11 +175,9 @@ public class CategoryRepository {
             BigDecimal roundedSum = BigDecimal.valueOf(categorySum).setScale(2, RoundingMode.HALF_UP);
             return roundedSum.floatValue();
         } catch (ValidationException exception) {
-            // If the Validation-Error occurs it means, that no subcategories are found for the category. Thereby the sum of them is 0.
             return 0;
         }
     }
-
 
     /**
      * Adds a new category for the logged-in user.
@@ -183,9 +186,7 @@ public class CategoryRepository {
      * @return The newly created Category object.
      */
     public DatabaseCategory addCategory(DatabaseCategory newCategory) {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection()) {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
             jdbcTemplate.update(connection -> {
@@ -219,9 +220,9 @@ public class CategoryRepository {
      */
     public DatabaseCategory updateCategory(DatabaseCategory updatedCategory, String username) throws ValidationException {
         DatabaseCategory oldDatabaseCategory = getCategory(updatedCategory.getCategoryId(), username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY);
+
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_CATEGORY)) {
 
             if (updatedCategory.getCategoryName() != null) {
                 ps.setString(1, updatedCategory.getCategoryName());
@@ -248,7 +249,6 @@ public class CategoryRepository {
             ps.setInt(4, updatedCategory.getCategoryId());
             ps.setInt(5, updatedCategory.getCategoryUserId());
             ps.executeUpdate();
-            conn.close();
             return getCategory(updatedCategory.getCategoryId(), username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -266,14 +266,12 @@ public class CategoryRepository {
      *                             with the provided username does not match the expected owner of the category.
      */
     public int deleteCategory(int categoryId, String username) throws ValidationException {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(DELETE_CATEGORY)) {
 
-            PreparedStatement ps = conn.prepareStatement(DELETE_CATEGORY);
             ps.setInt(1, categoryId);
             ps.setInt(2, userSingleton.getUserId(username));
             int rowsAffected = ps.executeUpdate();
-            conn.close();
 
             if (rowsAffected == 0) {
                 throw new ValidationException("Category with ID " + categoryId + " not found.");

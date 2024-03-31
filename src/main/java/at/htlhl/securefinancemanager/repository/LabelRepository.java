@@ -27,8 +27,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.3
- * @since 21.03.2024 (version 3.3)
+ * @version 3.4
+ * @since 31.03.2024 (version 3.4)
  */
 @Repository
 public class LabelRepository {
@@ -93,25 +93,23 @@ public class LabelRepository {
      */
     public List<DatabaseLabel> getLabels(String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_LABELS);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_LABELS)) {
             ps.setInt(1, activeUserId);
-            ResultSet rs = ps.executeQuery();
-
-            List<DatabaseLabel> databaseLabels = new ArrayList<>();
-            while (rs.next()) {
-                int labelId = rs.getInt("pk_label_id");
-                String decryptedLabelName = rs.getString("decrypted_label_name");
-                String decryptedLabelDescription = rs.getString("decrypted_label_description");
-                int labelColourId = rs.getInt("fk_label_colour_id");
-
-                databaseLabels.add(new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId));
+            try (ResultSet rs = ps.executeQuery()) {
+                List<DatabaseLabel> databaseLabels = new ArrayList<>();
+                while (rs.next()) {
+                    int labelId = rs.getInt("pk_label_id");
+                    String decryptedLabelName = rs.getString("decrypted_label_name");
+                    String decryptedLabelDescription = rs.getString("decrypted_label_description");
+                    int labelColourId = rs.getInt("fk_label_colour_id");
+                    databaseLabels.add(new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId));
+                }
+                if (databaseLabels.isEmpty()) {
+                    throw new ValidationException("No labels found for the authenticated user.");
+                }
+                return databaseLabels;
             }
-            if (databaseLabels.isEmpty()) {
-                throw new ValidationException("No labels found for the authenticated user.");
-            }
-            return databaseLabels;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -129,21 +127,20 @@ public class LabelRepository {
      */
     public DatabaseLabel getLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_LABEL);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_LABEL)) {
             ps.setInt(1, activeUserId);
             ps.setInt(2, labelId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                String decryptedLabelName = rs.getString("decrypted_label_name");
-                String decryptedLabelDescription = rs.getString("decrypted_label_description");
-                int labelColourId = rs.getInt("fk_label_colour_id");
-
-                return new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String decryptedLabelName = rs.getString("decrypted_label_name");
+                    String decryptedLabelDescription = rs.getString("decrypted_label_description");
+                    int labelColourId = rs.getInt("fk_label_colour_id");
+                    return new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId);
+                } else {
+                    throw new ValidationException("Label with ID " + labelId + " not found.");
+                }
             }
-            throw new ValidationException("Label with ID " + labelId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -159,20 +156,20 @@ public class LabelRepository {
      */
     public float getValueOfLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_LABEL_SUM);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_LABEL_SUM)) {
             ps.setInt(1, labelId);
             ps.setInt(2, activeUserId);
             ps.setInt(3, activeUserId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                BigDecimal totalSum = BigDecimal.valueOf(rs.getFloat("total_decrypted_amount"));
-                totalSum = totalSum.setScale(2, RoundingMode.HALF_UP);
-                return totalSum.floatValue();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal totalSum = BigDecimal.valueOf(rs.getFloat("total_decrypted_amount"));
+                    totalSum = totalSum.setScale(2, RoundingMode.HALF_UP);
+                    return totalSum.floatValue();
+                } else {
+                    throw new ValidationException("Label with ID " + labelId + " not found.");
+                }
             }
-            throw new ValidationException("Label with ID " + labelId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -185,11 +182,8 @@ public class LabelRepository {
      * @return The newly created label.
      */
     public DatabaseLabel addLabel(DatabaseLabel newLabel) {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection()) {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_LABEL, new String[]{"pk_label_id"});
                 ps.setString(1, newLabel.getLabelName());
@@ -202,7 +196,6 @@ public class LabelRepository {
                 ps.setInt(4, newLabel.getLabelUserId());
                 return ps;
             }, keyHolder);
-
             return new DatabaseLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), newLabel.getLabelName(),
                     newLabel.getLabelDescription(), newLabel.getLabelColourId(), newLabel.getLabelUserId());
         } catch (SQLException exception) {
@@ -222,16 +215,13 @@ public class LabelRepository {
      */
     public DatabaseLabel updateLabel(DatabaseLabel updatedLabel, String username) throws ValidationException {
         DatabaseLabel oldDatabaseLabel = getLabel(updatedLabel.getLabelId(), username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL);
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_LABEL)) {
             if (updatedLabel.getLabelName() != null) {
                 ps.setString(1, updatedLabel.getLabelName());
             } else {
                 ps.setString(1, oldDatabaseLabel.getLabelName());
             }
-
             if (updatedLabel.getLabelDescription() != null) {
                 ps.setString(2, updatedLabel.getLabelDescription());
             } else {
@@ -241,17 +231,14 @@ public class LabelRepository {
                     ps.setString(2, oldDatabaseLabel.getLabelDescription());
                 }
             }
-
             if (updatedLabel.getLabelColourId() != 0) {
                 ps.setInt(3, updatedLabel.getLabelColourId());
             } else {
                 ps.setInt(3, oldDatabaseLabel.getLabelColourId());
             }
-
             ps.setInt(4, updatedLabel.getLabelId());
             ps.setInt(5, updatedLabel.getLabelUserId());
             ps.executeUpdate();
-            conn.close();
             return getLabel(updatedLabel.getLabelId(), username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -269,15 +256,11 @@ public class LabelRepository {
      *                             with the provided username does not match the expected owner of the label.
      */
     public int deleteLabel(int labelId, String username) throws ValidationException {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
-            PreparedStatement ps = conn.prepareStatement(DELETE_LABEL);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(DELETE_LABEL)) {
             ps.setInt(1, labelId);
             ps.setInt(2, userSingleton.getUserId(username));
             int rowsAffected = ps.executeUpdate();
-            conn.close();
-
             if (rowsAffected == 0) {
                 throw new ValidationException("Label with ID " + labelId + " not found.");
             }

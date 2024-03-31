@@ -10,7 +10,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The {@code ColourRepository} class handles the persistence operations for colour data.
@@ -27,8 +29,8 @@ import java.util.List;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 2.0
- * @since 02.02.2024 (version 2.0)
+ * @version 2.1
+ * @since 31.03.2024 (version 2.1)
  */
 @Repository
 public class ColourRepository {
@@ -58,16 +60,24 @@ public class ColourRepository {
      * @throws ValidationException If no colours are found.
      */
     public List<DatabaseColour> getColours() throws ValidationException {
-        List<DatabaseColour> databaseColours = jdbcTemplate.query(SELECT_COLOURS, (rs, rowNum) -> {
-            int colourId = rs.getInt("pk_colour_id");
-            String colourName = rs.getString("colour_name");
-            byte[] colourCode = rs.getBytes("colour_code");
-            return new DatabaseColour(colourId, colourName, bytesToHex(colourCode));
-        });
-        if (databaseColours.isEmpty()) {
-            throw new ValidationException("No colours found.");
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_COLOURS);
+             ResultSet rs = ps.executeQuery()) {
+
+            List<DatabaseColour> databaseColours = new ArrayList<>();
+            while (rs.next()) {
+                int colourId = rs.getInt("pk_colour_id");
+                String colourName = rs.getString("colour_name");
+                byte[] colourCode = rs.getBytes("colour_code");
+                databaseColours.add(new DatabaseColour(colourId, colourName, bytesToHex(colourCode)));
+            }
+            if (databaseColours.isEmpty()) {
+                throw new ValidationException("No colours found.");
+            }
+            return databaseColours;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return databaseColours;
     }
 
     /**
@@ -78,23 +88,22 @@ public class ColourRepository {
      * @throws ValidationException If the specified colour does not exist.
      */
     public DatabaseColour getColour(int colourId) throws ValidationException {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(ColourRepository.SELECT_COLOUR);
-            ps.setInt(1, colourId);
-            ResultSet rs = ps.executeQuery();
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_COLOUR)) {
 
-            DatabaseColour databaseColour = null;
-            if (rs.next()) {
-                databaseColour = new DatabaseColour(rs.getInt("pk_colour_id"),
-                        rs.getString("colour_name"),
-                        bytesToHex((rs.getBytes("colour_code"))));
+            ps.setInt(1, colourId);
+            try (ResultSet rs = ps.executeQuery()) {
+                DatabaseColour databaseColour = null;
+                if (rs.next()) {
+                    databaseColour = new DatabaseColour(rs.getInt("pk_colour_id"),
+                            rs.getString("colour_name"),
+                            bytesToHex(rs.getBytes("colour_code")));
+                }
+                if (databaseColour == null) {
+                    throw new ValidationException("Colour with ID " + colourId + " does not exist");
+                }
+                return databaseColour;
             }
-            conn.close();
-            if (databaseColour == null) {
-                throw new ValidationException("Colour with ID " + colourId + " does not exist");
-            }
-            return databaseColour;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }

@@ -27,8 +27,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.3
- * @since 21.03.2024 (version 3.3)
+ * @version 3.4
+ * @since 31.03.2024 (version 3.4)
  */
 @Repository
 public class SubcategoryRepository {
@@ -95,27 +95,25 @@ public class SubcategoryRepository {
      */
     public List<DatabaseSubcategory> getSubcategories(int categoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORIES);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORIES)) {
             ps.setInt(1, activeUserId);
             ps.setInt(2, categoryId);
-            ResultSet rs = ps.executeQuery();
-
-            List<DatabaseSubcategory> databaseSubcategories = new ArrayList<>();
-            while (rs.next()) {
-                int subcategoryId = rs.getInt("pk_subcategory_id");
-                String decryptedSubcategoryName = rs.getString("decrypted_subcategory_name");
-                String decryptedSubcategoryDescription = rs.getString("decrypted_subcategory_description");
-                int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
-
-                databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, decryptedSubcategoryName,
-                        decryptedSubcategoryDescription, subcategoryColourId, activeUserId));
+            try (ResultSet rs = ps.executeQuery()) {
+                List<DatabaseSubcategory> databaseSubcategories = new ArrayList<>();
+                while (rs.next()) {
+                    int subcategoryId = rs.getInt("pk_subcategory_id");
+                    String decryptedSubcategoryName = rs.getString("decrypted_subcategory_name");
+                    String decryptedSubcategoryDescription = rs.getString("decrypted_subcategory_description");
+                    int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
+                    databaseSubcategories.add(new DatabaseSubcategory(subcategoryId, categoryId, decryptedSubcategoryName,
+                            decryptedSubcategoryDescription, subcategoryColourId, activeUserId));
+                }
+                if (databaseSubcategories.isEmpty()) {
+                    throw new ValidationException("No subcategories found for category with ID " + categoryId + ".");
+                }
+                return databaseSubcategories;
             }
-            if (databaseSubcategories.isEmpty()) {
-                throw new ValidationException("No subcategories found for category with ID " + categoryId + ".");
-            }
-            return databaseSubcategories;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -134,23 +132,21 @@ public class SubcategoryRepository {
      */
     public DatabaseSubcategory getSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORY);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_SUBCATEGORY)) {
             ps.setInt(1, subcategoryId);
             ps.setInt(2, activeUserId);
             ps.setInt(3, categoryId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                String decryptedSubcategoryName = rs.getString("decrypted_subcategory_name");
-                String decryptedSubcategoryDescription = rs.getString("decrypted_subcategory_description");
-                int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
-
-                return new DatabaseSubcategory(subcategoryId, categoryId, decryptedSubcategoryName,
-                        decryptedSubcategoryDescription, subcategoryColourId, activeUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String decryptedSubcategoryName = rs.getString("decrypted_subcategory_name");
+                    String decryptedSubcategoryDescription = rs.getString("decrypted_subcategory_description");
+                    int subcategoryColourId = rs.getInt("fk_subcategory_colour_id");
+                    return new DatabaseSubcategory(subcategoryId, categoryId, decryptedSubcategoryName,
+                            decryptedSubcategoryDescription, subcategoryColourId, activeUserId);
+                }
+                throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
             }
-            throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -169,20 +165,18 @@ public class SubcategoryRepository {
     public float getValueOfSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
         getSubcategory(categoryId, subcategoryId, username);
         int activeUserId = userSingleton.getUserId(username);
-
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_TOTAL_AMOUNT_OF_SUBCATEGORY);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_TOTAL_AMOUNT_OF_SUBCATEGORY)) {
             ps.setInt(1, subcategoryId);
             ps.setInt(2, activeUserId);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                BigDecimal totalSum = BigDecimal.valueOf(rs.getFloat("total_decrypted_amount"));
-                totalSum = totalSum.setScale(2, RoundingMode.HALF_UP);
-                return totalSum.floatValue();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal totalSum = BigDecimal.valueOf(rs.getFloat("total_decrypted_amount"));
+                    totalSum = totalSum.setScale(2, RoundingMode.HALF_UP);
+                    return totalSum.floatValue();
+                }
+                throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
             }
-            throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -195,11 +189,8 @@ public class SubcategoryRepository {
      * @return The newly created subcategory.
      */
     public DatabaseSubcategory addSubcategory(DatabaseSubcategory newSubcategory) {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection()) {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_SUBCATEGORY, new String[]{"pk_subcategory_id"});
                 ps.setInt(1, newSubcategory.getSubcategoryCategoryId());
@@ -213,7 +204,6 @@ public class SubcategoryRepository {
                 ps.setInt(5, newSubcategory.getSubcategoryUserId());
                 return ps;
             }, keyHolder);
-
             return new DatabaseSubcategory(Objects.requireNonNull(keyHolder.getKey()).intValue(),
                     newSubcategory.getSubcategoryCategoryId(), newSubcategory.getSubcategoryName(),
                     newSubcategory.getSubcategoryDescription(), newSubcategory.getSubcategoryColourId(),
@@ -235,18 +225,14 @@ public class SubcategoryRepository {
      */
     public DatabaseSubcategory updateSubcategory(DatabaseSubcategory updatedSubcategory, String username) throws ValidationException {
         DatabaseSubcategory oldDatabaseSubcategory = getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY);
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_SUBCATEGORY)) {
             ps.setInt(1, updatedSubcategory.getSubcategoryCategoryId());
-
             if (updatedSubcategory.getSubcategoryName() != null) {
                 ps.setString(2, updatedSubcategory.getSubcategoryName());
             } else {
                 ps.setString(2, oldDatabaseSubcategory.getSubcategoryName());
             }
-
             if (updatedSubcategory.getSubcategoryDescription() != null) {
                 ps.setString(3, updatedSubcategory.getSubcategoryDescription());
             } else {
@@ -256,17 +242,14 @@ public class SubcategoryRepository {
                     ps.setString(3, oldDatabaseSubcategory.getSubcategoryDescription());
                 }
             }
-
             if (updatedSubcategory.getSubcategoryColourId() != 0) {
                 ps.setInt(4, updatedSubcategory.getSubcategoryColourId());
             } else {
                 ps.setInt(4, oldDatabaseSubcategory.getSubcategoryColourId());
             }
-
             ps.setInt(5, updatedSubcategory.getSubcategoryId());
             ps.setInt(6, updatedSubcategory.getSubcategoryUserId());
             ps.executeUpdate();
-            conn.close();
             return getSubcategory(updatedSubcategory.getSubcategoryCategoryId(), updatedSubcategory.getSubcategoryId(), username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -285,16 +268,12 @@ public class SubcategoryRepository {
      *                             with the provided username does not match the expected owner of the subcategory.
      */
     public int deleteSubcategory(int categoryId, int subcategoryId, String username) throws ValidationException {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
-            PreparedStatement ps = conn.prepareStatement(DELETE_SUBCATEGORY);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(DELETE_SUBCATEGORY)) {
             ps.setInt(1, subcategoryId);
             ps.setInt(2, userSingleton.getUserId(username));
             ps.setInt(3, categoryId);
             int rowsAffected = ps.executeUpdate();
-            conn.close();
-
             if (rowsAffected == 0) {
                 throw new ValidationException("Subcategory with ID " + subcategoryId + " not found.");
             }

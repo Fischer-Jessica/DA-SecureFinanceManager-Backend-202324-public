@@ -25,8 +25,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.7
- * @since 21.03.2024 (version 3.7)
+ * @version 3.8
+ * @since 31.03.2024 (version 3.8)
  */
 @Repository
 public class EntryRepository {
@@ -105,32 +105,29 @@ public class EntryRepository {
      */
     public List<DatabaseEntry> getEntries(int subcategoryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES)) {
             ps.setInt(1, activeUserId);
             ps.setInt(2, subcategoryId);
-            ResultSet rs = ps.executeQuery();
-
-            List<DatabaseEntry> databaseEntries = new ArrayList<>();
-
-            while (rs.next()) {
-                int entryId = rs.getInt("pk_entry_id");
-                String decryptedEntryName = rs.getString("decrypted_entry_name");
-                String decryptedEntryDescription = rs.getString("decrypted_entry_description");
-                String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
-                String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
-                String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
-                String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
-
-                databaseEntries.add(new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
-                        decryptedEntryCreationTime, activeUserId));
+            try (ResultSet rs = ps.executeQuery()) {
+                List<DatabaseEntry> databaseEntries = new ArrayList<>();
+                while (rs.next()) {
+                    int entryId = rs.getInt("pk_entry_id");
+                    String decryptedEntryName = rs.getString("decrypted_entry_name");
+                    String decryptedEntryDescription = rs.getString("decrypted_entry_description");
+                    String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
+                    String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
+                    String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
+                    String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
+                    databaseEntries.add(new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
+                            decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
+                            decryptedEntryCreationTime, activeUserId));
+                }
+                if (databaseEntries.isEmpty()) {
+                    throw new ValidationException("No entries found for the subcategoryId " + subcategoryId + " for the authenticated user.");
+                }
+                return databaseEntries;
             }
-            if (databaseEntries.isEmpty()) {
-                throw new ValidationException("No entries found for the subcategoryId " + subcategoryId + " for the authenticated user.");
-            }
-            return databaseEntries;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -149,31 +146,26 @@ public class EntryRepository {
      */
     public DatabaseEntry getEntry(int subcategoryId, int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY)) {
             ps.setInt(1, entryId);
             ps.setInt(2, activeUserId);
             ps.setInt(3, subcategoryId);
-            ResultSet rs = ps.executeQuery();
-
-            DatabaseEntry databaseEntry = null;
-            if (rs.next()) {
-                String decryptedEntryName = rs.getString("decrypted_entry_name");
-                String decryptedEntryDescription = rs.getString("decrypted_entry_description");
-                String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
-                String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
-                String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
-                String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
-
-                databaseEntry = new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
-                        decryptedEntryCreationTime, activeUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String decryptedEntryName = rs.getString("decrypted_entry_name");
+                    String decryptedEntryDescription = rs.getString("decrypted_entry_description");
+                    String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
+                    String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
+                    String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
+                    String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
+                    return new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
+                            decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
+                            decryptedEntryCreationTime, activeUserId);
+                } else {
+                    throw new ValidationException("Entry with ID " + entryId + " and subcategoryId " + subcategoryId + " not found.");
+                }
             }
-            if (databaseEntry == null) {
-                throw new ValidationException("Entry with ID " + entryId + " and subcategoryId " + subcategoryId + " not found.");
-            }
-            return databaseEntry;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -191,31 +183,26 @@ public class EntryRepository {
      */
     public DatabaseEntry getEntryWithoutSubcategoryId(int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY_WITHOUT_SUBCATEGORY);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRY_WITHOUT_SUBCATEGORY)) {
             ps.setInt(1, entryId);
             ps.setInt(2, activeUserId);
-            ResultSet rs = ps.executeQuery();
-
-            DatabaseEntry databaseEntry = null;
-            if (rs.next()) {
-                String decryptedEntryName = rs.getString("decrypted_entry_name");
-                String decryptedEntryDescription = rs.getString("decrypted_entry_description");
-                String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
-                String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
-                String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
-                String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
-                int subcategoryId = rs.getInt("fk_subcategory_id");
-
-                databaseEntry = new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
-                        decryptedEntryCreationTime, activeUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String decryptedEntryName = rs.getString("decrypted_entry_name");
+                    String decryptedEntryDescription = rs.getString("decrypted_entry_description");
+                    String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
+                    String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
+                    String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
+                    String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
+                    int subcategoryId = rs.getInt("fk_subcategory_id");
+                    return new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
+                            decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment,
+                            decryptedEntryCreationTime, activeUserId);
+                } else {
+                    throw new ValidationException("Entry with ID " + entryId + " not found.");
+                }
             }
-            if (databaseEntry == null) {
-                throw new ValidationException("Entry with ID " + entryId + " not found.");
-            }
-            return databaseEntry;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -228,13 +215,9 @@ public class EntryRepository {
      * @return The newly created entry.
      */
     public DatabaseEntry addEntry(DatabaseEntry newEntry) {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection()) {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_ENTRY, new String[]{"pk_entry_id"});
                 ps.setInt(1, newEntry.getEntrySubcategoryId());
@@ -259,7 +242,6 @@ public class EntryRepository {
                 ps.setInt(8, newEntry.getEntryUserId());
                 return ps;
             }, keyHolder);
-
             return new DatabaseEntry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntrySubcategoryId(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), currentTimestamp.toString(), newEntry.getEntryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -278,12 +260,9 @@ public class EntryRepository {
      */
     public DatabaseEntry updateEntry(DatabaseEntry updatedEntry, String username) throws ValidationException {
         DatabaseEntry oldDatabaseEntry = getEntry(updatedEntry.getEntrySubcategoryId(), updatedEntry.getEntryId(), username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY);
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_ENTRY)) {
             ps.setInt(1, updatedEntry.getEntrySubcategoryId());
-
             if (updatedEntry.getEntryName() != null) {
                 ps.setString(2, updatedEntry.getEntryName());
             } else {
@@ -293,7 +272,6 @@ public class EntryRepository {
                     ps.setString(2, oldDatabaseEntry.getEntryName());
                 }
             }
-
             if (updatedEntry.getEntryDescription() != null) {
                 ps.setString(3, updatedEntry.getEntryDescription());
             } else {
@@ -303,19 +281,16 @@ public class EntryRepository {
                     ps.setString(3, oldDatabaseEntry.getEntryDescription());
                 }
             }
-
             if (updatedEntry.getEntryAmount() != null) {
                 ps.setString(4, updatedEntry.getEntryAmount());
             } else {
                 ps.setString(4, oldDatabaseEntry.getEntryAmount());
             }
-
             if (updatedEntry.getEntryTimeOfTransaction() != null) {
                 ps.setString(5, updatedEntry.getEntryTimeOfTransaction());
             } else {
                 ps.setString(5, oldDatabaseEntry.getEntryTimeOfTransaction());
             }
-
             if (updatedEntry.getEntryAttachment() != null) {
                 ps.setString(6, updatedEntry.getEntryAttachment());
             } else {
@@ -325,12 +300,10 @@ public class EntryRepository {
                     ps.setString(6, oldDatabaseEntry.getEntryAttachment());
                 }
             }
-
             ps.setInt(7, updatedEntry.getEntryId());
             ps.setInt(8, updatedEntry.getEntryUserId());
             ps.setInt(9, updatedEntry.getEntrySubcategoryId());
             ps.executeUpdate();
-            conn.close();
             return getEntry(updatedEntry.getEntrySubcategoryId(), updatedEntry.getEntryId(), username);
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
@@ -349,16 +322,12 @@ public class EntryRepository {
      *                             with the provided username does not match the expected owner of the entry.
      */
     public int deleteEntry(int subcategoryId, int entryId, String username) throws ValidationException {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
-            PreparedStatement ps = conn.prepareStatement(DELETE_ENTRY);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(DELETE_ENTRY)) {
             ps.setInt(1, entryId);
             ps.setInt(2, userSingleton.getUserId(username));
             ps.setInt(3, subcategoryId);
             int rowsAffected = ps.executeUpdate();
-            conn.close();
-
             if (rowsAffected == 0) {
                 throw new ValidationException("Entry with ID " + entryId + " not found.");
             }

@@ -10,7 +10,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 
 import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.userSingleton;
@@ -30,8 +33,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.7
- * @since 25.02.2024 (version 3.7)
+ * @version 3.8
+ * @since 31.03.2024 (version 3.8)
  */
 @Repository
 public class UserRepository {
@@ -94,26 +97,22 @@ public class UserRepository {
      */
     public static DatabaseUser getUserObject(JdbcTemplate jdbcTemplate, String activeUsername) throws ValidationException {
         DatabaseUser databaseUser = null;
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_USER);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_USER)) {
             ps.setString(1, activeUsername);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                int userId = rs.getInt("pk_user_id");
-                String username = rs.getString("username");
-                String encodedPassword = rs.getString("password");
-                String eMailAddress = rs.getString("email_address");
-                String firstName = rs.getString("first_name");
-                String lastName = rs.getString("last_name");
-
-                conn.close();
-                databaseUser = new DatabaseUser(userId, username, encodedPassword, eMailAddress, firstName, lastName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int userId = rs.getInt("pk_user_id");
+                    String username = rs.getString("username");
+                    String encodedPassword = rs.getString("password");
+                    String eMailAddress = rs.getString("email_address");
+                    String firstName = rs.getString("first_name");
+                    String lastName = rs.getString("last_name");
+                    databaseUser = new DatabaseUser(userId, username, encodedPassword, eMailAddress, firstName, lastName);
+                }
             }
-            conn.close();
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         if (databaseUser == null) {
             throw new ValidationException("User with username " + activeUsername + " not found.");
@@ -128,20 +127,15 @@ public class UserRepository {
      * @return true if the username already exists, false otherwise.
      */
     public boolean checkUsername(String username) {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_USERNAME);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_USERNAME)) {
             ps.setString(1, username);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                conn.close();
-                return true;
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
-            conn.close();
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return false;
     }
 
     /**
@@ -151,20 +145,15 @@ public class UserRepository {
      * @return true if the email address already exists, false otherwise.
      */
     public boolean checkEMailAddress(String eMailAddress) {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_E_MAIL_ADDRESS);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_E_MAIL_ADDRESS)) {
             ps.setString(1, eMailAddress);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                conn.close();
-                return true;
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
-            conn.close();
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return false;
     }
 
     /**
@@ -175,38 +164,22 @@ public class UserRepository {
      */
     public DatabaseUser addUser(ApiUser newApiUser) {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection()) {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_USER, new String[]{"pk_user_id"});
                 ps.setString(1, newApiUser.getUsername());
                 ps.setString(2, passwordEncoder.encode(newApiUser.getPassword()));
-                if (newApiUser.getEMailAddress() == null) {
-                    ps.setNull(3, Types.NULL);
-                } else {
-                    ps.setString(3, newApiUser.getEMailAddress());
-                }
-                if (newApiUser.getFirstName() == null) {
-                    ps.setNull(4, Types.NULL);
-                } else {
-                    ps.setString(4, newApiUser.getFirstName());
-                }
-                if (newApiUser.getLastName() == null) {
-                    ps.setNull(5, Types.NULL);
-                } else {
-                    ps.setString(5, newApiUser.getLastName());
-                }
+                ps.setString(3, newApiUser.getEMailAddress());
+                ps.setString(4, newApiUser.getFirstName());
+                ps.setString(5, newApiUser.getLastName());
                 return ps;
             }, keyHolder);
-
             userSingleton.addUser(newApiUser.getUsername(), Objects.requireNonNull(keyHolder.getKey()).intValue());
             return new DatabaseUser(Objects.requireNonNull(keyHolder.getKey()).intValue(), newApiUser.getUsername(),
                     newApiUser.getPassword(), newApiUser.getEMailAddress(), newApiUser.getFirstName(), newApiUser.getLastName());
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -223,10 +196,8 @@ public class UserRepository {
     public DatabaseUser updateUser(ApiUser updatedUser, String username) throws ValidationException {
         DatabaseUser oldDatabaseUser = getUserObject(jdbcTemplate, username);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(UPDATE_USER);
-
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(UPDATE_USER)) {
             if (updatedUser.getUsername() != null) {
                 ps.setString(1, updatedUser.getUsername());
                 username = updatedUser.getUsername();
@@ -235,49 +206,31 @@ public class UserRepository {
                 ps.setString(1, oldDatabaseUser.getUsername());
                 username = oldDatabaseUser.getUsername();
             }
-
             if (updatedUser.getPassword() != null) {
                 ps.setString(2, passwordEncoder.encode(updatedUser.getPassword()));
             } else {
                 ps.setString(2, oldDatabaseUser.getPassword());
             }
-
             if (updatedUser.getEMailAddress() != null) {
                 ps.setString(3, updatedUser.getEMailAddress());
             } else {
-                if (oldDatabaseUser.getEMailAddress() == null) {
-                    ps.setNull(3, Types.NULL);
-                } else {
-                    ps.setString(3, oldDatabaseUser.getEMailAddress());
-                }
+                ps.setString(3, oldDatabaseUser.getEMailAddress());
             }
-
             if (updatedUser.getFirstName() != null) {
                 ps.setString(4, updatedUser.getFirstName());
             } else {
-                if (oldDatabaseUser.getFirstName() == null) {
-                    ps.setNull(4, Types.NULL);
-                } else {
-                    ps.setString(4, oldDatabaseUser.getFirstName());
-                }
+                ps.setString(4, oldDatabaseUser.getFirstName());
             }
-
             if (updatedUser.getLastName() != null) {
                 ps.setString(5, updatedUser.getLastName());
             } else {
-                if (oldDatabaseUser.getLastName() == null) {
-                    ps.setNull(5, Types.NULL);
-                } else {
-                    ps.setString(5, oldDatabaseUser.getLastName());
-                }
+                ps.setString(5, oldDatabaseUser.getLastName());
             }
-
             ps.setInt(6, oldDatabaseUser.getUserId());
             ps.executeUpdate();
-            conn.close();
             return getUserObject(jdbcTemplate, username);
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -291,21 +244,17 @@ public class UserRepository {
      *                             with the provided username does not match the expected owner of the user.
      */
     public int deleteUser(String username) throws ValidationException {
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
-            PreparedStatement ps = conn.prepareStatement(DELETE_USER);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(DELETE_USER)) {
             ps.setInt(1, userSingleton.getUserId(username));
             int rowsAffected = ps.executeUpdate();
-            conn.close();
-
             if (rowsAffected == 0) {
                 throw new ValidationException("User with username " + username + " not found.");
             }
             userSingleton.removeUserById(userSingleton.getUserId(username));
             return rowsAffected;
-        } catch (SQLException exception) {
-            throw new RuntimeException(exception);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

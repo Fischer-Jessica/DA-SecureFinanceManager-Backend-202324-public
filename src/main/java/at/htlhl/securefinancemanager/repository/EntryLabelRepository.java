@@ -34,8 +34,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 2.9
- * @since 21.03.2024 (version 2.9)
+ * @version 3.0
+ * @since 31.03.2024 (version 3.0)
  */
 @Repository
 public class EntryLabelRepository {
@@ -108,27 +108,26 @@ public class EntryLabelRepository {
      */
     public List<DatabaseLabel> getLabelsForEntry(int entryId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_LABELS_FOR_ENTRY);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_LABELS_FOR_ENTRY)) {
             ps.setInt(1, entryId);
             ps.setInt(2, activeUserId);
             ps.setInt(3, activeUserId);
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                List<DatabaseLabel> databaseLabels = new ArrayList<>();
+                while (rs.next()) {
+                    int labelId = rs.getInt("pk_label_id");
+                    String decryptedLabelName = rs.getString("decrypted_label_name");
+                    String decryptedLabelDescription = rs.getString("decrypted_label_description");
+                    int labelColourId = rs.getInt("fk_label_colour_id");
 
-            List<DatabaseLabel> databaseLabels = new ArrayList<>();
-            while (rs.next()) {
-                int labelId = rs.getInt("pk_label_id");
-                String decryptedLabelName = rs.getString("decrypted_label_name");
-                String decryptedLabelDescription = rs.getString("decrypted_label_description");
-                int labelColourId = rs.getInt("fk_label_colour_id");
-
-                databaseLabels.add(new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId));
+                    databaseLabels.add(new DatabaseLabel(labelId, decryptedLabelName, decryptedLabelDescription, labelColourId, activeUserId));
+                }
+                if (databaseLabels.isEmpty()) {
+                    throw new ValidationException("No labels found for an entry with ID " + entryId);
+                }
+                return databaseLabels;
             }
-            if (databaseLabels.isEmpty()) {
-                throw new ValidationException("No labels found for an entry with ID " + entryId);
-            }
-            return databaseLabels;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -146,32 +145,31 @@ public class EntryLabelRepository {
      */
     public List<DatabaseEntry> getEntriesForLabel(int labelId, String username) throws ValidationException {
         int activeUserId = userSingleton.getUserId(username);
-        try {
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-            PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES_FOR_LABEL);
+        try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+             PreparedStatement ps = conn.prepareStatement(SELECT_ENTRIES_FOR_LABEL)) {
             ps.setInt(1, labelId);
             ps.setInt(2, activeUserId);
             ps.setInt(3, activeUserId);
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
+                List<DatabaseEntry> databaseEntries = new ArrayList<>();
+                while (rs.next()) {
+                    int entryId = rs.getInt("pk_entry_id");
+                    String decryptedEntryName = rs.getString("decrypted_entry_name");
+                    String decryptedEntryDescription = rs.getString("decrypted_entry_description");
+                    String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
+                    String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
+                    String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
+                    String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
+                    int subcategoryId = rs.getInt("fk_subcategory_id");
 
-            List<DatabaseEntry> databaseLabels = new ArrayList<>();
-            while (rs.next()) {
-                int entryId = rs.getInt("pk_entry_id");
-                String decryptedEntryName = rs.getString("decrypted_entry_name");
-                String decryptedEntryDescription = rs.getString("decrypted_entry_description");
-                String decryptedEntryAmount = rs.getString("decrypted_entry_amount");
-                String decryptedEntryCreationTime = rs.getString("decrypted_entry_creation_time");
-                String decryptedEntryTimeOfTransaction = rs.getString("decrypted_entry_time_of_transaction");
-                String decryptedEntryAttachment = rs.getString("decrypted_entry_attachment");
-                int subcategoryId = rs.getInt("fk_subcategory_id");
-
-                databaseLabels.add(new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
-                        decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment, decryptedEntryCreationTime, activeUserId));
+                    databaseEntries.add(new DatabaseEntry(entryId, subcategoryId, decryptedEntryName, decryptedEntryDescription,
+                            decryptedEntryAmount, decryptedEntryTimeOfTransaction, decryptedEntryAttachment, decryptedEntryCreationTime, activeUserId));
+                }
+                if (databaseEntries.isEmpty()) {
+                    throw new ValidationException("No entries found for an label with ID " + labelId);
+                }
+                return databaseEntries;
             }
-            if (databaseLabels.isEmpty()) {
-                throw new ValidationException("No entries found for an label with ID " + labelId);
-            }
-            return databaseLabels;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -195,19 +193,17 @@ public class EntryLabelRepository {
             labelRepository.getLabel(labelId, username);
             entryRepository.getEntryWithoutSubcategoryId(entryId, username);
 
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
-            GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-
-            jdbcTemplate.update(connection -> {
-                PreparedStatement ps = conn.prepareStatement(ADD_LABEL_TO_ENTRY, new String[]{"pk_entry_label_id"});
+            try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+                 PreparedStatement ps = conn.prepareStatement(ADD_LABEL_TO_ENTRY, new String[]{"pk_entry_label_id"})) {
                 ps.setInt(1, entryId);
                 ps.setInt(2, labelId);
                 ps.setInt(3, activeUserId);
-                return ps;
-            }, keyHolder);
-
-            return new DatabaseEntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, activeUserId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+                    jdbcTemplate.update(connection -> ps, keyHolder);
+                    return new DatabaseEntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, activeUserId);
+                }
+            }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
@@ -229,19 +225,13 @@ public class EntryLabelRepository {
             labelRepository.getLabel(labelId, username);
             entryRepository.getEntryWithoutSubcategoryId(entryId, username);
 
-            Connection conn = jdbcTemplate.getDataSource().getConnection();
-
-            PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY);
-            ps.setInt(1, entryId);
-            ps.setInt(2, labelId);
-            ps.setInt(3, userSingleton.getUserId(username));
-            int rowsAffected = ps.executeUpdate();
-            conn.close();
-
-            if (rowsAffected == 0) {
-                throw new ValidationException("No entryLabel found for an entry with ID " + entryId + " and a label with ID " + labelId);
+            try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection();
+                 PreparedStatement ps = conn.prepareStatement(REMOVE_LABEL_FROM_ENTRY)) {
+                ps.setInt(1, entryId);
+                ps.setInt(2, labelId);
+                ps.setInt(3, userSingleton.getUserId(username));
+                return ps.executeUpdate();
             }
-            return rowsAffected;
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
