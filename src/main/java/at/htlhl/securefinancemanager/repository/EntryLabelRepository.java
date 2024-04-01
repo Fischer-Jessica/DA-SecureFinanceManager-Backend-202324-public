@@ -34,8 +34,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.0
- * @since 31.03.2024 (version 3.0)
+ * @version 3.1
+ * @since 01.04.2024 (version 3.1)
  */
 @Repository
 public class EntryLabelRepository {
@@ -198,11 +198,9 @@ public class EntryLabelRepository {
                 ps.setInt(1, entryId);
                 ps.setInt(2, labelId);
                 ps.setInt(3, activeUserId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-                    jdbcTemplate.update(connection -> ps, keyHolder);
-                    return new DatabaseEntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, activeUserId);
-                }
+                GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+                jdbcTemplate.update(connection -> ps, keyHolder);
+                return new DatabaseEntryLabel(Objects.requireNonNull(keyHolder.getKey()).intValue(), entryId, labelId, activeUserId);
             }
         } catch (SQLException exception) {
             throw new RuntimeException(exception);

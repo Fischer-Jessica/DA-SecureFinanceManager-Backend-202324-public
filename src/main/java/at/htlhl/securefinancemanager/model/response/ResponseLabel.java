@@ -28,8 +28,8 @@ import at.htlhl.securefinancemanager.model.database.DatabaseLabel;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 1.1
- * @since 02.02.2024 (version 1.1)
+ * @version 1.2
+ * @since 01.04.2024 (version 1.2)
  * @see DatabaseLabel
  */
 public class ResponseLabel extends DatabaseLabel {
@@ -47,5 +47,14 @@ public class ResponseLabel extends DatabaseLabel {
     public ResponseLabel(DatabaseLabel databaseLabel, int mobileLabelId) {
         super(databaseLabel.getLabelId(), databaseLabel.getLabelName(), databaseLabel.getLabelDescription(), databaseLabel.getLabelColourId(), databaseLabel.getLabelUserId());
         this.mobileLabelId = mobileLabelId;
+    }
+
+    /**
+     * Returns the unique identifier for the mobile label.
+     *
+     * @return The unique identifier for the mobile label.
+     */
+    public int getMobileLabelId() {
+        return mobileLabelId;
     }
 }

@@ -28,8 +28,8 @@ import at.htlhl.securefinancemanager.model.database.DatabaseCategory;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 1.1
- * @since 02.02.2024 (version 1.1)
+ * @version 1.2
+ * @since 01.04.2024 (version 1.2)
  * @see DatabaseCategory
  */
 public class ResponseCategory extends DatabaseCategory {
@@ -47,5 +47,14 @@ public class ResponseCategory extends DatabaseCategory {
     public ResponseCategory(DatabaseCategory databaseCategory, int mobileCategoryId) {
         super(databaseCategory.getCategoryId(), databaseCategory.getCategoryName(), databaseCategory.getCategoryDescription(), databaseCategory.getCategoryColourId(), databaseCategory.getCategoryUserId());
         this.mobileCategoryId = mobileCategoryId;
+    }
+
+    /**
+     * Returns the unique identifier for the mobile category.
+     *
+     * @return The unique identifier for the mobile category.
+     */
+    public int getMobileCategoryId() {
+        return mobileCategoryId;
     }
 }

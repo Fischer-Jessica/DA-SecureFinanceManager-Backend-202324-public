@@ -28,8 +28,8 @@ import at.htlhl.securefinancemanager.model.database.DatabaseEntry;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 1.1
- * @since 02.02.2024 (version 1.1)
+ * @version 1.2
+ * @since 01.04.2024 (version 1.2)
  * @see DatabaseEntry
  */
 public class ResponseEntry extends DatabaseEntry {
@@ -47,5 +47,14 @@ public class ResponseEntry extends DatabaseEntry {
     public ResponseEntry(DatabaseEntry databaseEntry, int mobileEntryId) {
         super(databaseEntry.getEntryId(), databaseEntry.getEntrySubcategoryId(), databaseEntry.getEntryName(), databaseEntry.getEntryDescription(), databaseEntry.getEntryAmount(), databaseEntry.getEntryTimeOfTransaction(), databaseEntry.getEntryAttachment(), databaseEntry.getEntryCreationTime(), databaseEntry.getEntryUserId());
         this.mobileEntryId = mobileEntryId;
+    }
+
+    /**
+     * Returns the unique identifier for the mobile entry.
+     *
+     * @return The unique identifier for the mobile entry.
+     */
+    public int getMobileEntryId() {
+        return mobileEntryId;
     }
 }
