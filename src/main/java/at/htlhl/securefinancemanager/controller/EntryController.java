@@ -49,8 +49,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 4.1
- * @since 24.02.2024 (version 4.1)
+ * @version 4.2
+ * @since 01.04.2024 (version 4.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -81,6 +81,8 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the subcategoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "no entries found with the given subcategoryId for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getEntriesV1(@Parameter(description = "The subcategoryId added to the URL to retrieve the subordinated entries.") @PathVariable int subcategoryId,
@@ -94,6 +96,8 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -117,6 +121,8 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested entry with the given subcategoryId does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getEntryV1(@Parameter(description = "The subcategoryId added to the URL to retrieve the associated entry.") @PathVariable int subcategoryId,
@@ -133,6 +139,8 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -154,6 +162,8 @@ public class EntryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntry.class))}),
             @ApiResponse(responseCode = "400", description = "the categoryColourId is less than or equal to 0 or the entryAmount or the entryTimeOfTransaction is empty",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addEntryV1(@Parameter(description = "The subcategoryId added to the URL to create the new entry within it.") @PathVariable int subcategoryId,
@@ -177,6 +187,8 @@ public class EntryController {
             return ResponseEntity.ok(entryRepository.addEntry(new DatabaseEntry(subcategoryId, newApiEntry, userSingleton.getUserId(userDetails.getUsername()))));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -198,6 +210,8 @@ public class EntryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntry.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds and newApiEntries are not equal or a categoryColourId is less than or equal to 0 or a entryAmount or a entryTimeOfTransaction is empty",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addEntriesV2(@Parameter(description = "The subcategoryIds added to the URL to create the new entries within them. The subcategoryId and the newApiEntries need to be added in the same order.") @PathVariable List<Integer> subcategoryIds,
@@ -228,6 +242,8 @@ public class EntryController {
             return ResponseEntity.ok(createdEntries);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -250,6 +266,8 @@ public class EntryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseEntry.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds, mobileEntryIds and newApiEntries are not equal or a categoryColourId or a mobileEntryId is less than or equal to 0 or a entryAmount or a entryTimeOfTransaction is empty",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addEntriesV3(@Parameter(description = "The subcategoryIds added to the URL to create the new entries within them. The subcategoryId and the newApiEntries need to be added in the same order.") @PathVariable List<Integer> subcategoryIds,
@@ -283,6 +301,8 @@ public class EntryController {
             return ResponseEntity.ok(createdEntries);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -307,6 +327,8 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateEntryV1(@Parameter(description = "The id of the superior subcategory, added to the URL") @PathVariable int subcategoryId,
@@ -331,6 +353,8 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -355,6 +379,8 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds, entryIds and updatedApiEntries are not equal or a subcategoryId or a entryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given entry does not exist inside the given subcategory or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateEntriesV2(@Parameter(description = "List of the superior subcategoryIds. They need to be added to the URL in the same order as the updatedApiEntries") @PathVariable List<Integer> subcategoryIds,
@@ -386,6 +412,8 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -409,6 +437,8 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the subcategoryId or the entryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given entry does not exist inside the given subcategory or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteEntryV1(@Parameter(description = "The id of the superior subcategory, added to the URL.") @PathVariable int subcategoryId,
@@ -425,6 +455,8 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -448,6 +480,8 @@ public class EntryController {
             @ApiResponse(responseCode = "400", description = "the number of given subcategoryIds and entryIds are not equal or a subcategoryId or a entryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given entry does not exist inside the given subcategory or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteEntriesV2(@Parameter(description = "List of superior subcategoryIds. They need to be added to the URL in the same order as the entryIds.") @PathVariable List<Integer> subcategoryIds,
@@ -471,6 +505,8 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 }

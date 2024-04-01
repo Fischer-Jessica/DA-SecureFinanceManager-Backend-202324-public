@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>at.htlhl</groupId>
 	<artifactId>SecureFinanceManager</artifactId>
-	<version>version_9</version>
+	<version>version_10</version>
 	<name>SecureFinanceManager</name>
 	<description>The backend of our diploma thesis "Secure Finance Manager". - Made by Fischer.</description>
 	<properties>

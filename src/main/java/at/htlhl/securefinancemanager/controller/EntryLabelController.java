@@ -47,8 +47,8 @@ import java.util.List;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.1
- * @since 24.02.2024 (version 3.1)
+ * @version 3.2
+ * @since 01.04.2024 (version 3.2)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -79,6 +79,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "400", description = "the entryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getLabelsForEntryV1(@Parameter(description = "The entryId added to the URL to retrieve the associated labels.") @PathVariable int entryId,
@@ -92,6 +94,8 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -114,6 +118,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "400", description = "a entryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a requested entryId does not exist or is not found for the authenticated user or the entry does not have any labels associated with it",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getLabelsForEntriesV2(@Parameter(description = "List of entryIds added to the URL to retrieve the associated labels.") @PathVariable List<Integer> entryIds,
@@ -131,6 +137,8 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -153,6 +161,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested labelId does not exist or is not found for the authenticated user or the label does not have any entries associated with it",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getEntriesForLabelV1(@Parameter(description = "The labelId added to the URL to retrieve the associated entries.") @PathVariable int labelId,
@@ -166,6 +176,8 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -188,6 +200,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given entry or label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addLabelToEntryV1(@Parameter(description = "The entryId added to the URL to retrieve the associated entry.") @PathVariable int entryId,
@@ -204,6 +218,8 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -226,6 +242,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "400", description = "the number of given entryIds and labelIds are not equal or a entryId or a labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given entry or label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addLabelsToEntriesV2(@Parameter(description = "A list of entryIdd added to the URL, in the same order as the associated labelIds, to retrieve the associated entries.") @PathVariable List<Integer> entryIds,
@@ -249,6 +267,8 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -271,6 +291,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "400", description = "the entryId or the labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given entry, label or association does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> removeLabelFromEntryV1(@Parameter(description = "The entryId added to the URL to retrieve the associated entry.") @PathVariable int entryId,
@@ -287,6 +309,8 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -309,6 +333,8 @@ public class EntryLabelController {
             @ApiResponse(responseCode = "400", description = "the number of entryIds and labelIds are not equal or a entryId or a labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given entry, label or association does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> removeLabelsFromEntriesV2(@Parameter(description = "A list of entryIds added to the URL, in the same order as the associated labelIds, to retrieve the associated entries.") @PathVariable List<Integer> entryIds,
@@ -332,6 +358,8 @@ public class EntryLabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 }

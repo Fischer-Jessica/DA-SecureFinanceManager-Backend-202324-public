@@ -48,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 4.0
- * @since 09.02.2024 (version 4.0)
+ * @version 4.1
+ * @since 01.04.2024 (version 4.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -77,6 +77,8 @@ public class LabelController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class))}),
             @ApiResponse(responseCode = "404", description = "no labels found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getLabelsV1(@AuthenticationPrincipal UserDetails userDetails) {
@@ -84,6 +86,8 @@ public class LabelController {
             return ResponseEntity.ok(labelRepository.getLabels(userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -106,6 +110,8 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getLabelV1(@Parameter(description = "The labelId added to the URL to retrieve the associated label.") @PathVariable int labelId,
@@ -119,6 +125,8 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -141,6 +149,8 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the specified label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getLabelSumV1(@Parameter(description = "The labelId added to the URL to retrieve the sum of all transactions for entries with the specified label.") @PathVariable int labelId,
@@ -155,6 +165,8 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -175,6 +187,8 @@ public class LabelController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class))}),
             @ApiResponse(responseCode = "400", description = "the labelName is empty or the labelColourId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addLabelV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -195,6 +209,8 @@ public class LabelController {
             return ResponseEntity.ok(labelRepository.addLabel(new DatabaseLabel(newApiLabel, userSingleton.getUserId(userDetails.getUsername()))));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -215,6 +231,8 @@ public class LabelController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class))}),
             @ApiResponse(responseCode = "400", description = "a labelName is empty or a labelColourId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addLabelsV2(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -239,6 +257,8 @@ public class LabelController {
             return ResponseEntity.ok(createdLabels);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -260,6 +280,8 @@ public class LabelController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseLabel.class))}),
             @ApiResponse(responseCode = "400", description = "the number of mobileLabelIds and newApiLabels are not equal or a labelName is empty or a mobileLabelId or a labelColourId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addLabelsV3(@Parameter(description = "List of mobileLabelIds from mobile applications to be added to the URL. The mobileLabelIds and newApiLabels must be in the same order.") @RequestParam List<Integer> mobileLabelIds,
@@ -288,6 +310,8 @@ public class LabelController {
             return ResponseEntity.ok(createdLabels);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -311,6 +335,8 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0 or the labelColourId is less than 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateLabelV1(@Parameter(description = "The id of the label to be updated, added to the URL.") @PathVariable int labelId,
@@ -334,6 +360,8 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -357,6 +385,8 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "the number of labelIds and updatedLabels are not equal or a labelId is less than or equal to 0 or a labelColourId is less than 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateLabelsV2(@Parameter(description = "List of labelIds to be updated. They need to be added to the URL in the same order as the updatedApiLabels.") @PathVariable List<Integer> labelIds,
@@ -387,6 +417,8 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -409,6 +441,8 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "the labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteCategoryV1(@Parameter(description = "The id of the label to be deleted, added to the URL.") @PathVariable int labelId,
@@ -422,6 +456,8 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -444,6 +480,8 @@ public class LabelController {
             @ApiResponse(responseCode = "400", description = "a labelId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given label does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteLabelsV2(@Parameter(description = "List of labelIds to be deleted. They need to be added to the URL.") @PathVariable List<Integer> labelIds,
@@ -461,6 +499,8 @@ public class LabelController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 }

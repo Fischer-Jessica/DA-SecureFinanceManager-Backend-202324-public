@@ -48,8 +48,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.9
- * @since 08.03.2024 (version 3.9)
+ * @version 4.0
+ * @since 01.04.2024 (version 4.0)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -79,6 +79,8 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user or there are no subcategories in this category",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getSubcategoriesV1(@Parameter(description = "The categoryId added to the URL to retrieve the subordinated subcategories.") @PathVariable int categoryId,
@@ -92,6 +94,8 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -114,6 +118,8 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested subcategory of the given category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getSubcategoryV1(@Parameter(description = "The categoryId added to the URL to retrieve the associated subcategory.") @PathVariable int categoryId,
@@ -130,6 +136,8 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -153,6 +161,8 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId or subcategoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the specified subcategory does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getSubcategorySumV1(@Parameter(description = "The categoryId added to the URL to retrieve the sum of all transactions of the specified subcategory.") @PathVariable int categoryId,
@@ -167,6 +177,8 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -188,6 +200,8 @@ public class SubcategoryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the given categoryId or the subcategoryColourId is less than or equal to 0 or the categoryName is empty",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addSubcategoryV1(@Parameter(description = "The categoryId added to the URL to create the new subcategory within it.") @PathVariable int categoryId,
@@ -211,6 +225,8 @@ public class SubcategoryController {
             return ResponseEntity.ok(subcategoryRepository.addSubcategory(new DatabaseSubcategory(categoryId, newApiSubcategory, userSingleton.getUserId(userDetails.getUsername()))));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -232,6 +248,8 @@ public class SubcategoryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds and newApiSubcategories are not equal or a given categoryId or a subcategoryColourId is less than or equal to 0 or a categoryName is empty",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addSubcategoriesV2(@Parameter(description = "The categoryId added to the URL to create the new entries within them. The categoryId and the newApiSubcategories need to be added in the same order.") @PathVariable List<Integer> categoryIds,
@@ -262,6 +280,8 @@ public class SubcategoryController {
             return ResponseEntity.ok(createdSubcategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -284,6 +304,8 @@ public class SubcategoryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseSubcategory.class))}),
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds, mobileSubcategoryIds and newApiSubcategories are not equal or a given categoryId or a mobileSubcategoryId or a subcategoryColourId is less than or equal to 0 or a categoryName is empty",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addSubcategoriesV3(@Parameter(description = "The categoryIds added to the URL to create the new subcategories within them. The categoryId and the newApiSubcategories need to be added in the same order.") @PathVariable List<Integer> categoryIds,
@@ -317,6 +339,8 @@ public class SubcategoryController {
             return ResponseEntity.ok(createdSubcategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -341,6 +365,8 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0 or the categoryColourId is less than 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateSubcategoryV1(@Parameter(description = "The id of the superior category, added to the URL") @PathVariable int categoryId,
@@ -367,6 +393,8 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -392,6 +420,8 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds, subcategoryIds and updatedApiSubcategories are not equal or a categoryId or a subcategoryId is less than or equal to 0 or a categoryColourId is less than 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateSubcategoriesV2(@Parameter(description = "List of the superior categoryIds. They need to be added to the URL in the same order as the updatedApiSubcategories") @PathVariable List<Integer> categoryIds,
@@ -425,6 +455,8 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -449,6 +481,8 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId or the subcategoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteSubcategoryV1(@Parameter(description = "The id of the superior category, added to the URL.") @PathVariable int categoryId,
@@ -465,6 +499,8 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -489,6 +525,8 @@ public class SubcategoryController {
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds and subcategoryIds are not equal or a categoryId or a subcategoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given subcategory with the given categoryId does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteSubcategoriesV2(@Parameter(description = "List of superior categoryIds. They need to be added to the URL in the same order as the subcategoryIds.") @PathVariable List<Integer> categoryIds,
@@ -512,6 +550,8 @@ public class SubcategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 }

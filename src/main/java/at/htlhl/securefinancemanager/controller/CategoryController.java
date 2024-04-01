@@ -49,8 +49,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 4.0
- * @since 08.03.2024 (version 4.0)
+ * @version 4.1
+ * @since 01.04.2024 (version 4.1)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -78,6 +78,8 @@ public class CategoryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class))}),
             @ApiResponse(responseCode = "404", description = "no categories found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getCategoriesV1(@AuthenticationPrincipal UserDetails userDetails) {
@@ -85,6 +87,8 @@ public class CategoryController {
             return ResponseEntity.ok(categoryRepository.getCategories(userDetails.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -107,6 +111,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getCategoryV1(@Parameter(description = "The categoryId added to the URL to retrieve the associated Category.") @PathVariable int categoryId,
@@ -120,6 +126,8 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -142,6 +150,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getCategorySumV1(@Parameter(description = "The categoryId added to the URL to retrieve the sum of all transactions of the associated category.") @PathVariable int categoryId,
@@ -155,6 +165,8 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -175,6 +187,8 @@ public class CategoryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class))}),
             @ApiResponse(responseCode = "400", description = "the categoryName is empty or the categoryColourId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addCategoryV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -196,6 +210,8 @@ public class CategoryController {
                     categoryRepository.addCategory(new DatabaseCategory(newApiCategory, userSingleton.getUserId(userDetails.getUsername()))));
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -216,6 +232,8 @@ public class CategoryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class))}),
             @ApiResponse(responseCode = "400", description = "A categoryName is empty or a categoryColourId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addCategoriesV2(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -225,8 +243,7 @@ public class CategoryController {
                     mediaType = "application/json",
                     schema = @Schema(implementation = ApiCategory.class)
             )
-    ) @RequestBody List<ApiCategory> newApiCategories,
-                                                  @AuthenticationPrincipal UserDetails userDetails) {
+    ) @RequestBody List<ApiCategory> newApiCategories, @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<DatabaseCategory> createdCategories = new ArrayList<>();
             for (ApiCategory newApiCategory : newApiCategories) {
@@ -240,6 +257,8 @@ public class CategoryController {
             return ResponseEntity.ok(createdCategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -261,6 +280,8 @@ public class CategoryController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class))}),
             @ApiResponse(responseCode = "400", description = "the number of newCategories and mobileCategoryIds are not equal or categoryName is empty or a categoryColourId or a mobileCategoryId is less than or equal to 0",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addCategoriesV3(@Parameter(description = "List of mobileCategoryIds from mobile applications to be added to the URL. The mobileCategoryIds and newApiCategories must be in the same order.")
@@ -293,6 +314,8 @@ public class CategoryController {
             return ResponseEntity.ok(createdCategories);
         } catch (MissingRequiredParameter exception) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -316,6 +339,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0 or the categoryColourId is less than 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateCategoryV1(@Parameter(description = "The id of the category to be updated, added to the URL.") @PathVariable int categoryId,
@@ -340,6 +365,8 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -363,6 +390,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "the number of given categoryIds and updatedApiCategories are not equal or a categoryId is less than or equal to 0 or a categoryColourId is less than 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateCategoriesV2(@Parameter(description = "List of categoryIds to be updated. They need to be added to the URL in the same order as the updatedApiCategories.") @PathVariable List<Integer> categoryIds,
@@ -393,6 +422,8 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -415,6 +446,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "the categoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the given category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteCategoryV1(@Parameter(description = "The id of the category to be deleted, added to the URL.") @PathVariable int categoryId,
@@ -428,6 +461,8 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -450,6 +485,8 @@ public class CategoryController {
             @ApiResponse(responseCode = "400", description = "a categoryId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "a given category does not exist or is not found for the authenticated user",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteCategoriesV2(@Parameter(description = "List of categoryIds to be deleted. They need to be added to the URL.") @PathVariable List<Integer> categoryIds,
@@ -467,6 +504,8 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 }

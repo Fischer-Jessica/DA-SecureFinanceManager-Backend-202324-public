@@ -39,8 +39,8 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 2.6
- * @since 24.02.2024 (version 2.6)
+ * @version 2.7
+ * @since 01.04.2024 (version 2.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -66,6 +66,8 @@ public class ColourController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseColour.class))}),
             @ApiResponse(responseCode = "404", description = "no colours found",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getColoursV1() {
@@ -73,6 +75,8 @@ public class ColourController {
             return ResponseEntity.ok(colourRepository.getColours());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -93,6 +97,8 @@ public class ColourController {
             @ApiResponse(responseCode = "400", description = "the colourId is less than or equal to 0",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "404", description = "the requested colour does not exist",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getColourV1(@Parameter(description = "The colourId added to the Url to retrieve the associated colour.") @PathVariable int colourId) {
@@ -105,6 +111,8 @@ public class ColourController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 }

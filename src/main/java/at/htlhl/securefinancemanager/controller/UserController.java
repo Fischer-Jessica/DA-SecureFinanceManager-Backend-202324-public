@@ -55,8 +55,8 @@ import java.util.List;
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.6
- * @since 25.02.2024 (version 3.6)
+ * @version 3.7
+ * @since 01.04.2024 (version 3.7)
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -95,6 +95,8 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseUser.class))}),
             @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> getUserV1(@AuthenticationPrincipal UserDetails activeUser) {
@@ -102,6 +104,8 @@ public class UserController {
             return ResponseEntity.ok(UserRepository.getUserObject(jdbcTemplate, activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -121,6 +125,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "the username or the password is missing",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "409", description = "the username or the email address already exists",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addUserV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -156,6 +162,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -175,6 +183,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "a username or a password is missing",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "409", description = "the username or the email address already exists",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addUsersV2(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -214,6 +224,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -235,6 +247,8 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "a mobileUserId is less than or equal to 0 or a username or a password is missing",
                     content = {@Content(mediaType = "text/plain")}),
             @ApiResponse(responseCode = "409", description = "the username or the email address already exists",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> addUsersV3(@Parameter(description = "List of mobileUserIds from mobile applications to be added to the URL. The mobileUserIds and newApiUsers must be in the same order.") @RequestParam List<Integer> mobileUserId,
@@ -280,6 +294,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getLocalizedMessage());
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -299,6 +315,8 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseCategory.class))}),
             @ApiResponse(responseCode = "404", description = "the authenticated user is not found",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> updateUserV1(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -314,6 +332,8 @@ public class UserController {
             return ResponseEntity.ok(userRepository.updateUser(updatedApiUser, activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 
@@ -332,6 +352,8 @@ public class UserController {
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = Integer.class))}),
             @ApiResponse(responseCode = "404", description = "the authenticated user was not found",
+                    content = {@Content(mediaType = "text/plain")}),
+            @ApiResponse(responseCode = "500", description = "internal server error occurred",
                     content = {@Content(mediaType = "text/plain")})
     })
     public ResponseEntity<Object> deleteUserV1(@AuthenticationPrincipal UserDetails activeUser) {
@@ -339,6 +361,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(userRepository.deleteUser(activeUser.getUsername()));
         } catch (ValidationException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getLocalizedMessage());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exception.getLocalizedMessage());
         }
     }
 }
