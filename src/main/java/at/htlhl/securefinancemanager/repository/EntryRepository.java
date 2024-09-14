@@ -8,6 +8,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,8 +27,8 @@ import static at.htlhl.securefinancemanager.SecureFinanceManagerApplication.user
  *
  * @author Fischer
  * @fullName Fischer, Jessica Christina
- * @version 3.8
- * @since 31.03.2024 (version 3.8)
+ * @version 3.9
+ * @since 14.09.2024 (version 3.9)
  */
 @Repository
 public class EntryRepository {
@@ -217,7 +219,10 @@ public class EntryRepository {
     public DatabaseEntry addEntry(DatabaseEntry newEntry) {
         try (Connection conn = Objects.requireNonNull(jdbcTemplate.getDataSource(), "DataSource must not be null").getConnection()) {
             GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
-            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = conn.prepareStatement(INSERT_ENTRY, new String[]{"pk_entry_id"});
                 ps.setInt(1, newEntry.getEntrySubcategoryId());
@@ -232,7 +237,7 @@ public class EntryRepository {
                     ps.setString(3, newEntry.getEntryDescription());
                 }
                 ps.setString(4, newEntry.getEntryAmount());
-                ps.setString(5, currentTimestamp.toString());
+                ps.setString(5, currentDateTime.format(formatter));
                 ps.setString(6, newEntry.getEntryTimeOfTransaction());
                 if (newEntry.getEntryAttachment() == null) {
                     ps.setNull(7, Types.NULL);
@@ -242,7 +247,7 @@ public class EntryRepository {
                 ps.setInt(8, newEntry.getEntryUserId());
                 return ps;
             }, keyHolder);
-            return new DatabaseEntry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntrySubcategoryId(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), currentTimestamp.toString(), newEntry.getEntryUserId());
+            return new DatabaseEntry(Objects.requireNonNull(keyHolder.getKey()).intValue(), newEntry.getEntrySubcategoryId(), newEntry.getEntryName(), newEntry.getEntryDescription(), newEntry.getEntryAmount(), newEntry.getEntryTimeOfTransaction(), newEntry.getEntryAttachment(), currentDateTime.format(formatter), newEntry.getEntryUserId());
         } catch (SQLException exception) {
             throw new RuntimeException(exception);
         }
